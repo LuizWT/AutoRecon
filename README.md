@@ -25,12 +25,15 @@ Nmap (inclui diversas técnicas de varredura TCP, UDP, descoberta de hosts, entr
 Sn1per (para reconhecimento de rede e OSINT)
 
 ### Instalação
-    
-    ```~$ git clone https://github.com/seu-usuario/AutoRecon.git```
-    
-    ```~$ cd AutoRecon```
-    
-    ```~$ python3 setup_tools.py```
+
+Clone o repositório:
+    ~$ git clone https://github.com/seu-usuario/AutoRecon.git
+
+Acesse o diretório:
+    ~$ cd AutoRecon
+
+Execute a ferramenta
+    ~$ python3 main.py
 
 ### Uso
 
