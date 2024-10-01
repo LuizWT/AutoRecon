@@ -27,12 +27,15 @@ Atualmente, o AutoRecon é compatível apenas com sistemas operacionais baseados
 ### Instalação
 
 Clone o repositório:
+
     ~$ git clone https://github.com/seu-usuario/AutoRecon.git
 
 Acesse o diretório:
+
     ~$ cd AutoRecon
 
-Execute a ferramenta
+Execute a ferramenta:
+
     ~$ python3 main.py
 
 ### Uso
