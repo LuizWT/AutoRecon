@@ -54,9 +54,13 @@ No menu, você pode escolher diferentes tipos de varredura, como:
 Se você quiser contribuir com o projeto, sinta-se à vontade para abrir issues ou fazer pull requests no repositório oficial do projeto.
 Licença
 
-BTC wallet:
+_________________________________________________________________
+## Apoio ao Projeto
 
-    bc1qfy534ujs9yekwthe063fck0zf7hel7paem6sxl
+Se você gostaria de apoiar o projeto, considere fazer uma doação:
 
-______________________________________________
+**BTC Wallet**:  
+`bc1qfy534ujs9yekwthe063fck0zf7hel7paem6sxl`
+
+_________________________________________________________________
 Este projeto está licenciado sob a MIT License.
