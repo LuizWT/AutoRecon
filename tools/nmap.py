@@ -1,0 +1,265 @@
+from tools.terminal import open_terminal
+from colorama import init, Fore, Style
+import os
+import platform
+
+init(autoreset=True)
+
+def clear_terminal():
+    os.system('cls' if platform.system() == 'Windows' else 'clear')
+
+def show_command_explanation(mode):
+    explanations = {
+        'target_spec': f"{Fore.CYAN}[INFO] {Style.BRIGHT}Varredura padrão: Varre IPs, intervalos, CIDR, arquivos, etc.",
+        'scan_technique': f"{Fore.CYAN}[INFO] {Style.BRIGHT}Técnicas de Varredura: Varredura TCP, UDP, ACK, etc.",
+        'host_discovery': f"{Fore.CYAN}[INFO] {Style.BRIGHT}Descoberta de Hosts: Descobre hosts ativos na rede.",
+        'port_spec': f"{Fore.CYAN}[INFO] {Style.BRIGHT}Especificação de Portas: Varre portas específicas ou uma faixa de portas.",
+        'service_detection': f"{Fore.CYAN}[INFO] {Style.BRIGHT}Detecção de Serviços: Detecta serviços e versões em execução.",
+        'os_detection': f"{Fore.CYAN}[INFO] {Style.BRIGHT}Detecção de SO: Tenta identificar o sistema operacional do alvo.",
+        'timing': f"{Fore.CYAN}[INFO] {Style.BRIGHT}Tempos e Desempenho: Ajusta a velocidade e desempenho da varredura.",
+        'http_title': f"{Fore.CYAN}[INFO] {Style.BRIGHT}http-title: Varre as portas 80 e 443 para título HTTP.",
+        'ssl_cert': f"{Fore.CYAN}[INFO] {Style.BRIGHT}ssl-cert: Varre a porta 443 para certificado SSL.",
+        'vuln': f"{Fore.CYAN}[INFO] {Style.BRIGHT}vuln: Varre as portas 80 e 443 para vulnerabilidades conhecidas.",
+        'smb_os_discovery': f"{Fore.CYAN}[INFO] {Style.BRIGHT}smb-os-discovery: Varre a porta 445 para descobrir o sistema operacional SMB.",
+        'http_robots_txt': f"{Fore.CYAN}[INFO] {Style.BRIGHT}http-robots.txt: Varre as portas 80 e 443 para arquivo robots.txt.",
+        'ssh_hostkey': f"{Fore.CYAN}[INFO] {Style.BRIGHT}ssh-hostkey: Varre a porta 22 para chave do host SSH.",
+        'dns_brute': f"{Fore.CYAN}[INFO] {Style.BRIGHT}dns-brute: Realiza brute force em DNS."
+    }
+    
+    print(explanations.get(mode, f"{Fore.RED}[INFO] {Style.BRIGHT}Modo não identificado."))
+
+def nmap(target, mode, additional_param=None):
+    base_command = "sudo nmap "
+    
+    if mode == 'target_spec':
+        command = f"{base_command}{target}"
+    elif mode == 'scan_technique':
+        command = f"{base_command}{additional_param} {target}"
+    elif mode == 'host_discovery':
+        command = f"{base_command}-sn {target}"
+    elif mode == 'port_spec':
+        command = f"{base_command}-p {additional_param} {target}"
+    elif mode == 'service_detection':
+        command = f"{base_command}-sV {target}"
+    elif mode == 'os_detection':
+        command = f"{base_command}-O {target}"
+    elif mode == 'timing':
+        command = f"{base_command}-T {additional_param} {target}"
+    elif mode == 'http_title':
+        command = f"{base_command}-p 80,443 --script=http-title {target}"
+    elif mode == 'ssl_cert':
+        command = f"{base_command}-p 443 --script=ssl-cert {target}"
+    elif mode == 'vuln':
+        command = f"{base_command}-p 80,443 --script=vuln {target}"
+    elif mode == 'smb_os_discovery':
+        command = f"{base_command}-p 445 --script=smb-os-discovery {target}"
+    elif mode == 'http_robots_txt':
+        command = f"{base_command}-p 80,443 --script=http-robots.txt {target}"
+    elif mode == 'ssh_hostkey':
+        command = f"{base_command}-p 22 --script=ssh-hostkey {target}"
+    elif mode == 'dns_brute':
+        command = f"{base_command}--script=dns-brute --script-args dns-brute.domain={target}"
+    else:
+        command = None
+
+    print(f"{Fore.YELLOW}Comando: {command}")
+    open_terminal(command)
+
+def execute_all_nmap_commands(target):
+    # Os comandos DEVEM ser executados um a um para não causar conflito com a flag -p
+    commands = [
+        f"-sS -v {target}",                        # TCP SYN scan
+        f"-sT -v {target}",                        # TCP connect scan
+        f"-sU -v {target}",                        # UDP scan
+        f"-sn -v {target}",                        # Host discovery
+        f"-sV -v {target}",                        # Service version detection
+        f"-O -v {target}",                         # OS detection
+        f"-p- -v --script=http-title {target}",   # HTTP Title em todas as portas
+        f"-p 443 -v --script=ssl-cert {target}",  # SSL Cert
+        f"-p- -v --script=vuln {target}",         # Vulnerability scan em todas as portas
+        f"-p 445 -v --script=smb-os-discovery {target}",  # SMB OS discovery
+        f"-p- -v --script=http-robots.txt {target}",  # HTTP robots.txt em todas as portas
+        f"-p 22 -v --script=ssh-hostkey {target}", # SSH Hostkey
+        f"--script=dns-brute --script-args dns-brute.domain={target}"  # DNS Brute Force
+    ]
+
+    output_file = "nmap_output.txt"
+
+    for cmd in commands:
+        full_command = f"sudo nmap {cmd} >> {output_file} 2>&1"
+        print(f"{Fore.YELLOW}Executando comando: {full_command}")
+        os.system(full_command)
+    
+    print(f"{Fore.GREEN}Resultados salvos em: {output_file}")
+
+
+
+def nmap_options(option):
+    if option == "1":
+        show_command_explanation('target_spec')
+        target = get_target()
+        if target.lower() == 'b':
+            clear_terminal() 
+            return  
+        nmap(target, 'target_spec')
+    elif option == "2":
+        show_command_explanation('scan_technique')
+        target = get_target()
+        if target.lower() == 'b':
+            clear_terminal() 
+            return  
+        technique = get_scan_technique()
+        if technique.lower() == 'b':
+            clear_terminal() 
+            return  
+        nmap(target, 'scan_technique', technique)
+    elif option == "3":
+        show_command_explanation('host_discovery')
+        target = get_range()
+        if target.lower() == 'b':
+            clear_terminal() 
+            return  
+        nmap(target, 'host_discovery')  
+    elif option == "4":
+        show_command_explanation('port_spec')
+        target = get_target()
+        if target.lower() == 'b':
+            clear_terminal() 
+            return  
+        ports = get_ports()
+        if ports.lower() == 'b':
+            clear_terminal() 
+            return  
+        nmap(target, 'port_spec', ports)
+    elif option == "5":
+        show_command_explanation('service_detection')
+        target = get_target()
+        if target.lower() == 'b':
+            clear_terminal() 
+            return  
+        nmap(target, 'service_detection')  
+    elif option == "6":
+        show_command_explanation('os_detection')
+        target = get_target()
+        if target.lower() == 'b':
+            clear_terminal() 
+            return  
+        nmap(target, 'os_detection')  
+    elif option == "7":
+        show_command_explanation('timing')
+        target = get_target()
+        if target.lower() == 'b':
+            clear_terminal() 
+            return  
+        timing = input(f"{Fore.GREEN}Digite o nível de timing (0-5) ou {Fore.RED}[B] {Fore.GREEN}para voltar: ")
+        if timing.lower() == 'b':
+            clear_terminal() 
+            return  
+        nmap(target, 'timing', timing)
+    elif option == "8":
+        show_command_explanation('http_title')
+        target = get_target()
+        if target.lower() == 'b':
+            clear_terminal() 
+            return  
+        nmap(target, 'http_title')  
+    elif option == "9":
+        show_command_explanation('ssl_cert')
+        target = get_target()
+        if target.lower() == 'b':
+            clear_terminal() 
+            return  
+        nmap(target, 'ssl_cert')  
+    elif option == "10":
+        show_command_explanation('vuln')
+        target = get_target()
+        if target.lower() == 'b':
+            clear_terminal() 
+            return  
+        nmap(target, 'vuln')  
+    elif option == "11":
+        show_command_explanation('smb_os_discovery')
+        target = get_target()
+        if target.lower() == 'b':
+            clear_terminal() 
+            return  
+        nmap(target, 'smb_os_discovery')  
+    elif option == "12":
+        show_command_explanation('http_robots_txt')
+        target = get_target()
+        if target.lower() == 'b':
+            clear_terminal() 
+            return  
+        nmap(target, 'http_robots_txt')  
+    elif option == "13":
+        show_command_explanation('ssh_hostkey')
+        target = get_target()
+        if target.lower() == 'b':
+            clear_terminal() 
+            return  
+        nmap(target, 'ssh_hostkey')  
+    elif option == "14":
+        show_command_explanation('dns_brute')
+        target = input(f"{Fore.GREEN}Digite o domínio de destino (ex: example.com) ou [B] para voltar: ")
+        if target.lower() == 'b':
+            clear_terminal() 
+            return  
+        nmap('', 'dns_brute', target)
+    elif option == "15":
+        target = get_target()
+        if target.lower() == 'b':
+            clear_terminal() 
+            return  
+        execute_all_nmap_commands(target)
+
+def get_target():
+    return input(f"{Fore.GREEN}Digite o endereço do alvo (EX: 192.168.0.1 | site.com) ou [B] para voltar: ")
+
+def get_range():
+    return input(f"{Fore.GREEN}Digite o intervalo ou CIDR (EX: 192.168.1.0/24) ou [B] para voltar: ")
+
+def get_ports():
+    return input(f"{Fore.GREEN}Digite as portas ou faixa de portas (EX: 21,22 ou 1-100) ou [B] para voltar: ")
+
+def get_scan_technique():
+    return input(f"{Fore.GREEN}Digite a técnica de varredura (EX: -sS, -sT, -sU) ou [B] para voltar: ")
+
+def nmap_menu_loop():
+    while True:
+        print(f"""
+        {Fore.BLUE}                  
+        _ __  _ __ ___   __ _ _ __  
+        | '_ \| '_ ` _ \ / _` | '_ \ 
+        | | | | | | | | | (_| | |_) |
+        |_| |_|_| |_| |_|\__,_| .__/ 
+                            | |    
+                            |_|    
+                            
+        {Fore.CYAN}[1] {Fore.RESET}ESPECIFICAÇÃO DE ALVO
+        {Fore.CYAN}[2] {Fore.RESET}TÉCNICAS DE VARREDURA
+        {Fore.CYAN}[3] {Fore.RESET}DESCUBRIR HOSTS
+        {Fore.CYAN}[4] {Fore.RESET}ESPECIFICAÇÃO DE PORTAS
+        {Fore.CYAN}[5] {Fore.RESET}DETEÇÃO DE SERVIÇOS
+        {Fore.CYAN}[6] {Fore.RESET}DETEÇÃO DE SISTEMA OPERACIONAL
+        {Fore.CYAN}[7] {Fore.RESET}TEMPORIZAÇÃO E DESEMPENHO
+        {Fore.CYAN}[8] {Fore.RESET}HTTP TITLE
+        {Fore.CYAN}[9] {Fore.RESET}SSL CERT
+        {Fore.CYAN}[10] {Fore.RESET}VULN
+        {Fore.CYAN}[11] {Fore.RESET}SMB OS DISCOVERY
+        {Fore.CYAN}[12] {Fore.RESET}HTTP ROBOTS.TXT
+        {Fore.CYAN}[13] {Fore.RESET}SSH HOSTKEY
+        {Fore.CYAN}[14] {Fore.RESET}DNS BRUTE FORCE
+        {Fore.CYAN}[15] {Fore.RESET}EXECUTAR TODOS OS COMANDOS
+        {Fore.RED}[B] {Fore.RESET}Voltar
+        """)
+
+        option = input(f"{Fore.GREEN}Escolha uma opção: ")
+        clear_terminal()
+
+        if option.lower() == 'b':
+            break
+
+        if option in [str(i) for i in range(1, 16)]:
+            nmap_options(option)
+        else:
+            continue
