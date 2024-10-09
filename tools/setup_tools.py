@@ -7,7 +7,7 @@ init(autoreset=True)
 
 def check_sniper():
     try:
-        subprocess.run(['sudo','sniper', '--version'], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # Tenta executar o comando 'sniper' para verificar se está instalado
+        subprocess.run(['sudo', 'sniper', '--version'], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         print(f"{Fore.CYAN}[INFO] Sn1per já está instalado.")
         return True
     except subprocess.CalledProcessError:
@@ -20,9 +20,7 @@ def install_sniper():
         if platform.system() == 'Linux':
             if not os.path.exists('Sn1per'):
                 os.system('git clone https://github.com/1N3/Sn1per')
-            
             os.chdir('Sn1per')
-            
             os.system('sudo bash install.sh')
             print(f"{Fore.CYAN}[INFO] Sn1per instalado com sucesso.")
         else:
@@ -32,11 +30,12 @@ def install_sniper():
 
 def check_nmap():
     try:
-        subprocess.run(['nmap', '--version'], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # Tenta executar o comando 'nmap' para verificar se está instalado
+        subprocess.run(['nmap', '--version'], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         print(f"{Fore.CYAN}[INFO] Nmap já está instalado.")
         return True
-    except subprocess.CalledProcessError:
-        print(f"{Fore.CYAN}[INFO] Nmap não está instalado.")
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        print(f"{Fore.RED}[INFO] Nmap não está instalado. Iniciando a instalação...")
+        install_nmap()
         return False
 
 def install_nmap():
@@ -44,19 +43,17 @@ def install_nmap():
         print(f"{Fore.CYAN}[INFO] Iniciando a instalação do Nmap...")
         
         if platform.system() == 'Linux':
-            if os.path.isfile('/etc/debian_version'):  # Baseado em Debian
+            if os.path.isfile('/etc/debian_version'):
                 os.system('sudo apt-get update && sudo apt-get install -y nmap')
-            elif os.path.isfile('/etc/redhat-release'):  # Baseado em RedHat
+            elif os.path.isfile('/etc/redhat-release'):
                 os.system('sudo dnf install -y nmap')
-            elif os.path.isfile('/etc/SuSE-release'):  # SuSE
-                os.system('sudo zypper refresh')
-                os.system('sudo zypper addrepo https://download.opensuse.org/repositories/network:utilities/openSUSE_Leap_15.3/network:utilities.repo')
-                os.system('sudo zypper refresh')
-                os.system('sudo zypper install -y nmap')
+            elif os.path.isfile('/etc/arch-release'):
+                os.system('sudo pacman -Syu --noconfirm nmap')
+            elif os.path.isfile('/etc/SuSE-release'):
+                os.system('sudo zypper refresh && sudo zypper install -y nmap')
             else:
                 print(f"{Fore.RED}[ERROR] Distribuição não suportada para instalação do Nmap.")
                 return
-
             print(f"{Fore.CYAN}[INFO] Nmap instalado com sucesso.")
         else:
             print(f"{Fore.RED}[ERROR] Este script só suporta instalação no Linux.")
@@ -66,7 +63,7 @@ def install_nmap():
 def setup_tools():
     if not check_sniper():
         install_sniper()
-    if not check_nmap():
-        install_nmap()
+    check_nmap()
 
 setup_tools()
+
