@@ -14,11 +14,7 @@ O AutoRecon é um projeto de automatização de ferramentas de segurança focado
 
 ### Compatibilidade
 
-Atualmente, o AutoRecon é compatível apenas com sistemas operacionais baseados em Linux, suportando as seguintes distribuições:
-    
-    Debian/Ubuntu: Instalando pacotes via apt-get.
-    Red Hat/Fedora/CentOS: Utilizando dnf para instalação.
-    openSUSE: Instalando pacotes via zypper.
+Atualmente, o AutoRecon é compatível apenas com sistemas operacionais baseados em Linux
 
 ### Ferramentas Suportadas:
     
