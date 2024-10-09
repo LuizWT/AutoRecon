@@ -1,4 +1,3 @@
-from tools.terminal import open_terminal
 from colorama import init, Fore, Style
 import os
 import platform
@@ -7,6 +6,16 @@ init(autoreset=True)
 
 def clear_terminal():
     os.system('cls' if platform.system() == 'Windows' else 'clear')
+
+output_dir = "output"
+output_file = os.path.join(output_dir, "nmap_output.txt")
+os.makedirs(output_dir, exist_ok=True)
+
+def execute_command_and_log(command):
+    # Função autoexplicativa
+    full_command = f"{command} >> {output_file} 2>&1"
+    print(f"{Fore.YELLOW}Executando comando: {full_command}")
+    os.system(full_command)
 
 def show_command_explanation(mode):
     explanations = {
@@ -62,8 +71,8 @@ def nmap(target, mode, additional_param=None):
     else:
         command = None
 
-    print(f"{Fore.YELLOW}Comando: {command}")
-    open_terminal(command)
+    if command:
+        execute_command_and_log(command)
 
 def execute_all_nmap_commands(target):
     # Os comandos DEVEM ser executados um a um para não causar conflito com a flag -p
@@ -83,16 +92,10 @@ def execute_all_nmap_commands(target):
         f"--script=dns-brute --script-args dns-brute.domain={target}"  # DNS Brute Force
     ]
 
-    output_file = "nmap_output.txt"
-
     for cmd in commands:
-        full_command = f"sudo nmap {cmd} >> {output_file} 2>&1"
-        print(f"{Fore.YELLOW}Executando comando: {full_command}")
-        os.system(full_command)
+        execute_command_and_log(f"sudo nmap {cmd}")
     
     print(f"{Fore.GREEN}Resultados salvos em: {output_file}")
-
-
 
 def nmap_options(option):
     if option == "1":
@@ -157,54 +160,57 @@ def nmap_options(option):
             return  
         nmap(target, 'timing', timing)
     elif option == "8":
+        execute_all_nmap_commands(get_target())
+    elif option == "9":
         show_command_explanation('http_title')
         target = get_target()
         if target.lower() == 'b':
             clear_terminal() 
             return  
         nmap(target, 'http_title')  
-    elif option == "9":
+    elif option == "10":
         show_command_explanation('ssl_cert')
         target = get_target()
         if target.lower() == 'b':
             clear_terminal() 
             return  
         nmap(target, 'ssl_cert')  
-    elif option == "10":
+    elif option == "11":
         show_command_explanation('vuln')
         target = get_target()
         if target.lower() == 'b':
             clear_terminal() 
             return  
         nmap(target, 'vuln')  
-    elif option == "11":
+    elif option == "12":
         show_command_explanation('smb_os_discovery')
         target = get_target()
         if target.lower() == 'b':
             clear_terminal() 
             return  
         nmap(target, 'smb_os_discovery')  
-    elif option == "12":
+    elif option == "13":
         show_command_explanation('http_robots_txt')
         target = get_target()
         if target.lower() == 'b':
             clear_terminal() 
             return  
         nmap(target, 'http_robots_txt')  
-    elif option == "13":
+    elif option == "14":
         show_command_explanation('ssh_hostkey')
         target = get_target()
         if target.lower() == 'b':
             clear_terminal() 
             return  
         nmap(target, 'ssh_hostkey')  
-    elif option == "14":
+    elif option == "15":
         show_command_explanation('dns_brute')
-        target = input(f"{Fore.GREEN}Digite o domínio de destino (ex: example.com) ou [B] para voltar: ")
+        target = get_target()
         if target.lower() == 'b':
             clear_terminal() 
             return  
-        nmap('', 'dns_brute', target)
+        nmap(target, 'dns_brute')  
+
     elif option == "15":
         target = get_target()
         if target.lower() == 'b':
@@ -263,3 +269,4 @@ def nmap_menu_loop():
             nmap_options(option)
         else:
             continue
+
