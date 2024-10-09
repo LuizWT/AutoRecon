@@ -34,8 +34,7 @@ def check_nmap():
         print(f"{Fore.CYAN}[INFO] Nmap já está instalado.")
         return True
     except (subprocess.CalledProcessError, FileNotFoundError):
-        print(f"{Fore.RED}[INFO] Nmap não está instalado. Iniciando a instalação...")
-        install_nmap()
+        print(f"{Fore.RED}[INFO] Nmap não está instalado.")
         return False
 
 def install_nmap():
@@ -59,11 +58,3 @@ def install_nmap():
             print(f"{Fore.RED}[ERROR] Este script só suporta instalação no Linux.")
     except Exception as e:
         print(f"{Fore.RED}[ERROR] Ocorreu um erro durante a instalação: {e}")
-
-def setup_tools():
-    if not check_sniper():
-        install_sniper()
-    check_nmap()
-
-setup_tools()
-
