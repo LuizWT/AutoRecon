@@ -42,8 +42,15 @@ def nmap(target, mode, additional_param=None):
     
     if mode == 'target_spec':
         command = f"{base_command}{target}"
-    elif mode == 'scan_technique':
-        command = f"{base_command}{additional_param} {target}"
+    if mode == 'scan_technique':
+        if additional_param == 'all':
+            techniques = ['-sS', '-sT', '-sU']
+            for technique in techniques:
+                command = f"{base_command}{technique} {target}"
+                execute_command_and_log(command)
+        else:
+            command = f"{base_command}{additional_param} {target}"
+            execute_command_and_log(command)
     elif mode == 'host_discovery':
         command = f"{base_command}-sn {target}"
     elif mode == 'port_spec':
@@ -228,7 +235,28 @@ def get_ports():
     return input(f"{Fore.GREEN}Digite as portas ou faixa de portas (EX: 21,22 ou 1-100) ou [B] para voltar: ")
 
 def get_scan_technique():
-    return input(f"{Fore.GREEN}Digite a técnica de varredura (EX: -sS, -sT, -sU) ou [B] para voltar: ")
+    print(f"""
+    {Fore.CYAN}[1] {Fore.RESET}-sS (TCP SYN Scan)
+    {Fore.CYAN}[2] {Fore.RESET}-sT (TCP Connect Scan)
+    {Fore.CYAN}[3] {Fore.RESET}-sU (UDP Scan)
+    {Fore.CYAN}[4] {Fore.RESET}Todas as técnicas (-sS, -sT, -sU)
+    """)
+    choice = input(f"{Fore.GREEN}Escolha uma técnica ou [B] para voltar: ")
+    
+    if choice.lower() == 'b':
+        return 'b'
+    elif choice == '1':
+        return '-sS'
+    elif choice == '2':
+        return '-sT'
+    elif choice == '3':
+        return '-sU'
+    elif choice == '4':
+        return 'all'
+    else:
+        print(f"{Fore.RED}[ERRO] Opção inválida. Tente novamente.")
+        return get_scan_technique()
+
 
 def nmap_menu_loop():
     while True:
@@ -269,4 +297,3 @@ def nmap_menu_loop():
             nmap_options(option)
         else:
             continue
-
