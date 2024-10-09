@@ -1,4 +1,3 @@
-from tools.terminal import open_terminal
 from colorama import init, Fore, Style
 import os
 import platform
@@ -6,8 +5,17 @@ import platform
 init(autoreset=True)
 
 def clear_terminal():
-
     os.system('cls' if platform.system() == 'Windows' else 'clear')
+
+output_dir = "output"
+output_file = os.path.join(output_dir, "sn1per_output.txt")
+os.makedirs(output_dir, exist_ok=True)
+
+def execute_command_and_log(command):
+    """Executa um comando e registra a saída no arquivo de log."""
+    full_command = f"{command} >> {output_file} 2>&1"
+    print(f"{Fore.YELLOW}Executando comando: {full_command}")
+    os.system(full_command)
 
 def show_command_explanation(mode):
     explanations = {
@@ -27,31 +35,34 @@ def show_command_explanation(mode):
     print(explanations.get(mode, f"{Fore.RED}[INFO] {Style.BRIGHT}Modo não identificado."))
 
 def sniper(target, mode, additional_param=None):
+    base_command = "sudo sniper "
     if mode == 'normal':
-        command = f"sudo sniper -t {target}"
+        command = f"{base_command}-t {target}"
     elif mode == 'osint_recon':
-        command = f"sudo sniper -t {target} -o -re"
+        command = f"{base_command}-t {target} -o -re"
     elif mode == 'stealth':
-        command = f"sudo sniper -t {target} -m stealth -o -re"
+        command = f"{base_command}-t {target} -m stealth -o -re"
     elif mode == 'discover':
-        command = f"sudo sniper -t {target} -m discover -w {additional_param}"
+        command = f"{base_command}-t {target} -m discover -w {additional_param}"
     elif mode == 'port':
-        command = f"sudo sniper -t {target} -m port -p {additional_param}"
+        command = f"{base_command}-t {target} -m port -p {additional_param}"
     elif mode == 'fullportonly':
-        command = f"sudo sniper -t {target} -fp"
+        command = f"{base_command}-t {target} -fp"
     elif mode == 'web':
-        command = f"sudo sniper -t {target} -m web"
+        command = f"{base_command}-t {target} -m web"
     elif mode == 'webporthttp':
-        command = f"sudo sniper -t {target} -m webporthttp -p {additional_param}"
+        command = f"{base_command}-t {target} -m webporthttp -p {additional_param}"
     elif mode == 'webporthttps':
-        command = f"sudo sniper -t {target} -m webporthttps -p {additional_param}"
+        command = f"{base_command}-t {target} -m webporthttps -p {additional_param}"
     elif mode == 'webscan':
-        command = f"sudo sniper -t {target} -m webscan"
+        command = f"{base_command}-t {target} -m webscan"
     elif mode == 'bruteforce':
-        command = f"sudo sniper -t {target} -b"
+        command = f"{base_command}-t {target} -b"
+    else:
+        command = None
 
-    print(f"{Fore.YELLOW}Comando: {command}")
-    open_terminal(command)
+    if command:
+        execute_command_and_log(command)
 
 def get_target():
     return input(f"{Fore.GREEN}Digite o endereço do alvo (EX: 192.168.0.1 | site.com) ou [B] para voltar: ")
@@ -161,7 +172,6 @@ def sniper_options(option):
         sniper(target, 'bruteforce')
 
 def sniper_menu_loop():
-
     while True:
         print(f"""
         {Fore.BLUE}︻デ═一
@@ -189,4 +199,3 @@ def sniper_menu_loop():
             sniper_options(option)
         else:
             continue
-
