@@ -1,5 +1,6 @@
 import os
 import platform
+import subprocess
 from tools.setup_tools import check_sniper, install_sniper, check_nmap, install_nmap
 from tools.sniper import sniper_menu_loop
 from tools.nmap import nmap_menu_loop
@@ -11,7 +12,7 @@ def clear_screen():
     os.system('cls' if platform.system() == 'Windows' else 'clear')
 
 def main_menu():
-    print(f"""
+    print(rf"""
     {Fore.BLUE}{Style.BRIGHT}
                 _        _____                      
      /\        | |      |  __ \                     
@@ -27,10 +28,16 @@ def main_menu():
     """)
 
 def main():
+    # Verifica se o usuário já é root
+    if os.geteuid() != 0:
+        print(f"{Fore.RED}[ERRO] Esta ferramenta precisa de privilégios ROOT para funcionar.")
+        return
+
     while True:
         clear_screen()
         main_menu()
         option = input(f"{Fore.YELLOW}Escolha uma opção: ")
+        
         if option == "9":
             clear_screen()
             print(f"{Fore.RED}[INFO] Saindo do AutoRecon.")
@@ -44,7 +51,7 @@ def main():
                 sniper_menu_loop()
             else:
                 install = input(f"{Fore.YELLOW}[INFO] Sn1per não está instalado. Deseja instalar o Sn1per? (s/n): ").lower()
-                if install == 's'or install == 'y':
+                if install == 's' or install == 'y':
                     install_sniper()
                     print(f"{Fore.GREEN}[INFO] Abrindo o menu SNIPER...")
                     clear_screen()
