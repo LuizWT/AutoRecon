@@ -12,7 +12,6 @@ output_file = os.path.join(output_dir, "sn1per_output.txt")
 os.makedirs(output_dir, exist_ok=True)
 
 def execute_command_and_log(command):
-    """Executa um comando e registra a saída no arquivo de log."""
     full_command = f"{command} >> {output_file} 2>&1"
     print(f"{Fore.YELLOW}Executando comando: {full_command}")
     os.system(full_command)
@@ -173,8 +172,17 @@ def sniper_options(option):
 
 def sniper_menu_loop():
     while True:
-        print(f"""
-        {Fore.BLUE}︻デ═一
+        print(rf"""
+        {Fore.BLUE}
+         _____       _                 
+        / ____|     (_)                
+        | (___  _ __  _ _ __   ___ _ __ 
+        \___ \| '_ \| | '_ \ / _ \ '__|
+        ____) | | | | | |_) |  __/ |   
+       |_____/|_| |_|_| .__/ \___|_|   
+                      | |              
+                      |_|              
+
         {Fore.CYAN}[1] {Fore.RESET}MODO NORMAL
         {Fore.CYAN}[2] {Fore.RESET}MODO OSINT + RECONHECIMENTO
         {Fore.CYAN}[3] {Fore.RESET}MODO FURTIVO + OSINT + RECONHECIMENTO
