@@ -44,7 +44,7 @@ def nmap(target, mode, additional_param=None):
         command = f"{base_command}{target}"
     if mode == 'scan_technique':
         if additional_param == 'all':
-            techniques = ['-sS', '-sT', '-sU']
+            techniques = ['-sS', '-sT', '-sU', '-sF', '-sN', '-sX']
             for technique in techniques:
                 command = f"{base_command}{technique} {target}"
                 execute_command_and_log(command)
@@ -84,19 +84,22 @@ def nmap(target, mode, additional_param=None):
 def execute_all_nmap_commands(target):
     # Os comandos DEVEM ser executados um a um para não causar conflito com a flag -p
     commands = [
-        f"-sS -v {target}",                        # TCP SYN scan
-        f"-sT -v {target}",                        # TCP connect scan
-        f"-sU -v {target}",                        # UDP scan
-        f"-sn -v {target}",                        # Host discovery
-        f"-sV -v {target}",                        # Service version detection
-        f"-O -v {target}",                         # OS detection
-        f"-p- -v --script=http-title {target}",   # HTTP Title em todas as portas
-        f"-p 443 -v --script=ssl-cert {target}",  # SSL Cert
-        f"-p- -v --script=vuln {target}",         # Vulnerability scan em todas as portas
-        f"-p 445 -v --script=smb-os-discovery {target}",  # SMB OS discovery
-        f"-p- -v --script=http-robots.txt {target}",  # HTTP robots.txt em todas as portas
+        f"-sS -v {target}",                      # TCP SYN scan
+        f"-sT -v {target}",                      # TCP connect scan
+        f"-sU -v {target}",                      # UDP scan
+        f"-sF -v {target}",                      # TCP FIN scan
+        f"-sN -v {target}",                      # TCP NULL scan
+        f"-sX -v {target}",                      # TCP Xmas scan
+        f"-sn -v {target}",                      # Host discovery
+        f"-sV -v {target}",                      # Service version detection
+        f"-O -v {target}",                       # OS detection
+        f"-p- -v --script=http-title {target}",  # HTTP Title em todas as portas
+        f"-p 443 -v --script=ssl-cert {target}", # SSL Cert
+        f"-p- -v --script=vuln {target}",        # Vulnerability scan em todas as portas
+        f"-p 445 -v --script=smb-os-discovery {target}", # SMB OS discovery
+        f"-p- -v --script=http-robots.txt {target}", # HTTP robots.txt em todas as portas
         f"-p 22 -v --script=ssh-hostkey {target}", # SSH Hostkey
-        f"--script=dns-brute --script-args dns-brute.domain={target}"  # DNS Brute Force
+        f"--script=dns-brute --script-args dns-brute.domain={target}" # DNS Brute Force
     ]
 
     for cmd in commands:
@@ -239,7 +242,10 @@ def get_scan_technique():
     {Fore.CYAN}[1] {Fore.RESET}-sS (TCP SYN Scan)
     {Fore.CYAN}[2] {Fore.RESET}-sT (TCP Connect Scan)
     {Fore.CYAN}[3] {Fore.RESET}-sU (UDP Scan)
-    {Fore.CYAN}[4] {Fore.RESET}Todas as técnicas (-sS, -sT, -sU)
+    {Fore.CYAN}[4] {Fore.RESET}-sF (TCP FIN Scan)
+    {Fore.CYAN}[5] {Fore.RESET}-sN (TCP NULL Scan)
+    {Fore.CYAN}[6] {Fore.RESET}-sX (TCP Xmas Scan)
+    {Fore.CYAN}[7] {Fore.RESET}Todas as técnicas (-sS, -sT, -sU, -sF, -sN, -sX)
     """)
     choice = input(f"{Fore.GREEN}Escolha uma técnica ou [B] para voltar: ")
     
@@ -252,6 +258,12 @@ def get_scan_technique():
     elif choice == '3':
         return '-sU'
     elif choice == '4':
+        return '-sF'
+    elif choice == '5':
+        return '-sN'
+    elif choice == '6':
+        return '-sX'
+    elif choice == '7':
         return 'all'
     else:
         print(f"{Fore.RED}[ERRO] Opção inválida. Tente novamente.")
@@ -260,7 +272,7 @@ def get_scan_technique():
 
 def nmap_menu_loop():
     while True:
-        print(f"""
+        print(rf"""
         {Fore.BLUE}                  
         _ __  _ __ ___   __ _ _ __  
         | '_ \| '_ ` _ \ / _` | '_ \ 
