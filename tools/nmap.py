@@ -1,21 +1,8 @@
 from colorama import init, Fore, Style
-import os
-import platform
+from functions.clear_terminal import clear_terminal
+from functions.create_output_file import execute_command_and_log
 
 init(autoreset=True)
-
-def clear_terminal():
-    os.system('cls' if platform.system() == 'Windows' else 'clear')
-
-output_dir = "output"
-output_file = os.path.join(output_dir, "nmap_output.txt")
-os.makedirs(output_dir, exist_ok=True)
-
-def execute_command_and_log(command):
-    # Função autoexplicativa
-    full_command = f"{command} >> {output_file} 2>&1"
-    print(f"{Fore.YELLOW}Executando comando: {full_command}")
-    os.system(full_command)
 
 def show_command_explanation(mode):
     explanations = {
@@ -39,18 +26,19 @@ def show_command_explanation(mode):
 
 def nmap(target, mode, additional_param=None):
     base_command = "sudo nmap "
-    
+    command = None  # Inicializa command como None
+
     if mode == 'target_spec':
         command = f"{base_command}{target}"
-    if mode == 'scan_technique':
+    elif mode == 'scan_technique':
         if additional_param == 'all':
             techniques = ['-sS', '-sT', '-sU', '-sF', '-sN', '-sX']
             for technique in techniques:
                 command = f"{base_command}{technique} {target}"
                 execute_command_and_log(command)
+            return  # Retorna para evitar executar `execute_command_and_log` novamente
         else:
             command = f"{base_command}{additional_param} {target}"
-            execute_command_and_log(command)
     elif mode == 'host_discovery':
         command = f"{base_command}-sn {target}"
     elif mode == 'port_spec':
@@ -75,8 +63,6 @@ def nmap(target, mode, additional_param=None):
         command = f"{base_command}-p 22 --script=ssh-hostkey {target}"
     elif mode == 'dns_brute':
         command = f"{base_command}--script=dns-brute --script-args dns-brute.domain={target}"
-    else:
-        command = None
 
     if command:
         execute_command_and_log(command)
@@ -104,69 +90,68 @@ def execute_all_nmap_commands(target):
 
     for cmd in commands:
         execute_command_and_log(f"sudo nmap {cmd}")
-    
-    print(f"{Fore.GREEN}Resultados salvos em: {output_file}")
+
 
 def nmap_options(option):
     if option == "1":
         show_command_explanation('target_spec')
         target = get_target()
         if target.lower() == 'b':
-            clear_terminal() 
-            return  
+            clear_terminal()
+            return
         nmap(target, 'target_spec')
     elif option == "2":
         show_command_explanation('scan_technique')
         target = get_target()
         if target.lower() == 'b':
-            clear_terminal() 
-            return  
+            clear_terminal()
+            return
         technique = get_scan_technique()
         if technique.lower() == 'b':
-            clear_terminal() 
+            clear_terminal()
             return  
         nmap(target, 'scan_technique', technique)
     elif option == "3":
         show_command_explanation('host_discovery')
         target = get_range()
         if target.lower() == 'b':
-            clear_terminal() 
+            clear_terminal()
             return  
         nmap(target, 'host_discovery')  
     elif option == "4":
         show_command_explanation('port_spec')
         target = get_target()
         if target.lower() == 'b':
-            clear_terminal() 
+            clear_terminal()
             return  
         ports = get_ports()
         if ports.lower() == 'b':
-            clear_terminal() 
+            clear_terminal()
             return  
         nmap(target, 'port_spec', ports)
     elif option == "5":
         show_command_explanation('service_detection')
         target = get_target()
         if target.lower() == 'b':
-            clear_terminal() 
+            clear_terminal()
             return  
         nmap(target, 'service_detection')  
     elif option == "6":
         show_command_explanation('os_detection')
         target = get_target()
         if target.lower() == 'b':
-            clear_terminal() 
+            clear_terminal()
             return  
         nmap(target, 'os_detection')  
     elif option == "7":
         show_command_explanation('timing')
         target = get_target()
         if target.lower() == 'b':
-            clear_terminal() 
+            clear_terminal()
             return  
         timing = input(f"{Fore.GREEN}Digite o nível de timing (0-5) ou {Fore.RED}[B] {Fore.GREEN}para voltar: ")
         if timing.lower() == 'b':
-            clear_terminal() 
+            clear_terminal()
             return  
         nmap(target, 'timing', timing)
     elif option == "8":
@@ -175,56 +160,56 @@ def nmap_options(option):
         show_command_explanation('http_title')
         target = get_target()
         if target.lower() == 'b':
-            clear_terminal() 
+            clear_terminal()
             return  
         nmap(target, 'http_title')  
     elif option == "10":
         show_command_explanation('ssl_cert')
         target = get_target()
         if target.lower() == 'b':
-            clear_terminal() 
+            clear_terminal()
             return  
         nmap(target, 'ssl_cert')  
     elif option == "11":
         show_command_explanation('vuln')
         target = get_target()
         if target.lower() == 'b':
-            clear_terminal() 
+            clear_terminal()
             return  
         nmap(target, 'vuln')  
     elif option == "12":
         show_command_explanation('smb_os_discovery')
         target = get_target()
         if target.lower() == 'b':
-            clear_terminal() 
+            clear_terminal()
             return  
         nmap(target, 'smb_os_discovery')  
     elif option == "13":
         show_command_explanation('http_robots_txt')
         target = get_target()
         if target.lower() == 'b':
-            clear_terminal() 
+            clear_terminal()
             return  
         nmap(target, 'http_robots_txt')  
     elif option == "14":
         show_command_explanation('ssh_hostkey')
         target = get_target()
         if target.lower() == 'b':
-            clear_terminal() 
+            clear_terminal()
             return  
         nmap(target, 'ssh_hostkey')  
     elif option == "15":
         show_command_explanation('dns_brute')
         target = get_target()
         if target.lower() == 'b':
-            clear_terminal() 
+            clear_terminal()
             return  
         nmap(target, 'dns_brute')  
 
     elif option == "15":
         target = get_target()
         if target.lower() == 'b':
-            clear_terminal() 
+            clear_terminal()
             return  
         execute_all_nmap_commands(target)
 
@@ -281,7 +266,7 @@ def nmap_menu_loop():
                             | |    
                             |_|    
                             
-        {Fore.CYAN}[1] {Fore.RESET}ESPECIFICAÇÃO DE ALVO
+        {Fore.CYAN}[1] {Fore.RESET}VARREDURA PADRÃO
         {Fore.CYAN}[2] {Fore.RESET}TÉCNICAS DE VARREDURA
         {Fore.CYAN}[3] {Fore.RESET}DESCUBRIR HOSTS
         {Fore.CYAN}[4] {Fore.RESET}ESPECIFICAÇÃO DE PORTAS
@@ -300,7 +285,7 @@ def nmap_menu_loop():
         """)
 
         option = input(f"{Fore.GREEN}Escolha uma opção: ")
-        clear_terminal()
+
 
         if option.lower() == 'b':
             break
@@ -308,4 +293,5 @@ def nmap_menu_loop():
         if option in [str(i) for i in range(1, 16)]:
             nmap_options(option)
         else:
-            continue
+            clear_terminal()
+            print(f"{Fore.RED}Opção inválida.")
