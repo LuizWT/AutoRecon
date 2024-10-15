@@ -1,15 +1,11 @@
 import os
-import platform
-import subprocess
+from functions.clear_terminal import clear_terminal
 from tools.setup_tools import check_sniper, install_sniper, check_nmap, install_nmap
 from tools.sniper import sniper_menu_loop
 from tools.nmap import nmap_menu_loop
 from colorama import init, Fore, Style
 
 init(autoreset=True)  # inicia o colorama
-
-def clear_screen():
-    os.system('cls' if platform.system() == 'Windows' else 'clear')
 
 def main_menu():
     print(rf"""
@@ -34,43 +30,43 @@ def main():
         return
 
     while True:
-        clear_screen()
+        clear_terminal()
         main_menu()
         option = input(f"{Fore.YELLOW}Escolha uma opção: ")
         
         if option == "9":
-            clear_screen()
+            clear_terminal()
             print(f"{Fore.RED}[INFO] Saindo do AutoRecon.")
             break
         elif option == "1":
-            clear_screen()
+            clear_terminal()
             print(f"{Fore.GREEN}[INFO] Verificando a instalação do Sn1per...")
             if check_sniper():
                 print(f"{Fore.GREEN}[INFO] Abrindo o menu SNIPER...")
-                clear_screen()
+                clear_terminal()
                 sniper_menu_loop()
             else:
                 install = input(f"{Fore.YELLOW}[INFO] Sn1per não está instalado. Deseja instalar o Sn1per? (s/n): ").lower()
                 if install == 's' or install == 'y':
                     install_sniper()
                     print(f"{Fore.GREEN}[INFO] Abrindo o menu SNIPER...")
-                    clear_screen()
+                    clear_terminal()
                     sniper_menu_loop()
                 else:
                     print(f"{Fore.RED}[INFO] Retornando ao menu principal...")
         elif option == "2":
-            clear_screen()
+            clear_terminal()
             print(f"{Fore.GREEN}[INFO] Verificando a instalação do Nmap...")
             if check_nmap():
                 print(f"{Fore.GREEN}[INFO] Abrindo o menu NMAP...")
-                clear_screen()
+                clear_terminal()
                 nmap_menu_loop()
             else:
                 install = input(f"{Fore.YELLOW}[INFO] Nmap não está instalado. Deseja instalar o Nmap? (s/n): ").lower()
                 if install == 's' or install == 'y':
                     install_nmap()
                     print(f"{Fore.GREEN}[INFO] Abrindo o menu NMAP...")
-                    clear_screen()
+                    clear_terminal()
                     nmap_menu_loop()
                 else:
                     print(f"{Fore.RED}[INFO] Retornando ao menu principal...")
