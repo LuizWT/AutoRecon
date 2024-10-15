@@ -1,20 +1,9 @@
 from colorama import init, Fore, Style
-import os
-import platform
+from functions.clear_terminal import clear_terminal
+from functions.create_output_file import execute_command_and_log
 
 init(autoreset=True)
 
-def clear_terminal():
-    os.system('cls' if platform.system() == 'Windows' else 'clear')
-
-output_dir = "output"
-output_file = os.path.join(output_dir, "sn1per_output.txt")
-os.makedirs(output_dir, exist_ok=True)
-
-def execute_command_and_log(command):
-    full_command = f"{command} >> {output_file} 2>&1"
-    print(f"{Fore.YELLOW}Executando comando: {full_command}")
-    os.system(full_command)
 
 def show_command_explanation(mode):
     explanations = {
@@ -206,4 +195,5 @@ def sniper_menu_loop():
         if option in [str(i) for i in range(1, 12)]:
             sniper_options(option)
         else:
-            continue
+            clear_terminal()
+            print(f"{Fore.RED}Opção inválida.")
