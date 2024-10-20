@@ -155,50 +155,48 @@ def nmap_options(option):
             return  
         nmap(target, 'timing', timing)
     elif option == "8":
-        execute_all_nmap_commands(get_target())
-    elif option == "9":
         show_command_explanation('http_title')
         target = get_target()
         if target.lower() == 'b':
             clear_terminal()
             return  
         nmap(target, 'http_title')  
-    elif option == "10":
+    elif option == "9":
         show_command_explanation('ssl_cert')
         target = get_target()
         if target.lower() == 'b':
             clear_terminal()
             return  
         nmap(target, 'ssl_cert')  
-    elif option == "11":
+    elif option == "10":
         show_command_explanation('vuln')
         target = get_target()
         if target.lower() == 'b':
             clear_terminal()
             return  
         nmap(target, 'vuln')  
-    elif option == "12":
+    elif option == "11":
         show_command_explanation('smb_os_discovery')
         target = get_target()
         if target.lower() == 'b':
             clear_terminal()
             return  
         nmap(target, 'smb_os_discovery')  
-    elif option == "13":
+    elif option == "12":
         show_command_explanation('http_robots_txt')
         target = get_target()
         if target.lower() == 'b':
             clear_terminal()
             return  
         nmap(target, 'http_robots_txt')  
-    elif option == "14":
+    elif option == "13":
         show_command_explanation('ssh_hostkey')
         target = get_target()
         if target.lower() == 'b':
             clear_terminal()
             return  
         nmap(target, 'ssh_hostkey')  
-    elif option == "15":
+    elif option == "14":
         show_command_explanation('dns_brute')
         target = get_target()
         if target.lower() == 'b':
