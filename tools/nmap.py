@@ -26,7 +26,7 @@ def show_command_explanation(mode):
 
 def nmap(target, mode, additional_param=None):
     base_command = "sudo nmap "
-    command = None  # Inicializa command como None
+    command = None
 
     if mode == 'target_spec':
         command = f"{base_command}{target}"
@@ -35,8 +35,8 @@ def nmap(target, mode, additional_param=None):
             techniques = ['-sS', '-sT', '-sU', '-sF', '-sN', '-sX']
             for technique in techniques:
                 command = f"{base_command}{technique} {target}"
-                execute_command_and_log(command)
-            return  # Retorna para evitar executar `execute_command_and_log` novamente
+                execute_command_and_log(command, "nmap")
+            return 
         else:
             command = f"{base_command}{additional_param} {target}"
     elif mode == 'host_discovery':
@@ -65,7 +65,7 @@ def nmap(target, mode, additional_param=None):
         command = f"{base_command}--script=dns-brute --script-args dns-brute.domain={target}"
 
     if command:
-        execute_command_and_log(command)
+        execute_command_and_log(command, "nmap")
 
 def execute_all_nmap_commands(target):
     # Os comandos DEVEM ser executados um a um para não causar conflito com a flag -p
@@ -293,3 +293,4 @@ def nmap_menu_loop():
         else:
             clear_terminal()
             print(f"{Fore.RED}Opção inválida.")
+
