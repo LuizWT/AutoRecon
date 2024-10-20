@@ -41,11 +41,11 @@ Execute a ferramenta:
 O AutoRecon possui um menu interativo que facilita a execução de diferentes modos de varredura.
 No menu, você pode escolher diferentes tipos de varredura, como:
     
-    Especificação de Alvo
-    Técnicas de Varredura (TCP, UDP, ACK, etc.)
-    Descoberta de Hosts
-    Detecção de Sistema Operacional
-    Execução de todos os comandos em sequência
+- Especificação de Alvo
+- Técnicas de Varredura (TCP, UDP, ACK, etc.)
+- Descoberta de Hosts
+- Detecção de Sistema Operacional
+- Execução de todos os comandos em sequência
 
 ### Contribuições
 
