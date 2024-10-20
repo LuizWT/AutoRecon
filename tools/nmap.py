@@ -1,6 +1,7 @@
 from colorama import init, Fore, Style
 from functions.clear_terminal import clear_terminal
 from functions.create_output_file import execute_command_and_log
+from functions.proxy_chains import is_proxychains_enabled
 
 init(autoreset=True)
 
@@ -25,7 +26,7 @@ def show_command_explanation(mode):
     print(explanations.get(mode, f"{Fore.RED}[INFO] {Style.BRIGHT}Modo não identificado."))
 
 def nmap(target, mode, additional_param=None):
-    base_command = "sudo nmap "
+    base_command = "sudo nmap " if not is_proxychains_enabled() else "sudo proxychains nmap "
     command = None
 
     if mode == 'target_spec':
@@ -89,7 +90,7 @@ def execute_all_nmap_commands(target):
     ]
 
     for cmd in commands:
-        execute_command_and_log(f"sudo nmap {cmd}")
+        execute_command_and_log(f"sudo nmap {cmd}", "nmap")
 
 
 def nmap_options(option):
@@ -212,13 +213,13 @@ def nmap_options(option):
         execute_all_nmap_commands(target)
 
 def get_target():
-    return input(f"{Fore.GREEN}Digite o endereço do alvo (EX: 192.168.0.1 | site.com) ou [B] para voltar: ")
+    return input(f"{Fore.GREEN}Digite o endereço do alvo (EX: 192.168.0.1 | site.com) ou {Fore.RED}[B]{Fore.GREEN} para voltar: ")
 
 def get_range():
-    return input(f"{Fore.GREEN}Digite o intervalo ou CIDR (EX: 192.168.1.0/24) ou [B] para voltar: ")
+    return input(f"{Fore.GREEN}Digite o intervalo ou CIDR (EX: 192.168.1.0/24) ou {Fore.RED}[B]{Fore.GREEN} para voltar: ")
 
 def get_ports():
-    return input(f"{Fore.GREEN}Digite as portas ou faixa de portas (EX: 21,22 ou 1-100) ou [B] para voltar: ")
+    return input(f"{Fore.GREEN}Digite as portas ou faixa de portas (EX: 21,22 ou 1-100) ou {Fore.RED}[B]{Fore.GREEN} para voltar: ")
 
 def get_scan_technique():
     print(f"""
@@ -230,7 +231,7 @@ def get_scan_technique():
     {Fore.CYAN}[6] {Fore.RESET}-sX (TCP Xmas Scan)
     {Fore.CYAN}[7] {Fore.RESET}Todas as técnicas (-sS, -sT, -sU, -sF, -sN, -sX)
     """)
-    choice = input(f"{Fore.GREEN}Escolha uma técnica ou [B] para voltar: ")
+    choice = input(f"{Fore.GREEN}Escolha uma técnica ou {Fore.RED}[B]{Fore.GREEN} para voltar: ")
     
     if choice.lower() == 'b':
         return 'b'
@@ -251,7 +252,6 @@ def get_scan_technique():
     else:
         print(f"{Fore.RED}[ERRO] Opção inválida. Tente novamente.")
         return get_scan_technique()
-
 
 def nmap_menu_loop():
     while True:
@@ -293,4 +293,3 @@ def nmap_menu_loop():
         else:
             clear_terminal()
             print(f"{Fore.RED}Opção inválida.")
-
