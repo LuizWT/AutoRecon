@@ -58,3 +58,39 @@ def install_nmap():
             print(f"{Fore.RED}[ERROR] Este script só suporta instalação no Linux.")
     except Exception as e:
         print(f"{Fore.RED}[ERROR] Ocorreu um erro durante a instalação: {e}")
+
+def check_proxychains():
+    try:
+        subprocess.run(['proxychains4', 'true'], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        print(f"{Fore.CYAN}[INFO] ProxyChains já está instalado.")
+        return True
+    except FileNotFoundError:
+        print(f"{Fore.RED}[INFO] ProxyChains não está instalado.")
+        return False
+    except subprocess.CalledProcessError:
+        print(f"{Fore.RED}[INFO] ProxyChains não está funcionando corretamente.")
+        return False
+
+
+def install_proxychains():
+    try:
+        print(f"{Fore.CYAN}[INFO] Iniciando a instalação do ProxyChains...")
+        
+        if platform.system() == 'Linux':
+            if os.path.isfile('/etc/debian_version'):
+                os.system('sudo apt-get update && sudo apt-get install -y proxychains-ng')
+            elif os.path.isfile('/etc/redhat-release'):
+                os.system('sudo dnf install -y proxychains-ng')
+            elif os.path.isfile('/etc/arch-release'):
+                os.system('sudo pacman -Syu --noconfirm proxychains-ng')
+            elif os.path.isfile('/etc/SuSE-release'):
+                os.system('sudo zypper refresh && sudo zypper install -y proxychains-ng')
+            else:
+                print(f"{Fore.RED}[ERROR] Distribuição não suportada para instalação do ProxyChains.")
+                return
+            print(f"{Fore.CYAN}[INFO] ProxyChains instalado com sucesso.")
+        else:
+            print(f"{Fore.RED}[ERROR] Este script só suporta instalação no Linux.")
+    except Exception as e:
+        print(f"{Fore.RED}[ERROR] Ocorreu um erro durante a instalação: {e}")
+
