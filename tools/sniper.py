@@ -50,7 +50,7 @@ def sniper(target, mode, additional_param=None):
         command = None
 
     if command:
-        execute_command_and_log(command)
+        execute_command_and_log(command, "sniper")
 
 def get_target():
     return input(f"{Fore.GREEN}Digite o endereço do alvo (EX: 192.168.0.1 | site.com) ou [B] para voltar: ")
