@@ -261,8 +261,8 @@ def nmap_menu_loop():
         | '_ \| '_ ` _ \ / _` | '_ \ 
         | | | | | | | | | (_| | |_) |
         |_| |_|_| |_| |_|\__,_| .__/ 
-                            | |    
-                            |_|    
+                              | |    
+                              |_|    
                             
         {Fore.CYAN}[1] {Fore.RESET}VARREDURA PADRÃO
         {Fore.CYAN}[2] {Fore.RESET}TÉCNICAS DE VARREDURA
