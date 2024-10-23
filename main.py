@@ -1,14 +1,16 @@
 import os
 from functions.clear_terminal import clear_terminal
-from tools.setup_tools import check_sniper, install_sniper, check_nmap, install_nmap, check_proxychains, install_proxychains
+from tools.setup_tools.check import *
+from tools.setup_tools.install import *
 from tools.sniper import sniper_menu_loop
 from tools.nmap import nmap_menu_loop
-from functions.proxy_chains import toggle_proxychains, proxychains_enabled
+from functions.proxy_chains import toggle_proxychains, proxychains_enabled, check_proxychains_installed
 from colorama import init, Fore, Style
 
 init(autoreset=True)  # inicia o colorama
 
 def main_menu():
+    proxychains_info = " (/etc/proxychains.conf)" if check_proxychains_installed() else ""
     status_color = Fore.GREEN if proxychains_enabled else Fore.RED
     status_text = "ON" if proxychains_enabled else "OFF"
     print(rf"""
@@ -23,7 +25,8 @@ def main_menu():
 
     {Fore.CYAN}[1] {Fore.RESET}SNIPER
     {Fore.CYAN}[2] {Fore.RESET}NMAP
-    {Fore.CYAN}[3] {Fore.RESET}ProxyChains [{status_color}{status_text}{Fore.RESET}] (/etc/proxychains.conf)
+    {Fore.CYAN}[3] {Fore.RESET}WPSCAN
+    {Fore.CYAN}[0] {Fore.RESET}ProxyChains [{status_color}{status_text}{Fore.RESET}] {proxychains_info}
     {Fore.RED}[9] {Fore.RESET}Sair
     """)
 
@@ -39,7 +42,7 @@ def main():
         clear_terminal()
         main_menu()
         option = input(f"{Fore.YELLOW}Escolha uma opção: ")
-        
+
         if option == "9":
             clear_terminal()
             print(f"{Fore.RED}[INFO] Saindo do AutoRecon.")
@@ -52,8 +55,8 @@ def main():
                 clear_terminal()
                 sniper_menu_loop()
             else:
-                install = input(f"{Fore.YELLOW}[INFO] Sn1per não está instalado. Deseja instalar o Sn1per? (s/n): ").lower()
-                if install == 's' or install == 'y':
+                install = input(f"{Fore.YELLOW}[INFO] Sn1per não está instalado. Deseja instalar o Sn1per? (y/n): ").lower()
+                if install in ['s', 'y']:
                     install_sniper()
                     print(f"{Fore.GREEN}[INFO] Abrindo o menu SNIPER...")
                     clear_terminal()
@@ -68,8 +71,8 @@ def main():
                 clear_terminal()
                 nmap_menu_loop()
             else:
-                install = input(f"{Fore.YELLOW}[INFO] Nmap não está instalado. Deseja instalar o Nmap? (s/n): ").lower()
-                if install == 's' or install == 'y':
+                install = input(f"{Fore.YELLOW}[INFO] Nmap não está instalado. Deseja instalar o Nmap? (y/n): ").lower()
+                if install in ['s', 'y']:
                     install_nmap()
                     print(f"{Fore.GREEN}[INFO] Abrindo o menu NMAP...")
                     clear_terminal()
@@ -78,13 +81,33 @@ def main():
                     print(f"{Fore.RED}[INFO] Retornando ao menu principal...")
         elif option == "3":
             clear_terminal()
+            print(f"{Fore.GREEN}[INFO] Verificando a instalação do WPScan...")
+            if check_wpscan(): # WPScan DEVE ser verificado primeiro
+                print(f"{Fore.GREEN}[INFO] Abrindo o WPScan...")
+                
+            else:
+                if check_ruby():
+                    install_wpscan_choice = input(f"{Fore.YELLOW}[INFO] Deseja instalar o WPScan? (y/n): ").lower()
+                    if install_wpscan_choice in ['s', 'y']:
+                        install_wpscan()
+                    else:
+                        print(f"{Fore.RED}[INFO] Retornando ao menu principal...")
+                else:
+                    install_ruby_choice = input(f"{Fore.YELLOW}[INFO] Ruby não está instalado. Deseja instalar Ruby e WPScan? (y/n): ").lower()
+                    if install_ruby_choice in ['s', 'y']:
+                        install_ruby()
+                        install_wpscan()
+                    else:
+                        print(f"{Fore.RED}[INFO] Retornando ao menu principal...")
+        elif option == "0":
+            clear_terminal()
             print(f"{Fore.GREEN}[INFO] Verificando a instalação do ProxyChains...")
             if check_proxychains():
                 proxychains_enabled = toggle_proxychains()
                 print(f"{Fore.GREEN}[INFO] ProxyChains [{Fore.GREEN if proxychains_enabled else Fore.RED}{'ON' if proxychains_enabled else 'OFF'}{Fore.RESET}].")
             else:
-                install = input(f"{Fore.YELLOW}[INFO] ProxyChains não está instalado. Deseja instalar o ProxyChains? (s/n): ").lower()
-                if install == 's' or install == 'y':
+                install = input(f"{Fore.YELLOW}[INFO] ProxyChains não está instalado. Deseja instalar o ProxyChains? (y/n): ").lower()
+                if install in ['s', 'y']:
                     install_proxychains()
                     if check_proxychains():
                         proxychains_enabled = toggle_proxychains()
