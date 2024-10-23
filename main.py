@@ -4,6 +4,7 @@ from tools.setup_tools.check import *
 from tools.setup_tools.install import *
 from tools.sniper import sniper_menu_loop
 from tools.nmap import nmap_menu_loop
+from tools.wpscan import wpscan_menu_loop
 from functions.proxy_chains import toggle_proxychains, proxychains_enabled, check_proxychains_installed
 from colorama import init, Fore, Style
 
@@ -84,7 +85,8 @@ def main():
             print(f"{Fore.GREEN}[INFO] Verificando a instalação do WPScan...")
             if check_wpscan(): # WPScan DEVE ser verificado primeiro
                 print(f"{Fore.GREEN}[INFO] Abrindo o WPScan...")
-                
+                clear_terminal()
+                wpscan_menu_loop()
             else:
                 if check_ruby():
                     install_wpscan_choice = input(f"{Fore.YELLOW}[INFO] Deseja instalar o WPScan? (y/n): ").lower()
