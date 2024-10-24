@@ -1,7 +1,7 @@
 from functions.check_system import check_system
 from functions.clear_terminal import clear_terminal
-from tools.setup_tools.check import *
-from tools.setup_tools.install import *
+from setup_tools.setup import check_nmap, check_wpscan, check_sniper, check_ruby, check_proxychains
+from setup_tools.setup import install_nmap, install_wpscan, install_sniper, install_ruby, install_proxychains
 from tools.sniper import sniper_menu_loop
 from tools.nmap import nmap_menu_loop
 from tools.wpscan import wpscan_menu_loop
