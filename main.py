@@ -1,4 +1,4 @@
-import os
+from functions.check_system import check_system
 from functions.clear_terminal import clear_terminal
 from tools.setup_tools.check import *
 from tools.setup_tools.install import *
@@ -34,9 +34,7 @@ def main_menu():
 def main():
     global proxychains_enabled
 
-    # Verifica se o usuário já é root
-    if os.geteuid() != 0:
-        print(f"{Fore.RED}[ERRO] Esta ferramenta precisa de privilégios ROOT para funcionar.")
+    if not check_system():
         return
 
     while True:
