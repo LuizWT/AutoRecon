@@ -2,14 +2,14 @@
 
 ### Descrição
 
-O **AutoRecon** é um projeto de automação de ferramentas de segurança focado em facilitar o processo de varredura e coleta de informações em ambientes de rede. Ele integra diversas ferramentas de reconhecimento e varredura, como **Nmap** e **Sn1per**, oferecendo uma interface simplificada para realizar diversas operações com um único comando. O AutoRecon permite que administradores e profissionais de segurança testem e identifiquem vulnerabilidades em suas infraestruturas de maneira automatizada e organizada.
+O **AutoRecon** é um projeto de automatização de ferramentas de segurança focado em facilitar o processo de varredura e coleta de informações em ambientes de rede. Ele integra diversas ferramentas de reconhecimento e varredura, como **Nmap**, **Sn1per**, e **WPScan**, oferecendo uma interface simplificada para realizar diversas operações com um único comando. O AutoRecon permite que administradores e profissionais de segurança testem e identifiquem vulnerabilidades em suas infraestruturas de maneira automatizada e organizada.
 
 ### Funcionalidades
 
 - **Automatização de Nmap**: Execute varreduras do Nmap automaticamente com diferentes modos e técnicas, como detecção de serviços, descoberta de hosts, verificação de vulnerabilidades e força bruta de DNS.
 - **Execução Sequencial**: Execute múltiplos comandos em sequência para uma varredura completa, evitando a necessidade de rodar cada comando individualmente.
-- **Instalação Automática**: O AutoRecon verifica e instala automaticamente ferramentas essenciais, como Nmap e Sn1per. O usuário não é obrigado a instalar todas as ferramentas de terceiros, mas apenas as que pretende usar, sendo perguntado antes da instalação.
-- **Execução de Ferramentas de Terceiros**: Integração com **Sn1per**, uma ferramenta de reconhecimento de rede, para realizar operações de inteligência de código aberto (OSINT) e varredura de vulnerabilidades.
+- **Instalação Automática**: O AutoRecon verifica e instala automaticamente ferramentas essenciais, como Nmap, Sn1per e WPScan. O usuário não é obrigado a instalar todas as ferramentas de terceiros, mas apenas as que pretende usar, sendo perguntado antes da instalação.
+- **Execução de Ferramentas de Terceiros**: Integração com **Sn1per**, uma ferramenta de reconhecimento de rede, e **WPScan**, para realizar operações de inteligência de código aberto (OSINT) e varredura de vulnerabilidades de WordPress.
 - **Opção de Uso de Proxychains**: Execute varreduras através do **proxychains**, adicionando uma camada de anonimato durante os testes de segurança.
 - **Relatório de Resultados**: Salve automaticamente os resultados das varreduras em arquivos para análise posterior.
 
@@ -21,6 +21,7 @@ Atualmente, o AutoRecon é compatível apenas com sistemas operacionais baseados
 
 - **Nmap** (inclui diversas técnicas de varredura TCP, UDP, descoberta de hosts, entre outros)
 - **Sn1per** (para reconhecimento de rede e OSINT)
+- **WPScan** (para varredura e análise de vulnerabilidades de sites WordPress)
 
 ### Instalação
 
@@ -45,6 +46,7 @@ No menu, você pode escolher diferentes tipos de varredura, como:
 - Técnicas de Varredura (TCP, UDP, ACK, etc.)
 - Descoberta de Hosts
 - Detecção de Sistema Operacional
+- Varredura de vulnerabilidades em sites WordPress com **WPScan**
 - Execução de todos os comandos em sequência
 
 ### Contribuições
