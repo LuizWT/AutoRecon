@@ -9,6 +9,7 @@ init(autoreset=True)
 def install_wpscan():
     try:
         print(f"{Fore.CYAN}[INFO] Iniciando a instalação do WPScan...")
+        
         if not check_ruby():
             install_ruby_choice = input(f"{Fore.YELLOW}[INFO] Ruby não está instalado. Deseja instalar Ruby? (y/n): ").lower()
             if install_ruby_choice in ['s', 'y']:
@@ -17,7 +18,7 @@ def install_wpscan():
                 print(f"{Fore.RED}[INFO] WPScan não pode ser instalado sem Ruby.")
                 return
 
-        os.system('sudo gem install wpscan')  # Usar gem para instalar o WPScan
+        os.system('sudo gem install wpscan')
         print(f"{Fore.CYAN}[INFO] WPScan instalado com sucesso.")
         
     except subprocess.CalledProcessError as e:
