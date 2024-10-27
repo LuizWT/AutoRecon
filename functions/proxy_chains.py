@@ -2,7 +2,7 @@ import subprocess
 
 def check_proxychains_installed():
     try:
-        subprocess.run(["proxychains", "--version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        subprocess.run(["proxychains", "true"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         return True
     except FileNotFoundError:
         return False
@@ -16,9 +16,3 @@ def toggle_proxychains():
     return proxychains_enabled
 
 proxychains_enabled = False
-
-if __name__ == "__main__":
-    if check_proxychains_installed():
-        print("[INFO] ProxyChains está instalado.")
-    else:
-        print("[ERRO] ProxyChains não está instalado. Por favor, instale-o.")
