@@ -46,7 +46,7 @@ O AutoRecon possui um menu interativo que facilita a execução de diferentes mo
 - **Especificação de Alvo**: Informe o endereço IP ou domínio que deseja analisar.
 - **Técnicas de Varredura**: Selecione entre varreduras TCP, UDP, ACK, entre outras.
 - **Descoberta de Hosts**: Identifique hosts ativos na rede.
-- **Detecção de Sistema Operacional**: Determine o sistema operacional dos dispositivos alvo.
+- **Detecção de Sistema Operacional**: Detecte o sistema operacional dos dispositivos alvo.
 - **Varredura de Vulnerabilidades em WordPress com WPScan**: Realize uma análise de segurança focada em sites WordPress.
 - **Execução de Scans com Nuclei**: Utilize templates para verificar vulnerabilidades específicas em aplicações.
 - **Verificação de Vulnerabilidades com Nikto**: Analise servidores web em busca de configurações inseguras e vulnerabilidades conhecidas.
