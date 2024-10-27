@@ -2,14 +2,14 @@
 
 ### Descrição
 
-O **AutoRecon** é um projeto de automatização de ferramentas de segurança focado em facilitar o processo de varredura e coleta de informações em ambientes de rede. Ele integra diversas ferramentas de reconhecimento e varredura, como **Nmap**, **Sn1per**, e **WPScan**, oferecendo uma interface simplificada para realizar diversas operações com um único comando. O AutoRecon permite que administradores e profissionais de segurança testem e identifiquem vulnerabilidades em suas infraestruturas de maneira automatizada e organizada.
+O **AutoRecon** é um projeto de automatização de ferramentas de segurança focado em facilitar o processo de varredura e coleta de informações em ambientes de rede. Ele integra diversas ferramentas de reconhecimento e varredura, como **Nmap**, **Sn1per**, **WPScan**, **Nuclei** e **Nikto**, oferecendo uma interface simplificada para realizar diversas operações com um único comando. O AutoRecon permite que administradores e profissionais de segurança testem e identifiquem vulnerabilidades em suas infraestruturas de maneira automatizada e organizada.
 
 ### Funcionalidades
 
 - **Automatização de Nmap**: Execute varreduras do Nmap automaticamente com diferentes modos e técnicas, como detecção de serviços, descoberta de hosts, verificação de vulnerabilidades e força bruta de DNS.
 - **Execução Sequencial**: Execute múltiplos comandos em sequência para uma varredura completa, evitando a necessidade de rodar cada comando individualmente.
-- **Instalação Automática**: O AutoRecon verifica e instala automaticamente ferramentas essenciais, como Nmap, Sn1per e WPScan. O usuário não é obrigado a instalar todas as ferramentas de terceiros, mas apenas as que pretende usar, sendo perguntado antes da instalação.
-- **Execução de Ferramentas de Terceiros**: Integração com **Sn1per**, uma ferramenta de reconhecimento de rede, e **WPScan**, para realizar operações de inteligência de código aberto (OSINT) e varredura de vulnerabilidades de WordPress.
+- **Instalação Automática**: O AutoRecon verifica e instala automaticamente ferramentas essenciais, como Nmap, Sn1per, WPScan, Nuclei e Nikto. O usuário não é obrigado a instalar todas as ferramentas de terceiros, mas apenas as que pretende usar, sendo perguntado antes da instalação.
+- **Execução de Ferramentas de Terceiros**: Integração com **Sn1per** para reconhecimento de rede, **WPScan** para varredura de vulnerabilidades de WordPress, **Nuclei** para execução de scans de segurança baseados em templates e **Nikto** para verificar vulnerabilidades em servidores web.
 - **Opção de Uso de Proxychains**: Execute varreduras através do **proxychains**, adicionando uma camada de anonimato durante os testes de segurança.
 - **Relatório de Resultados**: Salve automaticamente os resultados das varreduras em arquivos para análise posterior.
 
@@ -19,9 +19,11 @@ Atualmente, o AutoRecon é compatível apenas com sistemas operacionais baseados
 
 ### Ferramentas Suportadas
 
-- **Nmap** (inclui diversas técnicas de varredura TCP, UDP, descoberta de hosts, entre outros)
-- **Sn1per** (para reconhecimento de rede e OSINT)
-- **WPScan** (para varredura e análise de vulnerabilidades de sites WordPress)
+- **Nmap** (Técnicas de varredura TCP, UDP, descoberta de hosts, entre outros)
+- **Sn1per** (Reconhecimento de rede e OSINT)
+- **WPScan** (Varredura e análise de vulnerabilidades de sites WordPress)
+- **Nuclei** (Execução de scans de segurança com base em templates personalizáveis)
+- **Nikto** (Verificação de vulnerabilidades em servidores web)
 
 ### Instalação
 
@@ -39,15 +41,16 @@ Execute a ferramenta:
 
 ### Uso
 
-O AutoRecon possui um menu interativo que facilita a execução de diferentes modos de varredura.
-No menu, você pode escolher diferentes tipos de varredura, como:
-    
-- Especificação de Alvo
-- Técnicas de Varredura (TCP, UDP, ACK, etc.)
-- Descoberta de Hosts
-- Detecção de Sistema Operacional
-- Varredura de vulnerabilidades em sites WordPress com **WPScan**
-- Execução de todos os comandos em sequência
+O AutoRecon possui um menu interativo que facilita a execução de diferentes modos de varredura a partir de outras ferramentas. Ao decorrer dos menus que forem sendo escolhidos, você se deparará com várias opções, incluindo:
+
+- **Especificação de Alvo**: Informe o endereço IP ou domínio que deseja analisar.
+- **Técnicas de Varredura**: Selecione entre varreduras TCP, UDP, ACK, entre outras.
+- **Descoberta de Hosts**: Identifique hosts ativos na rede.
+- **Detecção de Sistema Operacional**: Determine o sistema operacional dos dispositivos alvo.
+- **Varredura de Vulnerabilidades em WordPress com WPScan**: Realize uma análise de segurança focada em sites WordPress.
+- **Execução de Scans com Nuclei**: Utilize templates para verificar vulnerabilidades específicas em aplicações.
+- **Verificação de Vulnerabilidades com Nikto**: Analise servidores web em busca de configurações inseguras e vulnerabilidades conhecidas.
+- **Execução de Todos os Comandos em Sequência**: Execute uma sequência completa de scans para uma análise abrangente.
 
 ### Contribuições
 
