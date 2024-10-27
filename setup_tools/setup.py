@@ -62,6 +62,34 @@ def check_proxychains():
         print(f"{Fore.RED}[INFO] ProxyChains não está funcionando corretamente.")
         return False
     
+def check_go():
+    try:
+        subprocess.run(['go', 'version'], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        print(f"{Fore.CYAN}[INFO] Go já está instalado.")
+        return True
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        print(f"{Fore.RED}[INFO] Go não está instalado ou não é acessível.")
+        return False
+
+def check_nuclei():
+    try:
+        subprocess.run(['nuclei', '--version'], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        print(f"{Fore.CYAN}[INFO] Nuclei já está instalado.")
+        return True
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        print(f"{Fore.RED}[INFO] Nuclei não está instalado.")
+        return False
+    
+def check_nikto():
+    try:
+        subprocess.run(['nikto', '-Version'], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        print(f"{Fore.CYAN}[INFO] Nikto já está instalado.")
+        return True
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        print(f"{Fore.RED}[INFO] Nikto não está instalado.")
+        return False
+    
+##############################################################################
 
 def install_nmap():
     try:
@@ -162,3 +190,56 @@ def install_proxychains():
         
     except Exception as e:
         print(f"{Fore.RED}[ERROR] Ocorreu um erro durante a instalação do ProxyChains: {e}")
+
+def install_go():
+    try:
+        print(f"{Fore.CYAN}[INFO] Iniciando a instalação do Go...")
+
+        if os.path.isfile('/etc/debian_version'):
+            os.system('sudo apt-get update && sudo apt-get install -y golang')
+        elif os.path.isfile('/etc/redhat-release'):
+            os.system('sudo dnf install -y golang-bin')
+        elif os.path.isfile('/etc/arch-release'):
+            os.system('sudo pacman -Syu --noconfirm go')
+        elif os.path.isfile('/etc/SuSE-release'):
+            os.system('sudo zypper refresh && sudo zypper install -y go')
+        else:
+            print(f"{Fore.RED}[ERROR] Distribuição não suportada para instalação do Go.")
+            return
+
+        print(f"{Fore.CYAN}[INFO] Go instalado com sucesso.")
+
+    except Exception as e:
+        print(f"{Fore.RED}[ERROR] Ocorreu um erro durante a instalação do Go: {e}")
+
+def install_nuclei():
+    try:
+        print(f"{Fore.CYAN}[INFO] Iniciando a instalação do Nuclei...")
+
+        if not check_go():
+            install_go_choice = input(f"{Fore.YELLOW}[INFO] Go não está instalado. Deseja instalar Go? (y/n): ").lower()
+            if install_go_choice in ['s', 'y']:
+                install_go()
+            else:
+                print(f"{Fore.RED}[INFO] Nuclei não pode ser instalado sem Go.")
+                return
+
+        os.system('go install -v github.com/projectdiscovery/nuclei/v2/cmd/nuclei@latest')
+        print(f"{Fore.CYAN}[INFO] Nuclei instalado com sucesso.")
+
+    except Exception as e:
+        print(f"{Fore.RED}[ERROR] Ocorreu um erro durante a instalação do Nuclei: {e}")
+
+def install_nikto():
+    try:
+        print(f"{Fore.CYAN}[INFO] Iniciando a instalação do Nikto...")
+
+        os.system('git clone https://github.com/sullo/nikto')
+
+        os.chdir('nikto/program')
+
+        os.system('sudo ln -s "$(pwd)/nikto.pl" /usr/local/bin/nikto')
+
+    except Exception as e:
+        print(f"{Fore.RED}[ERROR] Ocorreu um erro durante a instalação do Nikto: {e}")
+
