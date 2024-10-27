@@ -16,7 +16,7 @@ def show_command_explanation(mode):
 
     print(explanations.get(mode, f"{Fore.RED}[INFO] {Style.BRIGHT}Modo não identificado."))
 
-def wpscan(target, mode):
+def wpscan(target, mode, api_token=None):
     base_command = "wpscan" if not is_proxychains_enabled() else "proxychains4 wpscan"
     
     commands = {
@@ -24,7 +24,7 @@ def wpscan(target, mode):
         'enumerate_users': f"{base_command} --url {target} --enumerate u",
         'enumerate_plugins': f"{base_command} --url {target} --enumerate p",
         'enumerate_themes': f"{base_command} --url {target} --enumerate t",
-        'scan': f"{base_command} --url {target} --api-token YOUR_API_TOKEN"
+        'scan': f"{base_command} --url {target} --api-token {api_token}"  # Usa o token aqui
     }
 
     command = commands.get(mode)
@@ -34,6 +34,9 @@ def wpscan(target, mode):
 
 def get_target():
     return input(f"{Fore.GREEN}Digite o endereço do alvo (EX: 192.168.0.1 | site.com) ou {Fore.RED}[B]{Fore.GREEN} para voltar: ")
+
+def get_api_token():
+    return input(f"{Fore.GREEN}Digite seu API Token ou {Fore.RED}[B]{Fore.GREEN} para voltar: ")
 
 def wpscan_options(option):
     if option == "1":
@@ -70,7 +73,11 @@ def wpscan_options(option):
         if target.lower() == 'b':
             clear_terminal()
             return  
-        wpscan(target, 'scan')
+        api_token = get_api_token()  # Solicita o token aqui
+        if api_token.lower() == 'b':
+            clear_terminal()
+            return  
+        wpscan(target, 'scan', api_token)
 
 def wpscan_menu_loop():
     while True:
