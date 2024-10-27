@@ -2,6 +2,7 @@ from colorama import init, Fore, Style
 from functions.clear_terminal import clear_terminal
 from functions.create_output_file import execute_command_and_log
 from functions.proxy_chains import is_proxychains_enabled
+from functions.check_cidr import is_valid_cidr
 
 init(autoreset=True)
 
@@ -95,6 +96,7 @@ def execute_all_nmap_commands(target):
 
 def nmap_options(option):
     if option == "1":
+        clear_terminal()
         show_command_explanation('target_spec')
         target = get_target()
         if target.lower() == 'b':
@@ -102,6 +104,7 @@ def nmap_options(option):
             return
         nmap(target, 'target_spec')
     elif option == "2":
+        clear_terminal()
         show_command_explanation('scan_technique')
         target = get_target()
         if target.lower() == 'b':
@@ -113,13 +116,15 @@ def nmap_options(option):
             return  
         nmap(target, 'scan_technique', technique)
     elif option == "3":
+        clear_terminal()
         show_command_explanation('host_discovery')
         target = get_range()
-        if target.lower() == 'b':
+        if target is None:
             clear_terminal()
             return  
         nmap(target, 'host_discovery')  
     elif option == "4":
+        clear_terminal()
         show_command_explanation('port_spec')
         target = get_target()
         if target.lower() == 'b':
@@ -131,6 +136,7 @@ def nmap_options(option):
             return  
         nmap(target, 'port_spec', ports)
     elif option == "5":
+        clear_terminal()
         show_command_explanation('service_detection')
         target = get_target()
         if target.lower() == 'b':
@@ -138,6 +144,7 @@ def nmap_options(option):
             return  
         nmap(target, 'service_detection')  
     elif option == "6":
+        clear_terminal()
         show_command_explanation('os_detection')
         target = get_target()
         if target.lower() == 'b':
@@ -145,6 +152,7 @@ def nmap_options(option):
             return  
         nmap(target, 'os_detection')  
     elif option == "7":
+        clear_terminal()
         show_command_explanation('timing')
         target = get_target()
         if target.lower() == 'b':
@@ -156,6 +164,7 @@ def nmap_options(option):
             return  
         nmap(target, 'timing', timing)
     elif option == "8":
+        clear_terminal()
         show_command_explanation('http_title')
         target = get_target()
         if target.lower() == 'b':
@@ -163,6 +172,7 @@ def nmap_options(option):
             return  
         nmap(target, 'http_title')  
     elif option == "9":
+        clear_terminal()
         show_command_explanation('ssl_cert')
         target = get_target()
         if target.lower() == 'b':
@@ -170,6 +180,7 @@ def nmap_options(option):
             return  
         nmap(target, 'ssl_cert')  
     elif option == "10":
+        clear_terminal()
         show_command_explanation('vuln')
         target = get_target()
         if target.lower() == 'b':
@@ -177,6 +188,7 @@ def nmap_options(option):
             return  
         nmap(target, 'vuln')  
     elif option == "11":
+        clear_terminal()
         show_command_explanation('smb_os_discovery')
         target = get_target()
         if target.lower() == 'b':
@@ -184,6 +196,7 @@ def nmap_options(option):
             return  
         nmap(target, 'smb_os_discovery')  
     elif option == "12":
+        clear_terminal()
         show_command_explanation('http_robots_txt')
         target = get_target()
         if target.lower() == 'b':
@@ -191,6 +204,7 @@ def nmap_options(option):
             return  
         nmap(target, 'http_robots_txt')  
     elif option == "13":
+        clear_terminal()
         show_command_explanation('ssh_hostkey')
         target = get_target()
         if target.lower() == 'b':
@@ -198,6 +212,7 @@ def nmap_options(option):
             return  
         nmap(target, 'ssh_hostkey')  
     elif option == "14":
+        clear_terminal()
         show_command_explanation('dns_brute')
         target = get_target()
         if target.lower() == 'b':
@@ -206,6 +221,7 @@ def nmap_options(option):
         nmap(target, 'dns_brute')  
 
     elif option == "15":
+        clear_terminal()
         target = get_target()
         if target.lower() == 'b':
             clear_terminal()
@@ -216,7 +232,14 @@ def get_target():
     return input(f"{Fore.GREEN}Digite o endereço do alvo (EX: 192.168.0.1 | site.com) ou {Fore.RED}[B]{Fore.GREEN} para voltar: ")
 
 def get_range():
-    return input(f"{Fore.GREEN}Digite o intervalo ou CIDR (EX: 192.168.1.0/24) ou {Fore.RED}[B]{Fore.GREEN} para voltar: ")
+    while True:
+        target = input(f"{Fore.GREEN}Digite o alvo da rede (EX: 192.168.1.0/24) ou {Fore.RED}[B]{Fore.GREEN} para voltar: ")
+        if target.lower() == 'b':
+            return None
+        if is_valid_cidr(target):
+            return target
+        else:
+            print(f"{Fore.RED}Formato inválido. Por favor, insira um endereço CIDR válido.")
 
 def get_ports():
     return input(f"{Fore.GREEN}Digite as portas ou faixa de portas (EX: 21,22 ou 1-100) ou {Fore.RED}[B]{Fore.GREEN} para voltar: ")
@@ -282,7 +305,7 @@ def nmap_menu_loop():
         {Fore.RED}[B] {Fore.RESET}Voltar
         """)
 
-        option = input(f"{Fore.GREEN}Escolha uma opção: ")
+        option = input(f"{Fore.YELLOW}Escolha uma opção: ")
 
 
         if option.lower() == 'b':
