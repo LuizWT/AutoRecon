@@ -1,15 +1,25 @@
+# Importações de bibliotecas padrão
+import readline
+
+# Importações de bibliotecas de terceiros
+from colorama import init, Fore, Style
+
+# Importações de módulos locais
 from functions.check_system import check_system
 from functions.clear_terminal import clear_terminal
-from setup_tools.setup import check_nmap, check_wpscan, check_sniper, check_ruby, check_proxychains, check_go, check_nuclei, check_nikto
-from setup_tools.setup import install_nmap, install_wpscan, install_sniper, install_ruby, install_proxychains, install_go, install_nuclei, install_nikto
+from functions.check_and_install_tool import check_and_install_tool
+
+from setup_tools.setup import (
+    check_nmap, check_wpscan, check_sniper, check_ruby, check_proxychains, check_go, check_nuclei, check_nikto,
+    install_nmap, install_wpscan, install_sniper, install_ruby, install_proxychains, install_go, install_nuclei, install_nikto,
+)
+
 from tools.sniper import sniper_menu_loop
 from tools.nmap import nmap_menu_loop
 from tools.wpscan import wpscan_menu_loop
 from tools.nuclei import nuclei_menu_loop
 from tools.nikto import nikto_menu_loop
 from functions.proxy_chains import toggle_proxychains, proxychains_enabled, check_proxychains_installed
-from colorama import init, Fore, Style
-import readline
 
 init(autoreset=True)  # inicia o colorama
 
@@ -53,92 +63,19 @@ def main():
             break
         elif option == "1":
             clear_terminal()
-            print(f"{Fore.GREEN}[INFO] Verificando a instalação do Sn1per...")
-            if check_sniper():
-                print(f"{Fore.GREEN}[INFO] Abrindo o menu SNIPER...")
-                clear_terminal()
-                sniper_menu_loop()
-            else:
-                install = input(f"{Fore.YELLOW}[INFO] Sn1per não está instalado. Deseja instalar o Sn1per? (y/n): ").lower()
-                if install in ['s', 'y']:
-                    install_sniper()
-                    print(f"{Fore.GREEN}[INFO] Abrindo o menu SNIPER...")
-                    clear_terminal()
-                    sniper_menu_loop()
-                else:
-                    print(f"{Fore.RED}[INFO] Retornando ao menu principal...")
+            check_and_install_tool("Sn1per", check_sniper, install_sniper, sniper_menu_loop)
         elif option == "2":
             clear_terminal()
-            print(f"{Fore.GREEN}[INFO] Verificando a instalação do Nmap...")
-            if check_nmap():
-                print(f"{Fore.GREEN}[INFO] Abrindo o menu NMAP...")
-                clear_terminal()
-                nmap_menu_loop()
-            else:
-                install = input(f"{Fore.YELLOW}[INFO] Nmap não está instalado. Deseja instalar o Nmap? (y/n): ").lower()
-                if install in ['s', 'y']:
-                    install_nmap()
-                    print(f"{Fore.GREEN}[INFO] Abrindo o menu NMAP...")
-                    clear_terminal()
-                    nmap_menu_loop()
-                else:
-                    print(f"{Fore.RED}[INFO] Retornando ao menu principal...")
+            check_and_install_tool("Nmap", check_nmap, install_nmap, nmap_menu_loop)
         elif option == "3":
             clear_terminal()
-            print(f"{Fore.GREEN}[INFO] Verificando a instalação do WPScan...")
-            if check_wpscan(): # WPScan DEVE ser verificado primeiro
-                print(f"{Fore.GREEN}[INFO] Abrindo o WPScan...")
-                clear_terminal()
-                wpscan_menu_loop()
-            else:
-                if check_ruby():
-                    install_wpscan_choice = input(f"{Fore.YELLOW}[INFO] Deseja instalar o WPScan? (y/n): ").lower()
-                    if install_wpscan_choice in ['s', 'y']:
-                        install_wpscan()
-                    else:
-                        print(f"{Fore.RED}[INFO] Retornando ao menu principal...")
-                else:
-                    install_ruby_choice = input(f"{Fore.YELLOW}[INFO] Ruby não está instalado. Deseja instalar Ruby e WPScan? (y/n): ").lower()
-                    if install_ruby_choice in ['s', 'y']:
-                        install_ruby()
-                        install_wpscan()
-                    else:
-                        print(f"{Fore.RED}[INFO] Retornando ao menu principal...")
+            check_and_install_tool("WPScan", check_wpscan, install_wpscan, wpscan_menu_loop, dep_check_func=check_ruby, dep_install_func=install_ruby)
         elif option == "4":
             clear_terminal()
-            print(f"{Fore.GREEN}[INFO] Verificando a instalação do Nuclei...")
-            if check_nuclei(): # Nuclei DEVE ser verificado primeiro
-                print(f"{Fore.GREEN}[INFO] Abrindo o Nuclei...")
-                clear_terminal()
-                nuclei_menu_loop()
-            else:
-                if check_go():
-                    install_nuclei_choice = input(f"{Fore.YELLOW}[INFO] Deseja instalar o Nuclei? (y/n): ").lower()
-                    if install_nuclei_choice in ['s', 'y']:
-                        install_nuclei()
-                    else:
-                        print(f"{Fore.RED}[INFO] Retornando ao menu principal...")
-                else:
-                    install_go_choice = input(f"{Fore.YELLOW}[INFO] GO não está instalado. Deseja instalar GO e Nuclei? (y/n): ").lower()
-                    if install_go_choice in ['s', 'y']:
-                        install_go()
-                        install_nuclei()
+            check_and_install_tool("Nuclei", check_nuclei, install_nuclei, nuclei_menu_loop, dep_check_func=check_go, dep_install_func=install_go)
         elif option == "5":
             clear_terminal()
-            print(f"{Fore.GREEN}[INFO] Verificando a instalação do Nikto...")
-            if check_nikto():
-                print(f"{Fore.GREEN}[INFO] Abrindo o menu NIKTO...")
-                clear_terminal()
-                nikto_menu_loop()
-            else:
-                install = input(f"{Fore.YELLOW}[INFO] Nikto não está instalado. Deseja instalar o Nikto? (y/n): ").lower()
-                if install in ['s', 'y']:
-                    install_nikto()
-                    print(f"{Fore.GREEN}[INFO] Abrindo o menu NIKTO...")
-                    clear_terminal()
-                    nikto_menu_loop()
-                else:
-                    print(f"{Fore.RED}[INFO] Retornando ao menu principal...")
+            check_and_install_tool("Nikto", check_nikto, install_nikto, nikto_menu_loop)
         elif option == "0":
             clear_terminal()
             print(f"{Fore.GREEN}[INFO] Verificando a instalação do ProxyChains...")
