@@ -35,6 +35,10 @@ Acesse o diretório:
 
     ~$ cd AutoRecon
 
+Instale as dependências:
+
+    ~$ sudo pip install -r requirements.txt
+
 Execute a ferramenta:
 
     ~$ python3 main.py
