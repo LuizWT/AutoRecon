@@ -1,4 +1,4 @@
-from colorama import init, Fore, Style
+from colorama import init, Fore
 from functions.create_output_file import execute_command_and_log
 from functions.clear_terminal import clear_terminal
 from functions.set_global_target import state, set_global_target
