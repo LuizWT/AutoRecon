@@ -28,8 +28,7 @@ session = PromptSession()
 
 def main_menu():
     proxychains_info = " (/etc/proxychains.conf)" if check_proxychains_installed() else ""
-    status_color = Fore.GREEN if proxychains_enabled else Fore.RED
-    status_text = "ON" if proxychains_enabled else "OFF"
+    proxychains_status = f"{Fore.GREEN}ON" if proxychains_enabled else f"{Fore.RED}OFF"
     
     global_target_display = f"Alvo: {state['global_target']}" if state['global_target'] else "Alvo: Não definido"
     
@@ -48,7 +47,7 @@ def main_menu():
     {Fore.CYAN}[3] {Fore.RESET}WPSCAN
     {Fore.CYAN}[4] {Fore.RESET}NUCLEI
     {Fore.CYAN}[5] {Fore.RESET}NIKTO
-    {Fore.CYAN}[0] {Fore.RESET}ProxyChains [{status_color}{status_text}{Fore.RESET}] {proxychains_info}
+    {Fore.CYAN}[0] {Fore.RESET}ProxyChains [{proxychains_status}{Fore.RESET}] {proxychains_info}
     {Fore.RED}[9] {Fore.RESET}Sair
     """)
 
