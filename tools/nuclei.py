@@ -1,12 +1,23 @@
-from colorama import init, Fore, Style
+from colorama import init, Fore
 from functions.clear_terminal import clear_terminal
 from functions.create_output_file import execute_command_and_log
 from functions.proxy_chains import is_proxychains_enabled
 from functions.check_cidr import is_valid_cidr
-from functions.set_global_target import state
+from functions.set_global_target import state, set_global_target
 from functions.toggle_info import toggle_info, is_info_visible
+from prompt_toolkit import PromptSession
+from prompt_toolkit.key_binding import KeyBindings
+from prompt_toolkit.formatted_text import HTML
+import asyncio
 
 init(autoreset=True)  # inicia o colorama
+
+session = PromptSession()
+bindings = KeyBindings()
+
+@bindings.add('c-t')
+def _(event):
+    asyncio.create_task(set_global_target())
 
 def get_command_explanation(mode):
     explanations = {
@@ -103,12 +114,13 @@ def nuclei_options(option, global_target):
             return
         nuclei(target, 'custom_template', (target, template))
 
-def nuclei_menu_loop(global_target):
+async def nuclei_menu_loop(global_target):
     global_target_display = f"Alvo: {state['global_target']}" if state['global_target'] else "Alvo: Não definido"
     while True:
+        clear_terminal()
         print(rf"""{Fore.BLUE}
-         _   _            _      _ 
-        | \ | |          | |    (_) {Fore.YELLOW}{global_target_display}{Fore.BLUE}
+         _   _            _      _ Pressione Ctrl+T para definir o alvo
+        | \ | |          | |    (_)     {Fore.YELLOW}{global_target_display}{Fore.BLUE}
         |  \| |_   _  ___| | ___ _ 
         | . ` | | | |/ __| |/ _ \ |
         | |\  | |_| | (__| |  __/ |
@@ -124,8 +136,7 @@ def nuclei_menu_loop(global_target):
         {Fore.YELLOW}[I] {Fore.RESET}Alternar Informações
         """)
 
-        option = input(f"{Fore.YELLOW}Escolha uma opção: ")
-        clear_terminal()
+        option = await session.prompt_async(HTML(f"<ansiyellow>Escolha uma opção:</ansiyellow> "), key_bindings=bindings)
     
         if option.lower() == 'b':
             break
