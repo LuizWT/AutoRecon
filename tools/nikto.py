@@ -1,10 +1,21 @@
 from colorama import init, Fore, Style
 from functions.create_output_file import execute_command_and_log
 from functions.clear_terminal import clear_terminal
-from functions.set_global_target import state
+from functions.set_global_target import state, set_global_target
 from functions.toggle_info import toggle_info, is_info_visible
+from prompt_toolkit import PromptSession
+from prompt_toolkit.key_binding import KeyBindings
+from prompt_toolkit.formatted_text import HTML
+import asyncio
 
 init(autoreset=True)  # inicia o colorama
+
+session = PromptSession()
+bindings = KeyBindings()
+
+@bindings.add('c-t')
+def _(event):
+    asyncio.create_task(set_global_target())
 
 def get_command_explanation(mode):
     explanations = {
@@ -75,15 +86,15 @@ def nikto_options(option):
     elif option == "8":
         execute_all_nikto_commands(target)
 
-def nikto_menu_loop(global_target):
+async def nikto_menu_loop(global_target):
     global_target_display = f"Alvo: {global_target}" if global_target else "Alvo: Não definido"
     while True:
         clear_terminal()
         print(rf"""
         {Fore.BLUE}
           _   _ _ _    _        
-         | \ | (_) |  | |       {Fore.YELLOW}{global_target_display}{Fore.BLUE}
-         |  \| |_| | _| |_ ___  
+         | \ | (_) |  | |   Pressione Ctrl+T para definir o alvo
+         |  \| |_| | _| |_ ___  {Fore.YELLOW}{global_target_display}{Fore.BLUE}
          | . ` | | |/ / __/ _ \ 
          | |\  | |   <| || (_) |
          |_| \_|_|_|\_\\__\___/ 
@@ -100,7 +111,7 @@ def nikto_menu_loop(global_target):
         {Fore.YELLOW}[I] {Fore.RESET}Alternar Informações
         """)
 
-        option = input(f"{Fore.YELLOW}Escolha uma opção: ")
+        option = await session.prompt_async(HTML(f"<ansiyellow>Escolha uma opção:</ansiyellow> "), key_bindings=bindings)
 
         if option.lower() == 'b':
             break
