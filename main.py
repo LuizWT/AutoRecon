@@ -21,6 +21,8 @@ from tools.wpscan import wpscan_menu_loop
 from tools.nuclei import nuclei_menu_loop
 from tools.nikto import nikto_menu_loop
 from functions.proxy_chains import toggle_proxychains, proxychains_enabled, check_proxychains_installed
+import tracemalloc
+tracemalloc.start()
 
 init(autoreset=True)
 
@@ -70,19 +72,19 @@ async def main_loop():
             break
         elif option == "1":
             clear_terminal()
-            check_and_install_tool("Sn1per", check_sniper, install_sniper, sniper_menu_loop, state['global_target'])
+            await check_and_install_tool("Sn1per", check_sniper, install_sniper, sniper_menu_loop, state['global_target'])
         elif option == "2":
             clear_terminal()
-            check_and_install_tool("Nmap", check_nmap, install_nmap, nmap_menu_loop, state['global_target'])
+            await check_and_install_tool("Nmap", check_nmap, install_nmap, nmap_menu_loop, state['global_target'])
         elif option == "3":
             clear_terminal()
-            check_and_install_tool("WPScan", check_wpscan, install_wpscan, wpscan_menu_loop, state['global_target'], dep_check_func=check_ruby, dep_install_func=install_ruby)
+            await check_and_install_tool("WPScan", check_wpscan, install_wpscan, wpscan_menu_loop, state['global_target'], dep_check_func=check_ruby, dep_install_func=install_ruby)
         elif option == "4":
             clear_terminal()
-            check_and_install_tool("Nuclei", check_nuclei, install_nuclei, nuclei_menu_loop, state, dep_check_func=check_go, dep_install_func=install_go)
+            await check_and_install_tool("Nuclei", check_nuclei, install_nuclei, nuclei_menu_loop, state, dep_check_func=check_go, dep_install_func=install_go)
         elif option == "5":
             clear_terminal()
-            check_and_install_tool("Nikto", check_nikto, install_nikto, nikto_menu_loop, state['global_target'])
+            await check_and_install_tool("Nikto", check_nikto, install_nikto, nikto_menu_loop, state['global_target'])
 
         elif option == "0":
             clear_terminal()
