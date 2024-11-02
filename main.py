@@ -1,7 +1,6 @@
 import readline
 from colorama import init, Fore, Style
 from prompt_toolkit import PromptSession
-from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.formatted_text import HTML
 import asyncio
 
@@ -10,10 +9,7 @@ from functions.clear_terminal import clear_terminal
 from functions.check_and_install_tool import check_and_install_tool
 from functions.set_global_target import set_global_target, bindings, state 
 
-from setup_tools.setup import (
-    check_nmap, check_wpscan, check_sniper, check_ruby, check_proxychains, check_go, check_nuclei, check_nikto,
-    install_nmap, install_wpscan, install_sniper, install_ruby, install_proxychains, install_go, install_nuclei, install_nikto,
-)
+from setup_tools.setup import TOOLS_CONFIG, install_tool, check_proxychains
 
 from tools.sniper import sniper_menu_loop
 from tools.nmap import nmap_menu_loop
@@ -21,8 +17,6 @@ from tools.wpscan import wpscan_menu_loop
 from tools.nuclei import nuclei_menu_loop
 from tools.nikto import nikto_menu_loop
 from functions.proxy_chains import toggle_proxychains, proxychains_enabled, check_proxychains_installed
-import tracemalloc
-tracemalloc.start()
 
 init(autoreset=True)
 
@@ -72,30 +66,32 @@ async def main_loop():
             break
         elif option == "1":
             clear_terminal()
-            await check_and_install_tool("Sn1per", check_sniper, install_sniper, sniper_menu_loop, state['global_target'])
+            await check_and_install_tool("sniper", sniper_menu_loop, state['global_target'])
         elif option == "2":
             clear_terminal()
-            await check_and_install_tool("Nmap", check_nmap, install_nmap, nmap_menu_loop, state['global_target'])
+            await check_and_install_tool("nmap", nmap_menu_loop, state['global_target'])
         elif option == "3":
             clear_terminal()
-            await check_and_install_tool("WPScan", check_wpscan, install_wpscan, wpscan_menu_loop, state['global_target'], dep_check_func=check_ruby, dep_install_func=install_ruby)
+            await check_and_install_tool("wpscan", wpscan_menu_loop, state['global_target'])
         elif option == "4":
             clear_terminal()
-            await check_and_install_tool("Nuclei", check_nuclei, install_nuclei, nuclei_menu_loop, state, dep_check_func=check_go, dep_install_func=install_go)
+            await check_and_install_tool("nuclei", nuclei_menu_loop, state['global_target'])
         elif option == "5":
             clear_terminal()
-            await check_and_install_tool("Nikto", check_nikto, install_nikto, nikto_menu_loop, state['global_target'])
-
+            await check_and_install_tool("nikto", nikto_menu_loop, state['global_target'])
         elif option == "0":
             clear_terminal()
             print(f"{Fore.GREEN}[INFO] Verificando a instalação do ProxyChains...")
+
             if check_proxychains():
                 proxychains_enabled = toggle_proxychains()
-                print(f"{Fore.GREEN}[INFO] ProxyChains [{Fore.GREEN if proxychains_enabled else Fore.RED}{'ON' if proxychains_enabled else 'OFF'}{Fore.RESET}].")
+                status = 'ON' if proxychains_enabled else 'OFF'
+                color = Fore.GREEN if proxychains_enabled else Fore.RED
+                print(f"{Fore.GREEN}[INFO] ProxyChains [{color}{status}{Fore.RESET}].")
             else:
-                install = input(f"{Fore.YELLOW}[INFO] ProxyChains não está instalado. Deseja instalar o ProxyChains? (y/n): ").lower()
-                if install in ['s', 'y']:
-                    install_proxychains()
+                install_choice = input(f"{Fore.YELLOW}[INFO] ProxyChains não está instalado. Deseja instalar o ProxyChains? (y/n): ").lower()
+                if install_choice in ['s', 'y']:
+                    install_tool("proxychains")
                     if check_proxychains():
                         proxychains_enabled = toggle_proxychains()
                         print(f"{Fore.GREEN}[INFO] ProxyChains ativado [{Fore.GREEN}ON{Fore.RESET}].")
