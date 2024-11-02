@@ -44,27 +44,29 @@ def wpscan(target, mode, api_token=None):
     if command:
         execute_command_and_log(command, "wpscan")
 
-def get_target(global_target):
-    return global_target if global_target else input(f"{Fore.RED}Digite o alvo ou [B] para voltar: ")
-
 def get_api_token():
     return input(f"{Fore.GREEN}Digite seu API Token ou {Fore.RED}[B]{Fore.GREEN} para voltar: ")
 
 def wpscan_options(option, global_target):
-    target = get_target(global_target)
+    target = state['global_target'] if state['global_target'] else input(f"{Fore.RED}Digite o alvo ou [B] para voltar: ")
     if target.lower() == 'b':
         clear_terminal()
         return  
     
     if option == "1":
+        clear_terminal()
         wpscan(target, 'normal')
     elif option == "2":
+        clear_terminal()
         wpscan(target, 'enumerate_users')
     elif option == "3":
+        clear_terminal()
         wpscan(target, 'enumerate_plugins')
     elif option == "4":
+        clear_terminal()
         wpscan(target, 'enumerate_themes')
     elif option == "5":
+        clear_terminal()
         api_token = get_api_token()  # Solicita o token aqui
         if api_token.lower() == 'b':
             clear_terminal()
@@ -104,5 +106,3 @@ async def wpscan_menu_loop(global_target):
 
         if option in [str(i) for i in range(1, 6)]:
             wpscan_options(option, global_target)
-        else:
-            print(f"{Fore.RED}Opção inválida.")
