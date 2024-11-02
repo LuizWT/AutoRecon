@@ -23,6 +23,7 @@ async def set_global_target():
             raise ValueError("O alvo global não pode ser vazio.")
 
         print(f"{Fore.YELLOW}Alvo global definido: {state['global_target']}\n{Fore.BLUE}Aperte Enter para continuar...")
+
     
     except Exception as e:
         print(f"{Fore.RED}Erro: {e}")
