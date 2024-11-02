@@ -18,6 +18,7 @@ bindings = KeyBindings()
 @bindings.add('c-t')
 def _(event):
     asyncio.create_task(set_global_target())
+    
 
 def get_command_explanation(mode):
     explanations = {
@@ -108,7 +109,7 @@ def execute_all_nmap_commands(target):
         execute_command_and_log(f"sudo nmap {cmd}", "nmap")
 
 def nmap_options(option, global_target):
-    target = global_target if global_target else input(f"{Fore.RED}Digite o alvo ou [B] para voltar: ")
+    target = state['global_target'] if state['global_target'] else input(f"{Fore.RED}Digite o alvo ou [B] para voltar: ")
 
     if option == "1":
         clear_terminal()
@@ -126,13 +127,6 @@ def nmap_options(option, global_target):
             clear_terminal()
             return  
         nmap(target, 'scan_technique', technique)
-    elif option == "3":
-        clear_terminal()
-        target = get_range()
-        if target is None:
-            clear_terminal()
-            return  
-        nmap(target, 'host_discovery')  
     elif option == "4":
         clear_terminal()
         if target.lower() == 'b':
@@ -156,15 +150,17 @@ def nmap_options(option, global_target):
             return  
         nmap(target, 'os_detection')  
     elif option == "7":
-        clear_terminal()
-        if target.lower() == 'b':
+        while True:
             clear_terminal()
-            return  
-        timing = input(f"{Fore.GREEN}Digite o nível de timing (0-5) ou {Fore.RED}[B] {Fore.GREEN}para voltar: ")
-        if timing.lower() == 'b':
-            clear_terminal()
-            return  
-        nmap(target, 'timing', timing)
+            timing = input(f"{Fore.GREEN}Digite o nível de timing (0-5) ou {Fore.RED}[B] {Fore.GREEN}para voltar: ")
+            if timing.lower() == 'b':
+                clear_terminal()
+                return
+            if timing.isdigit() and 0 <= int(timing) <= 5:
+                print(f"{Fore.GREEN}Configuração de temporização definida para {timing}.")
+                nmap(target, 'timing', timing)
+            else:
+                print(f"{Fore.RED}Nível de timing inválido.")
     elif option == "8":
         clear_terminal()
         if target.lower() == 'b':
@@ -260,9 +256,10 @@ def get_scan_technique():
         return get_scan_technique()
 
 async def nmap_menu_loop(global_target):
-    global_target_display = f"Alvo: {state['global_target']}" if state['global_target'] else "Alvo: Não definido"
     while True:
         clear_terminal()
+        global_target_display = f"Alvo: {state['global_target']}" if state['global_target'] else "Alvo: Não definido"  # Move this inside the loop
+
         print(rf"""
         {Fore.BLUE}                  
         _ __  _ __ ___   __ _ _ __   Pressione Ctrl+T para definir o alvo
@@ -274,7 +271,7 @@ async def nmap_menu_loop(global_target):
                             
         {Fore.CYAN}[1] {Fore.RESET}VARREDURA PADRÃO {get_command_explanation('target_spec') if is_info_visible() else ""}
         {Fore.CYAN}[2] {Fore.RESET}TÉCNICAS DE VARREDURA {get_command_explanation('scan_technique') if is_info_visible() else ""}
-        {Fore.CYAN}[3] {Fore.RESET}DESCUBRIR HOSTS {get_command_explanation('host_discovery') if is_info_visible() else ""}
+        {Fore.CYAN}[3] {Fore.RESET}DESCOBRIR HOSTS {get_command_explanation('host_discovery') if is_info_visible() else ""}
         {Fore.CYAN}[4] {Fore.RESET}ESPECIFICAÇÃO DE PORTAS {get_command_explanation('port_spec') if is_info_visible() else ""}
         {Fore.CYAN}[5] {Fore.RESET}DETEÇÃO DE SERVIÇOS {get_command_explanation('service_detection') if is_info_visible() else ""}
         {Fore.CYAN}[6] {Fore.RESET}DETEÇÃO DE SISTEMA OPERACIONAL {get_command_explanation('os_detection') if is_info_visible() else ""}
@@ -293,7 +290,6 @@ async def nmap_menu_loop(global_target):
 
         option = await session.prompt_async(HTML(f"<ansiyellow>Escolha uma opção:</ansiyellow> "), key_bindings=bindings)
 
-
         if option.lower() == 'b':
             break
         elif option.lower() == 'i':
@@ -302,5 +298,3 @@ async def nmap_menu_loop(global_target):
 
         if option in [str(i) for i in range(1, 16)]:
             nmap_options(option, global_target)
-        else:
-            print(f"{Fore.RED}Opção inválida.")
