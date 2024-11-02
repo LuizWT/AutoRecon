@@ -81,19 +81,28 @@ def get_custom_template():
 def nuclei_options(option, global_target):
     clear_terminal()
 
-    target = global_target if global_target else input(f"{Fore.RED}Digite o alvo: ")
+    target = state['global_target'] if state['global_target'] else input(f"{Fore.RED}Digite o alvo ou [B] para voltar: ")
 
     if option in ["1", "2", "6"] and target:
 
         if option == "1":
+            if target.lower() == 'b':
+                clear_terminal()
+                return
             nuclei(target, 'target_spec')
         elif option == "2":
+            if target.lower() == 'b':
+                clear_terminal()
+                return
             severity = get_severity()
             if severity.lower() == 'b':
                 clear_terminal()
                 return
             nuclei(target, 'severity', severity)
         elif option == "6":
+            if target.lower() == 'b':
+                clear_terminal()
+                return
             nuclei(target, 'dashboard')
     elif option == "3":
         target = get_multi_target_file()
@@ -101,12 +110,7 @@ def nuclei_options(option, global_target):
             clear_terminal()
             return
         nuclei(target, 'multi_target')
-    elif option == "4":
-        target = get_network_target()
-        if target.lower() == 'b':
-            clear_terminal()
-            return
-        nuclei(target, 'network_scan')
+
     elif option == "5":
         target, template = get_custom_template()
         if target is None or template is None:
@@ -115,9 +119,9 @@ def nuclei_options(option, global_target):
         nuclei(target, 'custom_template', (target, template))
 
 async def nuclei_menu_loop(global_target):
-    global_target_display = f"Alvo: {state['global_target']}" if state['global_target'] else "Alvo: Não definido"
     while True:
         clear_terminal()
+        global_target_display = f"Alvo: {state['global_target']}" if state['global_target'] else "Alvo: Não definido"
         print(rf"""{Fore.BLUE}
          _   _            _      _ Pressione Ctrl+T para definir o alvo
         | \ | |          | |    (_)     {Fore.YELLOW}{global_target_display}{Fore.BLUE}
@@ -143,9 +147,11 @@ async def nuclei_menu_loop(global_target):
         elif option.lower() == 'i':
             toggle_info()
             continue
-
+        elif option == "4":
+            target = get_network_target()
+            if target is None:
+                clear_terminal()
+                return
+            nuclei(target, 'network_scan')
         if option in [str(i) for i in range(1, 7)]:
             nuclei_options(option, global_target)
-        else:
-            clear_terminal()
-            print(f"{Fore.RED}Opção inválida.")
