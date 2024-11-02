@@ -157,5 +157,3 @@ async def sniper_menu_loop(global_target):
 
         if option in [str(i) for i in range(1, 12)]:
             sniper_options(option, state['global_target'])
-        else:
-            print(f"{Fore.RED}Opção inválida.")
