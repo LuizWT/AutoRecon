@@ -87,9 +87,9 @@ def nikto_options(option):
         execute_all_nikto_commands(target)
 
 async def nikto_menu_loop(global_target):
-    global_target_display = f"Alvo: {global_target}" if global_target else "Alvo: Não definido"
     while True:
         clear_terminal()
+        global_target_display = f"Alvo: {state['global_target']}" if state['global_target'] else "Alvo: Não definido"
         print(rf"""
         {Fore.BLUE}
           _   _ _ _    _        
@@ -122,5 +122,4 @@ async def nikto_menu_loop(global_target):
         if option in [str(i) for i in range(1, 9)]:
             nikto_options(option)
         else:
-            clear_terminal()
             print(f"{Fore.RED}Opção inválida.")
