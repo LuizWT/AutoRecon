@@ -332,7 +332,7 @@ async def automation_setup_menu():
                 print("Automação em andamento. Conclua ou interrompa a execução antes de sair.")
             else:
                 clear_terminal()
-                print(f"Saindo da configuração de automação...\nPressione Enter para continuar.")
+                print(f"{Fore.GREEN}Saindo da configuração de automação...\nPressione {Fore.RED}Enter{Fore.GREEN} para continuar.")
                 return
                 
         else:
