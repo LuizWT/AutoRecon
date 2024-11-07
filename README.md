@@ -41,7 +41,7 @@ Instale as dependências:
 
 Execute a ferramenta:
 
-    ~$ python3 main.py
+    ~$ sudo python3 autorecon.py
 
 ### Uso
 
