@@ -278,11 +278,12 @@ async def nmap_menu():
             add_command_to_queue("nmap", "dns_brute", target)
         elif mode_choice == '15':
             add_command_to_queue("nmap", "all_commands", target)
-        elif mode_choice.upper() == 'B':
-            print("Voltando ao menu principal...")
+        elif mode_choice.lower() == 'b':
+            clear_terminal()
             return
         else:
-            print("Opção inválida, tente novamente.")
+            clear_terminal()
+            print(f"{Fore.RED}[INFO] Opção inválida, tente novamente.")
 
 async def automation_setup_menu():
     global is_running
@@ -335,8 +336,9 @@ async def automation_setup_menu():
                 return
                 
         else:
-            print("Opção inválida, tente novamente.")
-        await asyncio.sleep(1)
+            clear_terminal()
+            print(f"{Fore.RED}Opção inválida, tente novamente.")
+
 
 
 async def edit_queue_menu():
@@ -346,7 +348,7 @@ async def edit_queue_menu():
             print(f"{Fore.CYAN}Comandos na Fila de Automação:{Style.RESET_ALL}")
             for idx, cmd in enumerate(command_queue, start=1):
                 print(f"{Fore.CYAN}[{idx}]{Fore.RESET} {cmd['command']}")
-            print(f"\n{Fore.YELLOW}Escolha uma opção:\n{Fore.RED}[R]{Fore.RESET} Remover um comando\n{Fore.CYAN}[A]{Fore.RESET} Adicionar comando customizado\n{Fore.RED}[B]{Fore.RESET} Voltar")
+            print(f"\n{'='*50}\n{Fore.CYAN}[A]{Fore.RESET} Adicionar comando customizado\n{Fore.RED}[R]{Fore.RESET} Remover um comando\n{Fore.RED}[B]{Fore.RESET} Voltar")
 
             choice = await session.prompt_async(HTML("<ansiyellow>Escolha uma opção:</ansiyellow> "))
 
@@ -385,7 +387,7 @@ async def remove_command_from_queue():
 
 
 async def add_custom_command_to_queue():
-    custom_command = await session.prompt_async("<ansiyellow>Digite o comando customizado:</ansiyellow> ")
+    custom_command = await session.prompt_async(HTML("<ansiyellow>Digite o comando customizado:</ansiyellow> "))
     command_data = {
         "tool": "custom",
         "mode": "custom",
