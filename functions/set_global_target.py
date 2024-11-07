@@ -27,8 +27,7 @@ async def set_global_target():
     
     except Exception as e:
         print(f"{Fore.RED}Erro: {e}")
-        await session.prompt_async(HTML(f"<ansiblue>Aperte Enter para tentar novamente...</ansiblue>"))
-
+        print(rf"{Fore.BLUE}Aperte Enter para voltar ao menu...")
 
 bindings = KeyBindings()
 
