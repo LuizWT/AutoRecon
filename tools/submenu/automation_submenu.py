@@ -149,7 +149,7 @@ async def execute_commands_in_intervals(interval_minutes):
             if not is_running:
                 break
             
-            print(rf"{Fore.CYAN}Iniciando automação com intervalos de {interval_minutes} minutos{'\n'}Pressione {Fore.RED}Enter{Fore.CYAN} para interromper a execução.{'\n'}{Fore.YELLOW}Aguardando {interval_minutes} minutos para a próxima execução...{Fore.RESET}{'\n'}")
+            print(f"{Fore.CYAN}Iniciando automação com intervalos de {interval_minutes} minutos\nPressione {Fore.RED}Enter{Fore.CYAN} para interromper a execução.\n{Fore.YELLOW}Aguardando {interval_minutes} minutos para a próxima execução...{Fore.RESET}\n")
             await asyncio.wait([asyncio.create_task(stop_event.wait()), asyncio.create_task(asyncio.sleep(interval_minutes * 60))], return_when=asyncio.FIRST_COMPLETED)
             if stop_event.is_set():
                 is_running = False
