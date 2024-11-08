@@ -129,29 +129,36 @@ def add_command_to_queue(tool_name, mode, target, additional_param=None):
     clear_terminal()
     print(f"{Fore.GREEN}Comando adicionado: {formatted_command}")
 
+stop_event = asyncio.Event()
+
+def stop_execution():
+    stop_event.set()
 
 async def execute_commands_in_intervals(interval_minutes):
     global is_running
     is_running = True
-    print(rf"{Fore.CYAN}Iniciando automação com intervalos de {interval_minutes} minutos{'\n'}Pressione {Fore.RED}Enter{Fore.CYAN} para interromper a execução.")
 
     try:
         while is_running:
             for command_data in command_queue:
-                if not is_running:
+                if stop_event.is_set():  # Verifica o evento de parada
+                    is_running = False
                     break
                 await process_command(command_data)
+            
+            if not is_running:
+                break
+            
             print(rf"{Fore.CYAN}Iniciando automação com intervalos de {interval_minutes} minutos{'\n'}Pressione {Fore.RED}Enter{Fore.CYAN} para interromper a execução.{'\n'}{Fore.YELLOW}Aguardando {interval_minutes} minutos para a próxima execução...{Fore.RESET}{'\n'}")
-            await asyncio.sleep(interval_minutes * 60)
+            await asyncio.wait([asyncio.create_task(stop_event.wait()), asyncio.create_task(asyncio.sleep(interval_minutes * 60))], return_when=asyncio.FIRST_COMPLETED)
+            if stop_event.is_set():  # Verifica novamente após o tempo de espera
+                is_running = False
+                break
+
     except asyncio.CancelledError:
-        clear_terminal()
-        print("\nAutomação interrompida pelo usuário.\nVoltando para o Submenu...")
-    except KeyboardInterrupt:
-        clear_terminal()
         print("\nAutomação interrompida pelo usuário.\nVoltando para o Submenu...")
     finally:
-        is_running = False
-
+        stop_event.clear()
 
 async def process_command(command_data):
     tool = command_data.get("tool")
@@ -319,10 +326,14 @@ async def automation_setup_menu():
                 try:
                     interval = int(interval_input)
                     if interval > 0:
-                        await execute_commands_in_intervals(interval)
-                        break
+                        asyncio.create_task(execute_commands_in_intervals(interval))
+                        await session.prompt_async("")
+                        stop_execution()
                     else:
                         print("Por favor, insira um número inteiro positivo.")
+                    if not await execute_commands_in_intervals(interval):
+                        clear_terminal()
+                        break
                 except ValueError:
                     print("Entrada inválida. Por favor, insira um número inteiro.")
         elif choice.lower() == 'q':
@@ -337,7 +348,7 @@ async def automation_setup_menu():
                 
         else:
             clear_terminal()
-            print(f"{Fore.RED}Opção inválida, tente novamente.")
+            print(f"{Fore.RED}[INFO] Opção inválida, tente novamente.")
 
 
 
