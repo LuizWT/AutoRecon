@@ -1,4 +1,6 @@
+# Bibliotecas e Dependências:
 import asyncio
+import os
 from prompt_toolkit import PromptSession
 from colorama import Fore, Style, init
 from functions.clear_terminal import clear_terminal
@@ -6,14 +8,19 @@ from functions.set_global_target import state
 from functions.create_output_file import execute_command_and_log_submenu
 from prompt_toolkit.formatted_text import HTML
 
+# Inicialização e Configurações:
 init(autoreset=True)
-
 session = PromptSession()
 is_running = False
 automation_lock = asyncio.Lock()
 
-#TODO Adicionar na biblioteca a lista de comandos para cada ferramenta
+# Variáveis Globais:
+command_queue = []
+stop_event = asyncio.Event()
 
+# Estruturas de Comandos:
+
+#TODO Adicionar na biblioteca a lista de comandos para cada ferramenta
 tools_commands = {
     "nmap": {
         "target_spec": {
@@ -94,13 +101,39 @@ tools_commands = {
                 f"--script=dns-brute --script-args dns-brute.domain={target}" # DNS Brute Force
             ]
         }
+    },
+
+    "nuclei": {
+        "target_spec": {
+            "command": "sudo nuclei",
+            "params": lambda target: f"-target {target}"
+        },
+        "severity": {
+            "command": "sudo nuclei",
+            "params": lambda target, severity: f"-severity {severity} -target {target}",
+            "all": ['low', 'medium', 'high', 'critical']
+        },
+        "multi_target": {
+            "command": "sudo nuclei",
+            "params": lambda target_file: f"-targets {target_file}"
+        },
+        "network_scan": {
+            "command": "sudo nuclei",
+            "params": lambda target: f"-target {target}"
+        },
+        "custom_template": {
+            "command": "sudo nuclei",
+            "params": lambda url, template: f"-u {url} -t {template}"
+        },
+        "dashboard": {
+            "command": "sudo nuclei",
+            "params": lambda target: f"-target {target} -dashboard"
+        }
     }
 }
 
 
-
-command_queue = []
-
+# Funções de Formatação e Adição de Comandos:
 def format_command(tool, mode, target, additional_param=None):
     if mode in tools_commands[tool]:
         if mode == "scan_technique":
@@ -110,6 +143,8 @@ def format_command(tool, mode, target, additional_param=None):
         elif mode == "host_discovery":
             return f"{tools_commands[tool][mode]['command']} {tools_commands[tool][mode]['params'](target)}"
         elif mode == "timing":
+            return f"{tools_commands[tool][mode]['command']} {tools_commands[tool][mode]['params'](target, additional_param)}"
+        elif mode == "severity":
             return f"{tools_commands[tool][mode]['command']} {tools_commands[tool][mode]['params'](target, additional_param)}"
         elif mode == "all_commands":
             commands = tools_commands[tool][mode]["params"](target)
@@ -129,8 +164,7 @@ def add_command_to_queue(tool_name, mode, target, additional_param=None):
     clear_terminal()
     print(f"{Fore.GREEN}Comando adicionado: {formatted_command}")
 
-stop_event = asyncio.Event()
-
+# Funções de Execução:
 def stop_execution():
     stop_event.set()
 
@@ -189,7 +223,166 @@ async def process_command(command_data):
     except Exception as e:
         print(f"Erro ao executar o comando: {e}")
 
+async def edit_queue_menu():
+    while True:
+        clear_terminal()
+        if command_queue:
+            print(f"{Fore.CYAN}Comandos na Fila de Automação:{Style.RESET_ALL}")
+            for idx, cmd in enumerate(command_queue, start=1):
+                print(f"{Fore.CYAN}[{idx}]{Fore.RESET} {cmd['command']}")
+            print(f"\n{'='*50}\n{Fore.CYAN}[A]{Fore.RESET} Adicionar comando customizado\n{Fore.RED}[R]{Fore.RESET} Remover um comando\n{Fore.RED}[B]{Fore.RESET} Voltar")
 
+            choice = await session.prompt_async(HTML("<ansiyellow>Escolha uma opção:</ansiyellow> "))
+
+            if choice.lower() == 'r':
+                await remove_command_from_queue()
+            elif choice.lower() == 'a':
+                await add_custom_command_to_queue()
+            elif choice.lower() == 'b':
+                clear_terminal()
+                return
+            else:
+                ""
+                
+        else:
+            print(f"{Fore.YELLOW}A fila de comandos está vazia.{Style.RESET_ALL}")
+            choice = await session.prompt_async(HTML(f"{'='*50}\n<ansicyan>[A]</ansicyan> Adicionar comando customizado\n<ansired>[B]</ansired> Voltar\n<ansiyellow>Escolha uma opção:</ansiyellow> "))
+            if choice.lower() == 'a':
+                await add_custom_command_to_queue()
+            elif choice.lower() == 'b':
+                clear_terminal()
+                return
+            else:
+                ""
+
+async def remove_command_from_queue():
+    try:
+        idx = int(await session.prompt_async(HTML("<ansiyellow>Digite o índice do comando a ser removido:</ansiyellow> ")))
+        if 1 <= idx <= len(command_queue):
+            removed_command = command_queue.pop(idx - 1)
+            print(f"{Fore.GREEN}Comando {Fore.RED}removido{Fore.GREEN}: {removed_command['command']}")
+        else:
+            print(f"{Fore.RED}Índice fora do intervalo.")
+    except ValueError:
+        print(f"{Fore.RED}Entrada inválida. Por favor, insira um número válido.")
+
+async def add_custom_command_to_queue():
+    custom_command = await session.prompt_async(HTML("<ansiyellow>Digite o comando customizado:</ansiyellow> "))
+    command_data = {
+        "tool": "custom",
+        "mode": "custom",
+        "command": custom_command
+    }
+    command_queue.append(command_data)
+    print(f"Comando customizado adicionado: {custom_command}")
+
+
+
+async def get_scan_technique():
+    clear_terminal()
+    print(f"""
+    {Fore.CYAN}[1] {Fore.RESET}-sS (TCP SYN Scan)
+    {Fore.CYAN}[2] {Fore.RESET}-sT (TCP Connect Scan)
+    {Fore.CYAN}[3] {Fore.RESET}-sU (UDP Scan)
+    {Fore.CYAN}[4] {Fore.RESET}-sF (TCP FIN Scan)
+    {Fore.CYAN}[5] {Fore.RESET}-sN (TCP NULL Scan)
+    {Fore.CYAN}[6] {Fore.RESET}-sX (TCP Xmas Scan)
+    {Fore.CYAN}[7] {Fore.RESET}Todas as técnicas (-sS, -sT, -sU, -sF, -sN, -sX)
+    """)
+    
+    choice = await session.prompt_async(HTML(f"<ansigreen>Escolha uma técnica ou</ansigreen> <ansired>[B]</ansired><ansigreen> para voltar:</ansigreen> "))
+    
+    if choice.lower() == 'b':
+        return 'b'
+    elif choice == '1':
+        return '-sS'
+    elif choice == '2':
+        return '-sT'
+    elif choice == '3':
+        return '-sU'
+    elif choice == '4':
+        return '-sF'
+    elif choice == '5':
+        return '-sN'
+    elif choice == '6':
+        return '-sX'
+    elif choice == '7':
+        return 'all'
+    else:
+        print(f"{Fore.RED}[ERRO] Opção inválida. Tente novamente.")
+        return await get_scan_technique()
+    
+
+
+# MENUS:
+
+async def nuclei_menu():
+    target = state['global_target']
+    while True:
+
+        print(rf"""{Fore.BLUE}
+         _   _            _      _ 
+        | \ | |          | |    (_) 
+        |  \| |_   _  ___| | ___ _ 
+        | . ` | | | |/ __| |/ _ \ |
+        | |\  | |_| | (__| |  __/ |
+        |_| \_|\__,_|\___|_|\___|_|
+                                    
+        {Fore.CYAN}[1] {Fore.RESET}Varredura padrão 
+        {Fore.CYAN}[2] {Fore.RESET}Filtrar por severidade
+        {Fore.CYAN}[3] {Fore.RESET}Varredura múltipla
+        {Fore.CYAN}[4] {Fore.RESET}Varredura de rede
+        {Fore.CYAN}[5] {Fore.RESET}Usar template personalizado
+        {Fore.CYAN}[6] {Fore.RESET}Enviar para ProjectDiscovery
+        {Fore.RED}[B] {Fore.RESET}Voltar
+        """)
+
+        option = await session.prompt_async(HTML(f"<ansiyellow>Escolha uma opção:</ansiyellow> "))
+
+        if option == '1':
+            add_command_to_queue("nuclei", "target_spec", target)
+        elif option == '2':
+            while True:
+                severity = await session.prompt_async(HTML("<ansiyellow>Digite a severidade (low, medium, high, critical) ou</ansiyellow> <ansired>[B]</ansired> <ansiyellow>para voltar:</ansiyellow> "))
+                if severity.lower() == 'b':
+                    clear_terminal()
+                    break
+                elif severity.lower() in ['low','medium', 'high', 'critical']:
+                    add_command_to_queue("nuclei", "severity", target, severity)
+                else:
+                    print(f"{Fore.RED}Entrada inválida. Por favor, forneça uma severidade (low, medium, high, critical) ou [B] para voltar.")
+        elif option == '3':
+            while True:
+                target = await session.prompt_async(HTML(f"<ansiyellow>Digite o caminho para o arquivo com a lista de alvos ou</ansiyellow> <ansired>[B]</ansired> <ansiyellow>para voltar:</ansiyellow> "))
+                if target.lower() == 'b':
+                    clear_terminal()
+                    continue
+                if os.path.isfile(target):
+                    add_command_to_queue("nuclei", "multi_target", target)
+                    print(f"{Fore.GREEN}Arquivo encontrado:{Fore.RESET} {target}")
+                    break
+                else:
+                    print(f"{Fore.RED}Arquivo não encontrado. Tente novamente.")
+        elif option == '4':
+            add_command_to_queue("nuclei", "network_scan", target)
+        elif option == '5':
+            template = await session.prompt_async(HTML("<ansiyellow>Digite a URL e o template separados por espaço:</ansiyellow> "))
+            if template.lower() == 'b':
+                clear_terminal()
+                continue
+            template_data = template.split()
+            if len(template_data) == 2:
+                add_command_to_queue("nuclei", "custom_template", template_data)
+            else:
+                print(f"{Fore.RED}Entrada inválida. Por favor, forneça uma URL e um template separados.")
+        elif option == '6':
+            add_command_to_queue("nuclei", "dashboard", target)
+        elif option.lower() == 'b':
+            clear_terminal()
+            return
+        else:
+            clear_terminal()
+            print(f"{Fore.RED}[INFO] Opção inválida, tente novamente.")
 
 
 
@@ -308,15 +501,20 @@ async def automation_setup_menu():
         
     {Fore.YELLOW}Escolha uma ferramenta para adicionar comandos à fila de automação:
     {Fore.CYAN}[1]{Fore.RESET} NMAP
+    {Fore.CYAN}[2]{Fore.RESET} NUCLEI
     {Fore.CYAN}[A]{Fore.RESET} Iniciar Automação
     {Fore.CYAN}[Q]{Fore.RESET} Editar Queue
     {Fore.RED}[B]{Fore.RESET} Sair""")
 
-        choice = await session.prompt_async(HTML("<ansiyellow>Escolha uma opção:</ansiyellow> "))
+        choice = await session.prompt_async(HTML("\n<ansiyellow>Escolha uma opção:</ansiyellow> "))
 
         if choice == '1':
             clear_terminal()
             await nmap_menu()
+        if choice == '2':
+            clear_terminal()
+            await nuclei_menu()
+        
         elif choice.lower() == 'a':
             while True:
                 interval_input = await session.prompt_async(HTML("<ansiyellow>Digite o intervalo (em minutos) ou</ansiyellow> <ansired>[B]</ansired> <ansiyellow>para voltar:</ansiyellow> "))
@@ -335,7 +533,7 @@ async def automation_setup_menu():
                         clear_terminal()
                         break
                 except ValueError:
-                    print("Entrada inválida. Por favor, insira um número inteiro.")
+                    print(f"{Fore.RED}Entrada inválida. Por favor, insira um número inteiro.")
         elif choice.lower() == 'q':
             await edit_queue_menu()
         elif choice.lower() == 'b':
@@ -349,96 +547,3 @@ async def automation_setup_menu():
         else:
             clear_terminal()
             print(f"{Fore.RED}[INFO] Opção inválida, tente novamente.")
-
-
-
-async def edit_queue_menu():
-    while True:
-        clear_terminal()
-        if command_queue:
-            print(f"{Fore.CYAN}Comandos na Fila de Automação:{Style.RESET_ALL}")
-            for idx, cmd in enumerate(command_queue, start=1):
-                print(f"{Fore.CYAN}[{idx}]{Fore.RESET} {cmd['command']}")
-            print(f"\n{'='*50}\n{Fore.CYAN}[A]{Fore.RESET} Adicionar comando customizado\n{Fore.RED}[R]{Fore.RESET} Remover um comando\n{Fore.RED}[B]{Fore.RESET} Voltar")
-
-            choice = await session.prompt_async(HTML("<ansiyellow>Escolha uma opção:</ansiyellow> "))
-
-            if choice.lower() == 'r':
-                await remove_command_from_queue()
-            elif choice.lower() == 'a':
-                await add_custom_command_to_queue()
-            elif choice.lower() == 'b':
-                clear_terminal()
-                return
-            else:
-                ""
-                
-        else:
-            print(f"{Fore.YELLOW}A fila de comandos está vazia.{Style.RESET_ALL}")
-            choice = await session.prompt_async(HTML(f"{'='*50}\n<ansicyan>[A]</ansicyan> Adicionar comando customizado\n<ansired>[B]</ansired> Voltar\n<ansiyellow>Escolha uma opção:</ansiyellow> "))
-            if choice.lower() == 'a':
-                await add_custom_command_to_queue()
-            elif choice.lower() == 'b':
-                clear_terminal()
-                return
-            else:
-                ""
-
-
-async def remove_command_from_queue():
-    try:
-        idx = int(await session.prompt_async(HTML("<ansiyellow>Digite o índice do comando a ser removido:</ansiyellow> ")))
-        if 1 <= idx <= len(command_queue):
-            removed_command = command_queue.pop(idx - 1)
-            print(f"{Fore.GREEN}Comando {Fore.RED}removido{Fore.GREEN}: {removed_command['command']}")
-        else:
-            print(f"{Fore.RED}Índice fora do intervalo.")
-    except ValueError:
-        print(f"{Fore.RED}Entrada inválida. Por favor, insira um número válido.")
-
-
-async def add_custom_command_to_queue():
-    custom_command = await session.prompt_async(HTML("<ansiyellow>Digite o comando customizado:</ansiyellow> "))
-    command_data = {
-        "tool": "custom",
-        "mode": "custom",
-        "command": custom_command
-    }
-    command_queue.append(command_data)
-    print(f"Comando customizado adicionado: {custom_command}")
-
-
-
-async def get_scan_technique():
-    clear_terminal()
-    print(f"""
-    {Fore.CYAN}[1] {Fore.RESET}-sS (TCP SYN Scan)
-    {Fore.CYAN}[2] {Fore.RESET}-sT (TCP Connect Scan)
-    {Fore.CYAN}[3] {Fore.RESET}-sU (UDP Scan)
-    {Fore.CYAN}[4] {Fore.RESET}-sF (TCP FIN Scan)
-    {Fore.CYAN}[5] {Fore.RESET}-sN (TCP NULL Scan)
-    {Fore.CYAN}[6] {Fore.RESET}-sX (TCP Xmas Scan)
-    {Fore.CYAN}[7] {Fore.RESET}Todas as técnicas (-sS, -sT, -sU, -sF, -sN, -sX)
-    """)
-    
-    choice = await session.prompt_async(HTML(f"<ansigreen>Escolha uma técnica ou</ansigreen> <ansired>[B]</ansired><ansigreen> para voltar:</ansigreen> "))
-    
-    if choice.lower() == 'b':
-        return 'b'
-    elif choice == '1':
-        return '-sS'
-    elif choice == '2':
-        return '-sT'
-    elif choice == '3':
-        return '-sU'
-    elif choice == '4':
-        return '-sF'
-    elif choice == '5':
-        return '-sN'
-    elif choice == '6':
-        return '-sX'
-    elif choice == '7':
-        return 'all'
-    else:
-        print(f"{Fore.RED}[ERRO] Opção inválida. Tente novamente.")
-        return await get_scan_technique() 
