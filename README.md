@@ -20,8 +20,6 @@ O **AutoRecon** é um projeto de automação de ferramentas de segurança focado
 - **Edição da Fila de Execução**: Visualize, edite ou remova comandos da fila para adaptar o escopo das execuções conforme necessário.
 - **Intervalo de Execução Personalizável**: Defina intervalos customizados para a execução automática de comandos, tornando o processo mais adaptável às necessidades de cada análise.
 
-Essas novas funcionalidades tornam o AutoRecon ainda mais robusto, oferecendo maior controle e flexibilidade para automação de tarefas de segurança.
-
 ### Compatibilidade
 
 Atualmente, o AutoRecon é compatível apenas com sistemas operacionais baseados em **Linux**.
