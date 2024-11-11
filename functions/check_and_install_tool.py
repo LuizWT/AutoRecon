@@ -26,30 +26,57 @@ async def check_and_install_tool(tool_name, menu_func, global_target):
         if "min_version" in tool_config:
             is_installed = check_min_version(tool_name, tool_config["min_version"])
         else:
-            is_installed = subprocess.run(tool_config["check_command"], stdout=subprocess.PIPE, stderr=subprocess.PIPE).returncode == 0
+            is_installed = subprocess.run(tool_config["check_command"], stdout=subprocess.PIPE, stderr=subprocess.PIPE).returncode == True
     except FileNotFoundError:
         is_installed = False
 
     if is_installed:
         print(f"{Fore.GREEN}[INFO] Abrindo o menu {tool_name.upper()}...")
-        clear_terminal()
+
         await menu_func(global_target)
-    else:
-        if "ruby_required" in tool_config and not subprocess.run(TOOLS_CONFIG["ruby"]["check_command"], stdout=subprocess.PIPE, stderr=subprocess.PIPE).returncode == 0:
-            install_dep = input(f"{Fore.YELLOW}[INFO] {tool_name} requer Ruby. Deseja instalar Ruby? (y/n): ").lower()
-            if install_dep in ['s', 'y']:
-                install_tool("ruby")
         
-        if "go_required" in tool_config and not subprocess.run(TOOLS_CONFIG["go"]["check_command"], stdout=subprocess.PIPE, stderr=subprocess.PIPE).returncode == 0:
-            install_dep = input(f"{Fore.YELLOW}[INFO] {tool_name} requer Go. Deseja instalar Go? (y/n): ").lower()
-            if install_dep in ['s', 'y']:
-                install_tool("go")
-                
-        install_choice = input(f"{Fore.YELLOW}[INFO] {tool_name} não está instalado. Deseja instalar o {tool_name}? (y/n): ").lower()
-        if install_choice in ['s', 'y']:
-            install_tool(tool_name)
-            print(f"{Fore.GREEN}[INFO] Abrindo o menu {tool_name.upper()}...")
-            clear_terminal()
-            await menu_func(global_target)
-        else:
-            print(f"{Fore.RED}[INFO] Retornando ao menu principal...")
+    else:
+        if tool_config.get("install_commands"):
+            install_commands = tool_config["install_commands"]
+
+            # Verifica se há a dependencia de Ruby
+            if install_commands.get("ruby_required"):
+                try:
+                    subprocess.run(TOOLS_CONFIG["ruby"]["check_command"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+                except FileNotFoundError:
+                    install_dep = input(f"{Fore.YELLOW}[INFO] {tool_name} requer Ruby.\nDeseja instalar Ruby e {tool_name}? (y/n): ").lower()
+                    if install_dep in ['s', 'y']:
+                        install_tool("ruby")
+                        install_tool(tool_name)
+                        is_installed =  True
+                        print(f"{Fore.GREEN}[INFO] Abrindo o menu {tool_name.upper()}...")
+                        await menu_func(global_target)
+                    else:
+                        print(f"{Fore.RED}[INFO] Retornando ao menu principal...")
+                        return
+                        
+            # Verifica se há a dependencia de Go
+            if install_commands.get("go_required"):
+                try:
+                    subprocess.run(TOOLS_CONFIG["go"]["check_command"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+                except FileNotFoundError:
+                    install_dep = input(f"{Fore.YELLOW}[INFO] {tool_name} requer Go.\nDeseja instalar Go e {tool_name}? (y/n): ").lower()
+                    if install_dep in ['s', 'y']:
+                        install_tool("go")
+                        install_tool(tool_name)
+                        is_installed = True
+                        print(f"{Fore.GREEN}[INFO] Abrindo o menu {tool_name.upper()}...")
+                        await menu_func(global_target)
+                    else:
+                        print(f"{Fore.RED}[INFO] Retornando ao menu principal...")
+                        return
+
+        if is_installed == False:
+            install_choice = input(f"{Fore.YELLOW}[INFO] {tool_name} não está instalado. Deseja instalar o {tool_name}? (y/n): ").lower()
+            if install_choice in ['s', 'y']:
+                install_tool(tool_name)
+                print(f"{Fore.GREEN}[INFO] Abrindo o menu {tool_name.upper()}...")
+
+                await menu_func(global_target)
+            else:
+                print(f"{Fore.RED}[INFO] Retornando ao menu principal...")
