@@ -13,7 +13,7 @@ O **AutoRecon** é um projeto de automação de ferramentas de segurança focado
 - **Opção de Uso de Proxychains**: Execute varreduras através do **proxychains**, adicionando uma camada de anonimato durante os testes de segurança.
 - **Relatório de Resultados**: Salve automaticamente os resultados das varreduras em arquivos para análise posterior.
 
-### Novas Funcionalidades na Última Versão
+### Novas Funcionalidades na Última Versão v1.1.0
 
 - **Submenu de Automação**: Adicione comandos a uma fila (queue) personalizada e configure um intervalo de execução para cada um.
 - **Comandos Customizados**: Agora você pode criar e executar comandos específicos diretamente, sem as limitações dos predefinidos.
