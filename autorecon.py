@@ -1,16 +1,20 @@
+# Importações padrão de Python
 import readline
-from colorama import init, Fore, Style
-from prompt_toolkit import PromptSession
-from prompt_toolkit.formatted_text import HTML
 import asyncio
 
-from functions.check_system import check_system
-from functions.clear_terminal import clear_terminal
-from functions.check_and_install_tool import check_and_install_tool
-from functions.set_global_target import set_global_target, bindings, state
+# Bibliotecas de terceiros
+from colorama import init, Fore, Style
+from prompt_toolkit import PromptSession
+from prompt_toolkit.formatted_text import HTML  # Formatar o texto com HTML no prompt_toolkit pois não é possível usar o colorama
 
+# Importações internas de funções específicas
+from functions.check_system import check_system  # Função personalizada de verificação do sistema
+from functions.clear_terminal import clear_terminal  # Função personalizada para limpar o terminal
+from functions.check_and_install_tool import check_and_install_tool  # Função personalizada para checar e instalar ferramentas
+from functions.set_global_target import set_global_target, bindings, state  # Funções e variáveis para configuração do alvo global
+
+# Importação de configurações e ferramentas
 from setup_tools.setup import TOOLS_CONFIG, install_tool, check_proxychains
-
 from tools.submenu.automation_submenu import automation_setup_menu
 from tools.sniper import sniper_menu_loop
 from tools.nmap import nmap_menu_loop
@@ -19,10 +23,12 @@ from tools.nuclei import nuclei_menu_loop
 from tools.nikto import nikto_menu_loop
 from functions.proxy_chains import toggle_proxychains, proxychains_enabled, check_proxychains_installed
 
+# Inicializa a colorama e cria a sessão para receber entradas de forma interativa
 init(autoreset=True)
-
 session = PromptSession()
 
+
+# Função de atalho para automação de comandos (Ctrl+A)
 @bindings.add('c-a')
 async def _(event):
     if state['global_target']:
@@ -33,6 +39,7 @@ async def _(event):
         print(f"{Fore.RED}Você deve definir um alvo global antes de acessar este submenu.\n{Fore.CYAN}Pressione Enter para retornar...")
         return
 
+# Função que exibe o menu principal
 def main_menu():
     proxychains_info = " (/etc/proxychains.conf)" if check_proxychains_installed() else ""
     proxychains_status = f"{Fore.GREEN}ON" if proxychains_enabled else f"{Fore.RED}OFF"
@@ -59,7 +66,7 @@ def main_menu():
     {Fore.YELLOW}[CTRL+A] {Fore.RESET}Automação de comandos [{automation_commands}{Fore.RESET}]
     """)
 
-
+# Função assíncrona Main
 async def main_loop():
     global proxychains_enabled
 
