@@ -1,6 +1,7 @@
 import os
 from colorama import init, Fore
 import subprocess
+from functions.clear_terminal import clear_terminal
 
 init(autoreset=True)
 
@@ -18,7 +19,7 @@ TOOLS_CONFIG = {
         "check_command": ["wpscan", "--version"],
         "install_commands": {
             "ruby_required": True,  # WPScan depende de Ruby
-            "general": "sudo gem install wpscan"
+            "install_script": "sudo gem install wpscan"
         }
     },
     "sniper": {
@@ -60,8 +61,24 @@ TOOLS_CONFIG = {
         "check_command": ["nuclei", "--version"],
         "install_commands": {
             "go_required": True,  # Nuclei depende de Go
-            "general": "go install -v github.com/projectdiscovery/nuclei/v2/cmd/nuclei@latest"
+            "install_script": """
+                USER_HOME=$(eval echo ~$SUDO_USER) &&
+                cd $USER_HOME && 
+                rm -rf nuclei && 
+                sudo -u $SUDO_USER git clone https://github.com/projectdiscovery/nuclei.git && 
+                cd nuclei && 
+                sudo -u $SUDO_USER git config --global --add safe.directory $USER_HOME/nuclei && 
+                sudo -u $SUDO_USER mkdir -p $USER_HOME/nuclei/bin && 
+                sudo -u $SUDO_USER go build -v -buildvcs=false -o $USER_HOME/nuclei/bin/nuclei ./cmd/nuclei && 
+                if [ -n "$BASH_VERSION" ]; then 
+                    echo 'export PATH=$PATH:$USER_HOME/nuclei/bin' >> $USER_HOME/.bashrc; 
+                elif [ -n "$ZSH_VERSION" ]; then 
+                    echo 'export PATH=$PATH:$USER_HOME/nuclei/bin' >> $USER_HOME/.zshrc; 
+                fi &&
+                sudo cp $USER_HOME/nuclei/bin/nuclei /usr/local/bin/nuclei
+            """
         }
+
     },
     "nikto": {
         "check_command": ["nikto", "-Version"],
@@ -102,11 +119,6 @@ def install_tool(tool):
     try:
         print(f"{Fore.CYAN}[INFO] Iniciando a instalação do {tool.capitalize()}...")
 
-        if tool_config.get("ruby_required") and not check_tool("ruby"):
-            install_tool("ruby")
-        if tool_config.get("go_required") and not check_tool("go"):
-            install_tool("go")
-
         if "debian_version" in os.listdir("/etc"):
             command = tool_config["install_commands"].get("debian")
         elif "redhat-release" in os.listdir("/etc"):
@@ -130,7 +142,8 @@ def install_tool(tool):
 
         if "link_script" in tool_config["install_commands"]:
             os.system(tool_config["install_commands"]["link_script"])
-
+        
+        clear_terminal()
         print(f"{Fore.CYAN}[INFO] {tool.capitalize()} instalado com sucesso.")
 
     except Exception as e:
