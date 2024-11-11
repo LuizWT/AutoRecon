@@ -1,10 +1,13 @@
+# Bibliotecas e Dependências:
 import os
 from colorama import init, Fore
 import subprocess
 from functions.clear_terminal import clear_terminal
 
+# Inicialização:
 init(autoreset=True)
 
+# Estruturas de configurações de ferramentas e dependências:
 TOOLS_CONFIG = {
     "nmap": {
         "check_command": ["nmap", "--version"],
@@ -23,7 +26,7 @@ TOOLS_CONFIG = {
         }
     },
     "sniper": {
-        "check_command": ["sudo", "sniper", "--version"],
+        "check_command": ["sudo", "sniper"],
         "install_commands": {
             "git_clone": "https://github.com/1N3/Sn1per",
             "install_script": "cd Sn1per && sudo bash install.sh"
@@ -89,7 +92,7 @@ TOOLS_CONFIG = {
     }
 }
 
-
+# Funções de Verificação de Ferramenta:
 def check_tool(tool):
     tool_config = TOOLS_CONFIG.get(tool)
     if not tool_config:
@@ -110,6 +113,7 @@ def check_tool(tool):
         return False
 
 
+# Funções de Instalação de Ferramenta:
 def install_tool(tool):
     tool_config = TOOLS_CONFIG.get(tool)
     if not tool_config:
@@ -149,6 +153,7 @@ def install_tool(tool):
     except Exception as e:
         print(f"{Fore.RED}[ERROR] Ocorreu um erro durante a instalação de {tool.capitalize()}: {e}")
 
+# Função específica de ProxyChains:
 def check_proxychains():
     try:
         subprocess.run(['proxychains4', 'true'], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
