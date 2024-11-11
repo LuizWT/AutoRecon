@@ -26,7 +26,7 @@ async def check_and_install_tool(tool_name, menu_func, global_target):
         if "min_version" in tool_config:
             is_installed = check_min_version(tool_name, tool_config["min_version"])
         else:
-            is_installed = subprocess.run(tool_config["check_command"], stdout=subprocess.PIPE, stderr=subprocess.PIPE).returncode == True
+            is_installed = subprocess.run(tool_config["check_command"], stdout=subprocess.PIPE, stderr=subprocess.PIPE).returncode == 0
     except FileNotFoundError:
         is_installed = False
 
