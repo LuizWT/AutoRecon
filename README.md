@@ -9,7 +9,7 @@ O **AutoRecon** é um projeto de automação de ferramentas de segurança focado
 - **Automatização de Ferramentas**: Execute varreduras do Nmap, Nuclei, WPScan, Nikto, e outras ferramentas, com diferentes modos e técnicas, como detecção de serviços, descoberta de hosts, verificação de vulnerabilidades e força bruta de DNS.
 - **Execução Sequencial**: Execute múltiplos comandos em sequência para uma varredura completa, evitando a necessidade de rodar cada comando individualmente.
 - **Instalação Automática**: O AutoRecon verifica e instala automaticamente ferramentas essenciais, como Nmap, Sn1per, WPScan, Nuclei e Nikto. O usuário não é obrigado a instalar todas as ferramentas de terceiros, mas apenas as que pretende usar, sendo perguntado antes da instalação.
-- **Execução de Ferramentas de Terceiros**: Integração com **Sn1per** para reconhecimento de rede, **WPScan** para varredura de vulnerabilidades de WordPress, **Nuclei** para execução de scans de segurança baseados em templates e **Nikto** para verificar vulnerabilidades em servidores web.
+- **Execução de Ferramentas de Terceiros**: Integração com **Sn1per** para reconhecimento de rede, **WPScan** para varredura de vulnerabilidades de WordPress, **Nuclei** para execução de scans de segurança baseados em templates, **Nikto** para verificar vulnerabilidades em servidores web e **Nmap** para escaneamento e descoberta de rede.
 - **Opção de Uso de Proxychains**: Execute varreduras através do **proxychains**, adicionando uma camada de anonimato durante os testes de segurança.
 - **Relatório de Resultados**: Salve automaticamente os resultados das varreduras em arquivos para análise posterior.
 
