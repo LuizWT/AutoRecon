@@ -1,7 +1,6 @@
 # Importações padrão de Python
 import readline
 import asyncio
-import argparse
 import sys
 
 # Bibliotecas de terceiros
@@ -14,7 +13,7 @@ from functions.check_system import check_system  # Função personalizada de ver
 from functions.clear_terminal import clear_terminal  # Função personalizada para limpar o terminal
 from functions.check_and_install_tool import check_and_install_tool  # Função personalizada para checar e instalar ferramentas
 from functions.set_global_target import set_global_target, bindings, state  # Funções e variáveis para configuração do alvo global
-from functions.ar_updater import is_git_repo, update_repository # verifica se a ferramenta está atualizada
+from functions.ar_updater import parse_args, update_repository # verifica se a ferramenta está atualizada
 
 # Importação de configurações e ferramentas
 from setup_tools.setup import TOOLS_CONFIG, install_tool, check_proxychains
@@ -125,10 +124,7 @@ async def main_loop():
                 else:
                     print(f"{Fore.RED}[INFO] Retornando ao menu principal...")
 
-def parse_args():
-    parser = argparse.ArgumentParser(description="AutoRecon - Ferramenta de Automação de Segurança")
-    parser.add_argument('-update', action='store_true', help="Atualiza o código para a versão mais recente")
-    return parser.parse_args()
+
 
 if __name__ == "__main__":
     # Verificar se foi chamado para atualizar o código

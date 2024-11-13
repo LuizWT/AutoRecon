@@ -1,5 +1,6 @@
 # Função para verificar se o projeto está dentro de um repositório Git
 import subprocess
+import argparse
 import sys
 
 def is_git_repo():
@@ -24,3 +25,8 @@ def update_repository():
     except subprocess.CalledProcessError as e:
         print(f"[ERROR] Falha ao atualizar o repositório: {e}")
         sys.exit(1)
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="AutoRecon - Ferramenta de Automação de Segurança")
+    parser.add_argument('-update', action='store_true', help="Atualiza o código para a versão mais recente")
+    return parser.parse_args()
