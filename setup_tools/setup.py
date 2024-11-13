@@ -12,7 +12,7 @@ TOOLS_CONFIG = {
     "nmap": {
         "check_command": ["nmap", "--version"],
         "install_commands": {
-            "debian": "sudo apt-get update && sudo apt-get install -y nmap",
+            "debian": "sudo apt update && sudo apt install -y nmap",
             "redhat": "sudo dnf install -y nmap",
             "arch": "sudo pacman -Syu --noconfirm nmap",
             "suse": "sudo zypper refresh && sudo zypper install -y nmap"
@@ -28,10 +28,16 @@ TOOLS_CONFIG = {
     "sniper": {
         "check_command": ["sudo", "sniper"],
         "install_commands": {
-            "git_clone": "https://github.com/1N3/Sn1per",
-            "install_script": "cd Sn1per && sudo bash install.sh"
+            "install_script": """
+                USER_HOME=$(eval echo ~$SUDO_USER) &&
+                cd $USER_HOME &&
+                sudo -u $SUDO_USER git clone https://github.com/1N3/Sn1per &&
+                cd Sn1per &&
+                sudo bash install.sh
+            """
         }
     },
+
     "ruby": {
         "check_command": ["ruby", "--version"],
         "install_commands": {
