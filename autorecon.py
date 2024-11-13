@@ -1,6 +1,8 @@
 # Importações padrão de Python
 import readline
 import asyncio
+import argparse
+import sys
 
 # Bibliotecas de terceiros
 from colorama import init, Fore, Style
@@ -12,6 +14,7 @@ from functions.check_system import check_system  # Função personalizada de ver
 from functions.clear_terminal import clear_terminal  # Função personalizada para limpar o terminal
 from functions.check_and_install_tool import check_and_install_tool  # Função personalizada para checar e instalar ferramentas
 from functions.set_global_target import set_global_target, bindings, state  # Funções e variáveis para configuração do alvo global
+from functions.ar_updater import is_git_repo, update_repository # verifica se a ferramenta está atualizada
 
 # Importação de configurações e ferramentas
 from setup_tools.setup import TOOLS_CONFIG, install_tool, check_proxychains
@@ -39,6 +42,7 @@ async def _(event):
         print(f"{Fore.RED}Você deve definir um alvo global antes de acessar este submenu.\n{Fore.CYAN}Pressione Enter para retornar...")
         return
 
+
 # Função que exibe o menu principal
 def main_menu():
     proxychains_info = " (/etc/proxychains.conf)" if check_proxychains_installed() else ""
@@ -54,7 +58,9 @@ def main_menu():
    / /\ \| | | | __/ _ \|  _  // _ \/ __/ _ \| '_ \ 
   / ____ \ |_| | || (_) | | \ \  __/ (_| (_) | | | |
  /_/    \_\__,_|\__\___/|_|  \_\___|\___\___/|_| |_|
-                                            LuizWt{Style.RESET_ALL}
+
+ {Fore.YELLOW}+ -- --=[ https://github.com/LuizWT/
+ {Fore.YELLOW}+ -- --=[ AutoRecon v1.2 - @LuizWt
 
     {Fore.CYAN}[1] {Fore.RESET}SNIPER
     {Fore.CYAN}[2] {Fore.RESET}NMAP
@@ -119,5 +125,16 @@ async def main_loop():
                 else:
                     print(f"{Fore.RED}[INFO] Retornando ao menu principal...")
 
+def parse_args():
+    parser = argparse.ArgumentParser(description="AutoRecon - Ferramenta de Automação de Segurança")
+    parser.add_argument('-update', action='store_true', help="Atualiza o código para a versão mais recente")
+    return parser.parse_args()
+
 if __name__ == "__main__":
+    # Verificar se foi chamado para atualizar o código
+    args = parse_args()
+    if args.update:
+        update_repository()  # Atualiza o código
+        sys.exit(0)  # Finaliza o programa após a atualização
+
     asyncio.run(main_loop())

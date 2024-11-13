@@ -318,10 +318,11 @@ async def get_scan_technique():
 
 async def nuclei_menu():
     target = state['global_target']
+    global_target_display = f"Alvo: {state['global_target']}" if state['global_target'] else "Alvo: Não definido"
     while True:
 
         print(rf"""{Fore.BLUE}
-         _   _            _      _ 
+         _   _            _      _ {Fore.YELLOW}{global_target_display}{Fore.BLUE}
         | \ | |          | |    (_) 
         |  \| |_   _  ___| | ___ _ 
         | . ` | | | |/ __| |/ _ \ |
@@ -388,11 +389,12 @@ async def nuclei_menu():
 
 async def nmap_menu():
     target = state['global_target']
+    global_target_display = f"Alvo: {state['global_target']}" if state['global_target'] else "Alvo: Não definido"
     while True:
         print(rf"""
         {Fore.BLUE}                  
         _ __  _ __ ___   __ _ _ __  
-        | '_ \| '_ ` _ \ / _` | '_ \ 
+        | '_ \| '_ ` _ \ / _` | '_ \      {Fore.YELLOW}{global_target_display}{Fore.BLUE}
         | | | | | | | | | (_| | |_) |
         |_| |_|_| |_| |_|\__,_| .__/ 
                               | |    
@@ -487,17 +489,19 @@ async def nmap_menu():
 
 async def automation_setup_menu():
     global is_running
-
+    global_target_display = f"Alvo: {state['global_target']}" if state['global_target'] else "Alvo: Não definido"
     while True:
         print(rf"""
             {Fore.BLUE}{Style.BRIGHT}
-                _        _____                      
-     /\        | |      |  __ \      {Fore.GREEN}Configuração de Automação{Fore.BLUE}{Style.BRIGHT}
-    /  \  _   _| |_ ___ | |__) |___  ___ ___  _ __ 
-   / /\ \| | | | __/ _ \|  _  // _ \/ __/ _ \| '_ \ 
-  / ____ \ |_| | || (_) | | \ \  __/ (_| (_) | | | |
- /_/    \_\__,_|\__\___/|_|  \_\___|\___\___/|_| |_|
-                                            LuizWt{Style.RESET_ALL}
+           _____     _____      _              _       _  {Fore.GREEN}Configuração de Automação{Fore.BLUE}{Style.BRIGHT}         
+     /\   |  __ \   / ____|    | |            | |     | |  {Fore.YELLOW}{global_target_display}{Fore.BLUE}        
+    /  \  | |__) | | (___   ___| |__   ___  __| |_   _| | ___ _ __ 
+   / /\ \ |  _  /   \___ \ / __| '_ \ / _ \/ _` | | | | |/ _ \ '__|
+  / ____ \| | \ \   ____) | (__| | | |  __/ (_| | |_| | |  __/ |   
+ /_/    \_\_|  \_\ |_____/ \___|_| |_|\___|\__,_|\__,_|_|\___|_|   
+
+ {Fore.YELLOW}+ -- --=[ https://github.com/LuizWT/
+ {Fore.YELLOW}+ -- --=[ AutoRecon v1.2 - @LuizWt     
         
     {Fore.YELLOW}Escolha uma ferramenta para adicionar comandos à fila de automação:
     {Fore.CYAN}[1]{Fore.RESET} NMAP
