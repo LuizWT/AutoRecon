@@ -61,7 +61,7 @@ def main_menu():
  /_/    \_\__,_|\__\___/|_|  \_\___|\___\___/|_| |_|
 
  {Fore.YELLOW}+ -- --=[ https://github.com/LuizWT/
- {Fore.YELLOW}+ -- --=[ AutoRecon v1.2 - @LuizWt
+ {Fore.YELLOW}+ -- --=[ AutoRecon v1.3.0 - @LuizWt
 
     {Fore.CYAN}[1] {Fore.RESET}SNIPER
     {Fore.CYAN}[2] {Fore.RESET}NMAP
