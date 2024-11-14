@@ -2,7 +2,9 @@ import os
 import subprocess
 import argparse
 import sys
+from colorama import Fore, init
 
+init(autoreset=True)
 # Função para verificar se o script está sendo executado dentro de um repositório Git
 def is_git_repo(path):
     try:
@@ -16,10 +18,7 @@ def get_git_repo_path(start_path=None):
     if start_path is None:
         start_path = os.getcwd()
 
-    print(f"[DEBUG] Verificando repositório a partir de: {start_path}")
-
     while os.path.exists(os.path.join(start_path, '.git')):
-        print(f"[DEBUG] Repositório encontrado em: {start_path}")
         return start_path
     
     parent_dir = os.path.dirname(start_path)
@@ -55,7 +54,7 @@ def update_repository():
         subprocess.run(['sudo', 'git', 'fetch'], check=True, cwd=repo_path, env=env)
         subprocess.run(['sudo', 'git', 'pull'], check=True, cwd=repo_path, env=env)
 
-        print("Código atualizado com sucesso.")
+        print(f"{Fore.GREEN}Código atualizado com sucesso.")
     except subprocess.CalledProcessError as e:
         print(f"[ERROR] Falha ao atualizar o repositório: {e}")
         sys.exit(1)
