@@ -9,11 +9,12 @@ from prompt_toolkit import PromptSession
 from prompt_toolkit.formatted_text import HTML  # Formatar o texto com HTML no prompt_toolkit pois não é possível usar o colorama
 
 # Importações internas de funções específicas
-from functions.check_system import check_system  # Função personalizada de verificação do sistema
-from functions.clear_terminal import clear_terminal  # Função personalizada para limpar o terminal
-from functions.check_and_install_tool import check_and_install_tool  # Função personalizada para checar e instalar ferramentas
+from functions.check_system import check_system  # Verifica se o sistema é Linux
+from functions.clear_terminal import clear_terminal  # Limpar o terminal
+from functions.check_and_install_tool import check_and_install_tool  # Função genérica para checar e instalar ferramentas
 from functions.set_global_target import set_global_target, bindings, state  # Funções e variáveis para configuração do alvo global
-from functions.ar_updater import parse_args, update_repository # verifica se a ferramenta está atualizada
+from configurations.ar_updater import parse_args, update_repository # Verifica se a ferramenta está atualizada
+from configurations.configure_alias import configure_global_command  # Configura o alias global "autorecon"
 
 # Importação de configurações e ferramentas
 from setup_tools.setup import TOOLS_CONFIG, install_tool, check_proxychains
@@ -44,6 +45,7 @@ async def _(event):
 
 # Função que exibe o menu principal
 def main_menu():
+    configure_global_command()
     proxychains_info = " (/etc/proxychains.conf)" if check_proxychains_installed() else ""
     proxychains_status = f"{Fore.GREEN}ON" if proxychains_enabled else f"{Fore.RED}OFF"
     
@@ -127,10 +129,9 @@ async def main_loop():
 
 
 if __name__ == "__main__":
-    # Verificar se foi chamado para atualizar o código
     args = parse_args()
     if args.update:
-        update_repository()  # Atualiza o código
-        sys.exit(0)  # Finaliza o programa após a atualização
+        update_repository()
+        sys.exit(0)
 
     asyncio.run(main_loop())
