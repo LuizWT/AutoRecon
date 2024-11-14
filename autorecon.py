@@ -13,7 +13,7 @@ from functions.check_system import check_system  # Verifica se o sistema é Linu
 from functions.clear_terminal import clear_terminal  # Limpar o terminal
 from functions.check_and_install_tool import check_and_install_tool  # Função genérica para checar e instalar ferramentas
 from functions.set_global_target import set_global_target, bindings, state  # Funções e variáveis para configuração do alvo global
-from configurations.ar_updater import parse_args, update_repository # Verifica se a ferramenta está atualizada
+from configurations.ar_updater import parse_args, update_repository, new_version_checker # Verifica se a ferramenta está atualizada
 from configurations.configure_alias import configure_global_command  # Configura o alias global "autorecon"
 
 # Importação de configurações e ferramentas
@@ -45,11 +45,15 @@ async def _(event):
 
 # Função que exibe o menu principal
 def main_menu():
+    if new_version_checker():
+        update_message = f"{Fore.RED}Outdated{Fore.YELLOW} - @LuizWt {Fore.RED}'sudo autorecon -update' para atualizar"
+    else:
+        update_message = f"{Fore.GREEN}Latest{Fore.YELLOW} - @LuizWt"
     configure_global_command()
     proxychains_info = " (/etc/proxychains.conf)" if check_proxychains_installed() else ""
     proxychains_status = f"{Fore.GREEN}ON" if proxychains_enabled else f"{Fore.RED}OFF"
     
-    global_target_display = f"Alvo: {state['global_target']}" if state['global_target'] else "Alvo: Não definido"
+    global_target_display = f"Alvo: {state['global_target']}" if state['global_target'] else f"Alvo: {Fore.RED}Não definido"
     automation_commands = f"{Fore.GREEN}ON" if state['global_target'] else f"{Fore.RED}OFF"
     print(rf"""
     {Fore.BLUE}{Style.BRIGHT}
@@ -61,7 +65,7 @@ def main_menu():
  /_/    \_\__,_|\__\___/|_|  \_\___|\___\___/|_| |_|
 
  {Fore.YELLOW}+ -- --=[ https://github.com/LuizWT/
- {Fore.YELLOW}+ -- --=[ AutoRecon v1.3.0 - @LuizWt
+ {Fore.YELLOW}+ -- --=[ AutoRecon v1.3.0 {update_message}
 
     {Fore.CYAN}[1] {Fore.RESET}SNIPER
     {Fore.CYAN}[2] {Fore.RESET}NMAP

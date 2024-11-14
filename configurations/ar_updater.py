@@ -65,8 +65,24 @@ def parse_args():
     parser.add_argument('-update', action='store_true', help="Atualiza o código para a versão mais recente")
     return parser.parse_args()
 
-if __name__ == "__main__":
-    args = parse_args()
+def new_version_checker():
 
-    if args.update:
-        update_repository()
+    try:
+        result = subprocess.run(['git', 'fetch'], capture_output=True, text=True)
+        if result.returncode != 0:
+            return False
+        
+        # Compara o estado atual do repositório local com o remoto
+        result = subprocess.run(['git', 'status', '-uno'], capture_output=True, text=True)
+        if result.returncode == 0:
+            # Se a saída tiver "behind", significa que está desatualizado
+            if "behind" in result.stdout:
+                return True
+            else:
+                return False
+        else:
+            print("[ERROR] Falha ao verificar o status do repositório.")
+            return False
+    except subprocess.CalledProcessError as e:
+        print(f"[ERROR] Erro ao verificar commits: {e}")
+        return False
