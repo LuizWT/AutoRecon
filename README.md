@@ -84,7 +84,7 @@ O AutoRecon possui um menu interativo que facilita a execução de diferentes mo
 
 ### Contribuições
 
-Se você quiser contribuir com o projeto, sinta-se à vontade para abrir issues ou fazer pull requests no repositório oficial do projeto.
+Se você quiser contribuir com o projeto, sinta-se à vontade para abrir issues ou fazer Pull Requests no repositório oficial do projeto.
   
 <hr>
 
