@@ -82,15 +82,11 @@ O AutoRecon possui um menu interativo que facilita a execução de diferentes mo
   
 <hr>
 
-### Contribuições
-
-Se você quiser contribuir com o projeto, sinta-se à vontade para abrir issues ou fazer Pull Requests no repositório oficial do projeto.
-  
-<hr>
-
 ## Apoio ao Projeto
 
-Se você gostaria de apoiar o projeto, considere fazer uma doação:
+Se você quiser contribuir com o projeto, sinta-se à vontade para abrir Issues ou fazer Pull Requests no repositório oficial do projeto.
+  
+Quer apoiar ainda mais? Faça uma doação e ajude a manter este projeto vivo!
 
 **BTC Wallet**:  
 `bc1qfy534ujs9yekwthe063fck0zf7hel7paem6sxl`
