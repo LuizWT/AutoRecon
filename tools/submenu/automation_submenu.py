@@ -230,14 +230,18 @@ async def edit_queue_menu():
             print(f"{Fore.CYAN}Comandos na Fila de Automação:{Style.RESET_ALL}")
             for idx, cmd in enumerate(command_queue, start=1):
                 print(f"{Fore.CYAN}[{idx}]{Fore.RESET} {cmd['command']}")
-            print(f"\n{'='*50}\n{Fore.CYAN}[A]{Fore.RESET} Adicionar comando customizado\n{Fore.RED}[R]{Fore.RESET} Remover um comando\n{Fore.RED}[B]{Fore.RESET} Voltar")
-
+            
+            # Opções do menu, incluindo a nova opção de editar
+            print(f"\n{'='*50}\n{Fore.CYAN}[A]{Fore.RESET} Adicionar comando customizado\n{Fore.CYAN}[E]{Fore.RESET} Editar um comando\n{Fore.RED}[R]{Fore.RESET} Remover um comando\n{Fore.RED}[B]{Fore.RESET} Voltar")
+            
             choice = await session.prompt_async(HTML("<ansiyellow>Escolha uma opção:</ansiyellow> "))
 
             if choice.lower() == 'r':
                 await remove_command_from_queue()
             elif choice.lower() == 'a':
                 await add_custom_command_to_queue()
+            elif choice.lower() == 'e':
+                await edit_command_in_queue()
             elif choice.lower() == 'b':
                 clear_terminal()
                 return
@@ -265,6 +269,28 @@ async def remove_command_from_queue():
             print(f"{Fore.RED}Índice fora do intervalo.")
     except ValueError:
         print(f"{Fore.RED}Entrada inválida. Por favor, insira um número válido.")
+
+async def edit_command_in_queue():
+    try:
+        index = int(await session.prompt_async(HTML("<ansiyellow>Informe o número do comando para editar:</ansiyellow> "))) - 1
+        if 0 <= index < len(command_queue):
+            command = command_queue[index]
+            old_command = command['command']
+            print(f"{Fore.CYAN}Comando atual: {old_command}{Style.RESET_ALL}")
+
+            # Permite editar o comando na linha completa
+            edited_command = await session.prompt_async(HTML(f"<ansiyellow>Edite o comando (ou deixe em branco para manter o atual): </ansiyellow> "), default=old_command)
+            
+            # Se o usuário pressionar Enter sem digitar nada, mantém o comando original
+            if edited_command.strip() == "":
+                print(f"{Fore.YELLOW}Comando mantido: {old_command}{Style.RESET_ALL}")
+            else:
+                command_queue[index]['command'] = edited_command.strip()
+        else:
+            print(f"{Fore.RED}Índice inválido. Tente novamente.{Style.RESET_ALL}")
+    except ValueError:
+        print(f"{Fore.RED}Entrada inválida. Tente novamente.{Style.RESET_ALL}")
+
 
 async def add_custom_command_to_queue():
     custom_command = await session.prompt_async(HTML("<ansiyellow>Digite o comando customizado:</ansiyellow> "))
@@ -383,7 +409,6 @@ async def nuclei_menu():
             return
         else:
             clear_terminal()
-            print(f"{Fore.RED}[INFO] Opção inválida, tente novamente.")
 
 
 
@@ -485,7 +510,6 @@ async def nmap_menu():
             return
         else:
             clear_terminal()
-            print(f"{Fore.RED}[INFO] Opção inválida, tente novamente.")
 
 async def automation_setup_menu():
     if new_version_checker():
@@ -554,4 +578,3 @@ async def automation_setup_menu():
                 
         else:
             clear_terminal()
-            print(f"{Fore.RED}[INFO] Opção inválida, tente novamente.")
