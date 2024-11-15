@@ -226,16 +226,43 @@ async def process_command(command_data):
 async def edit_queue_menu():
     while True:
         clear_terminal()
+        update_message = (
+            f"{Fore.RED}Outdated{Fore.YELLOW} - @LuizWt {Fore.RED}\n"
+            f"Utilize 'sudo autorecon -update' para atualizar"
+            if new_version_checker()
+            else f"{Fore.GREEN}Latest{Fore.YELLOW} - @LuizWt"
+        )
+        global_target_display = (
+            f"Alvo: {state['global_target']}" if state['global_target'] else "Alvo: Não definido"
+        )
+
+        print(rf"""
+            {Fore.BLUE}{Style.BRIGHT}
+           _____     _____      _              _       _  {Fore.GREEN}Edição de Queue{Fore.BLUE}{Style.BRIGHT}         
+     /\   |  __ \   / ____|    | |            | |     | |  {Fore.YELLOW}{global_target_display}{Fore.BLUE}        
+    /  \  | |__) | | (___   ___| |__   ___  __| |_   _| | ___ _ __ 
+   / /\ \ |  _  /   \___ \ / __| '_ \ / _ \/ _` | | | | |/ _ \ '__|
+  / ____ \| | \ \   ____) | (__| | | |  __/ (_| | |_| | |  __/ |   
+ /_/    \_\_|  \_\ |_____/ \___|_| |_|\___|\__,_|\__,_|_|\___|_|   
+
+ {Fore.YELLOW}+ -- --=[ https://github.com/LuizWT/
+ {Fore.YELLOW}+ -- --=[ AutoRecon v1.3.0 {update_message}
+        """)
+
         if command_queue:
             print(f"{Fore.CYAN}Comandos na Fila de Automação:{Style.RESET_ALL}")
             for idx, cmd in enumerate(command_queue, start=1):
                 print(f"{Fore.CYAN}[{idx}]{Fore.RESET} {cmd['command']}")
-            
-            # Opções do menu, incluindo a nova opção de editar
-            print(f"\n{'='*50}\n{Fore.CYAN}[A]{Fore.RESET} Adicionar comando customizado\n{Fore.CYAN}[E]{Fore.RESET} Editar um comando\n{Fore.RED}[R]{Fore.RESET} Remover um comando\n{Fore.RED}[B]{Fore.RESET} Voltar")
-            
-            choice = await session.prompt_async(HTML("<ansiyellow>Escolha uma opção:</ansiyellow> "))
 
+            print(f"\n{'=' * 50}")
+            print(f"{Fore.CYAN}[A]{Fore.RESET} Adicionar comando customizado")
+            print(f"{Fore.CYAN}[E]{Fore.RESET} Editar um comando")
+            print(f"{Fore.RED}[R]{Fore.RESET} Remover um comando")
+            print(f"{Fore.RED}[B]{Fore.RESET} Voltar")
+            
+            choice = await session.prompt_async(
+                HTML("<ansiyellow>Escolha uma opção:</ansiyellow> ")
+            )
             if choice.lower() == 'r':
                 await remove_command_from_queue()
             elif choice.lower() == 'a':
@@ -246,18 +273,24 @@ async def edit_queue_menu():
                 clear_terminal()
                 return
             else:
-                ""
-                
+                pass
         else:
             print(f"{Fore.YELLOW}A fila de comandos está vazia.{Style.RESET_ALL}")
-            choice = await session.prompt_async(HTML(f"{'='*50}\n<ansicyan>[A]</ansicyan> Adicionar comando customizado\n<ansired>[B]</ansired> Voltar\n<ansiyellow>Escolha uma opção:</ansiyellow> "))
+            print(f"{'=' * 50}")
+            print(f"{Fore.CYAN}[A]{Fore.RESET} Adicionar comando customizado")
+            print(f"{Fore.RED}[B]{Fore.RESET} Voltar")
+
+            choice = await session.prompt_async(
+                HTML("<ansiyellow>Escolha uma opção:</ansiyellow> ")
+            )
             if choice.lower() == 'a':
                 await add_custom_command_to_queue()
             elif choice.lower() == 'b':
                 clear_terminal()
                 return
             else:
-                ""
+                pass
+
 
 async def remove_command_from_queue():
     try:
