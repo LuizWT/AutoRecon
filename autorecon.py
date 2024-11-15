@@ -80,12 +80,11 @@ def main_menu():
 # Função assíncrona Main
 async def main_loop():
     global proxychains_enabled
-    clear_terminal()
     if not check_system():
         return
 
     while True:
-       
+        clear_terminal()
         main_menu()
 
         option = await session.prompt_async(HTML(f"<ansiyellow>Escolha uma opção:</ansiyellow> "), key_bindings=bindings)
