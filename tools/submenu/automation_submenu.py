@@ -489,7 +489,7 @@ async def nmap_menu():
 
 async def automation_setup_menu():
     if new_version_checker():
-        update_message = f"{Fore.RED}Outdated{Fore.YELLOW} - @LuizWt {Fore.RED}Utilize 'sudo autorecon -update' para atualizar"
+        update_message = f"{Fore.RED}Outdated{Fore.YELLOW} - @LuizWt {Fore.RED}\nUtilize 'sudo autorecon -update' para atualizar"
     else:
         update_message = f"{Fore.GREEN}Latest{Fore.YELLOW} - @LuizWt"
     global is_running
