@@ -7,7 +7,7 @@ from functions.clear_terminal import clear_terminal
 from functions.set_global_target import state
 from functions.create_output_file import execute_command_and_log_submenu
 from prompt_toolkit.formatted_text import HTML
-
+from configurations.ar_updater import new_version_checker
 # Inicialização e Configurações:
 init(autoreset=True)
 session = PromptSession()
@@ -488,6 +488,10 @@ async def nmap_menu():
             print(f"{Fore.RED}[INFO] Opção inválida, tente novamente.")
 
 async def automation_setup_menu():
+    if new_version_checker():
+        update_message = f"{Fore.RED}Outdated{Fore.YELLOW} - @LuizWt {Fore.RED}Utilize 'sudo autorecon -update' para atualizar"
+    else:
+        update_message = f"{Fore.GREEN}Latest{Fore.YELLOW} - @LuizWt"
     global is_running
     global_target_display = f"Alvo: {state['global_target']}" if state['global_target'] else "Alvo: Não definido"
     while True:
@@ -501,7 +505,7 @@ async def automation_setup_menu():
  /_/    \_\_|  \_\ |_____/ \___|_| |_|\___|\__,_|\__,_|_|\___|_|   
 
  {Fore.YELLOW}+ -- --=[ https://github.com/LuizWT/
- {Fore.YELLOW}+ -- --=[ AutoRecon v1.3.0 - @LuizWt     
+ {Fore.YELLOW}+ -- --=[ AutoRecon v1.3.0 {update_message}    
         
     {Fore.YELLOW}Escolha uma ferramenta para adicionar comandos à fila de automação:
     {Fore.CYAN}[1]{Fore.RESET} NMAP
