@@ -80,7 +80,7 @@ def main_menu():
 # Função assíncrona Main
 async def main_loop():
     global proxychains_enabled
-
+    clear_terminal()
     if not check_system():
         return
 
