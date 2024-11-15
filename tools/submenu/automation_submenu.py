@@ -276,6 +276,7 @@ async def edit_command_in_queue():
         if 0 <= index < len(command_queue):
             command = command_queue[index]
             old_command = command['command']
+            clear_terminal()
             print(f"{Fore.CYAN}Comando atual: {old_command}{Style.RESET_ALL}")
 
             # Permite editar o comando na linha completa
@@ -300,7 +301,6 @@ async def add_custom_command_to_queue():
         "command": custom_command
     }
     command_queue.append(command_data)
-    print(f"Comando customizado adicionado: {custom_command}")
 
 
 
