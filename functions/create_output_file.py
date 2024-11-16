@@ -23,7 +23,7 @@ def execute_command_and_log(command, script_name):
     clear_terminal()
     print(f"{Fore.GREEN}Resultados salvos em: {output_file}")
 
-
+# TODO Refatorar o código para logar a saída dos resultados dos comandos
 async def execute_command_and_log_submenu(command, tool_name):
     output_file = create_output_file(tool_name)
     
