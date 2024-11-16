@@ -22,6 +22,9 @@ stop_event = asyncio.Event()
 # Estruturas de Comandos:
 
 #TODO Adicionar na biblioteca a lista de comandos para cada ferramenta
+
+#TODO Adicionar menu para outras ferramentas
+
 tools_commands = {
     "nmap": {
         "target_spec": {
