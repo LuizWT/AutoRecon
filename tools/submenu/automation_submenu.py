@@ -8,6 +8,7 @@ from functions.set_global_target import state
 from functions.create_output_file import execute_command_and_log_submenu
 from prompt_toolkit.formatted_text import HTML
 from configurations.ar_updater import new_version_checker
+
 # Inicialização e Configurações:
 init(autoreset=True)
 session = PromptSession()
@@ -254,11 +255,8 @@ async def edit_queue_menu():
             for idx, cmd in enumerate(command_queue, start=1):
                 print(f"{Fore.CYAN}[{idx}]{Fore.RESET} {cmd['command']}")
 
-            print(f"\n{'=' * 50}")
-            print(f"{Fore.CYAN}[A]{Fore.RESET} Adicionar comando customizado")
-            print(f"{Fore.CYAN}[E]{Fore.RESET} Editar um comando")
-            print(f"{Fore.RED}[R]{Fore.RESET} Remover um comando")
-            print(f"{Fore.RED}[B]{Fore.RESET} Voltar")
+            print(f"\n{'_' * 30}\n\n{Fore.CYAN}[A]{Fore.RESET} Adicionar comando customizado\n{Fore.CYAN}[E]{Fore.RESET} Editar um comando\n{Fore.RED}[R]{Fore.RESET} Remover um comando\n{Fore.RED}[B]{Fore.RESET} Voltar\n")
+
             
             choice = await session.prompt_async(
                 HTML("<ansiyellow>Escolha uma opção:</ansiyellow> ")
@@ -276,9 +274,7 @@ async def edit_queue_menu():
                 pass
         else:
             print(f"{Fore.YELLOW}A fila de comandos está vazia.{Style.RESET_ALL}")
-            print(f"{'=' * 50}")
-            print(f"{Fore.CYAN}[A]{Fore.RESET} Adicionar comando customizado")
-            print(f"{Fore.RED}[B]{Fore.RESET} Voltar")
+            print(f"\n{'_' * 30}\n\n{Fore.CYAN}[A]{Fore.RESET} Adicionar comando customizado\n{Fore.RED}[B]{Fore.RESET} Voltar\n")
 
             choice = await session.prompt_async(
                 HTML("<ansiyellow>Escolha uma opção:</ansiyellow> ")
@@ -291,17 +287,19 @@ async def edit_queue_menu():
             else:
                 pass
 
-
 async def remove_command_from_queue():
+
+    idx_input = await session.prompt_async(HTML("<ansiyellow>Digite o índice do comando a ser removido:</ansiyellow> "))
+    
     try:
-        idx = int(await session.prompt_async(HTML("<ansiyellow>Digite o índice do comando a ser removido:</ansiyellow> ")))
+        idx = int(idx_input)
         if 1 <= idx <= len(command_queue):
-            removed_command = command_queue.pop(idx - 1)
-            print(f"{Fore.GREEN}Comando {Fore.RED}removido{Fore.GREEN}: {removed_command['command']}")
+            command_queue.pop(idx - 1)
         else:
             print(f"{Fore.RED}Índice fora do intervalo.")
     except ValueError:
         print(f"{Fore.RED}Entrada inválida. Por favor, insira um número válido.")
+
 
 async def edit_command_in_queue():
     try:
