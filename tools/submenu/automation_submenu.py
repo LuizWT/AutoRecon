@@ -159,14 +159,28 @@ def format_command(tool, mode, target, additional_param=None):
 
 def add_command_to_queue(tool_name, mode, target, additional_param=None):
     formatted_command = format_command(tool_name, mode, target, additional_param)
-    command_data = {
-        "tool": tool_name,
-        "mode": mode,
-        "command": formatted_command
-    }
-    command_queue.append(command_data)
-    clear_terminal()
-    print(f"{Fore.GREEN}Comando adicionado: {formatted_command}")
+
+    if mode == "all_commands":
+        # Adiciona comando por comando, separadamente
+        commands = formatted_command.split('\n')
+        for cmd in commands:
+            command_data = {
+                "tool": tool_name,
+                "mode": mode,
+                "command": cmd.strip()  # Remove possíveis espaços extras
+            }
+            command_queue.append(command_data)
+            clear_terminal()
+            print(f"{Fore.GREEN}Comando adicionado: {cmd.strip()}")
+    else:
+        command_data = {
+            "tool": tool_name,
+            "mode": mode,
+            "command": formatted_command
+        }
+        command_queue.append(command_data)
+        clear_terminal()
+        print(f"{Fore.GREEN}Comando adicionado: {formatted_command}")
 
 # Funções de Execução:
 def stop_execution():
@@ -250,7 +264,7 @@ async def edit_queue_menu():
  /_/    \_\_|  \_\ |_____/ \___|_| |_|\___|\__,_|\__,_|_|\___|_|   
 
  {Fore.YELLOW}+ -- --=[ https://github.com/LuizWT/
- {Fore.YELLOW}+ -- --=[ AutoRecon v1.3.0 {update_message}
+ {Fore.YELLOW}+ -- --=[ AutoRecon v1.3.1 {update_message}
         """)
 
         if command_queue:
@@ -375,7 +389,6 @@ async def get_scan_technique():
 
 
 # MENUS:
-
 async def nuclei_menu():
     target = state['global_target']
     global_target_display = f"Alvo: {state['global_target']}" if state['global_target'] else "Alvo: Não definido"
