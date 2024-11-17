@@ -573,7 +573,7 @@ async def automation_setup_menu():
  /_/    \_\_|  \_\ |_____/ \___|_| |_|\___|\__,_|\__,_|_|\___|_|   
 
  {Fore.YELLOW}+ -- --=[ https://github.com/LuizWT/
- {Fore.YELLOW}+ -- --=[ AutoRecon v1.3.0 {update_message}    
+ {Fore.YELLOW}+ -- --=[ AutoRecon {__version__} {update_message}    
         
     {Fore.YELLOW}Escolha uma ferramenta para adicionar comandos à fila de automação:
     {Fore.CYAN}[1]{Fore.RESET} NMAP
