@@ -8,7 +8,7 @@ from functions.set_global_target import state
 from functions.create_output_file import execute_command_and_log_submenu
 from prompt_toolkit.formatted_text import HTML
 from configurations.ar_updater import new_version_checker
-
+from configurations.version import __version__
 # Inicialização e Configurações:
 init(autoreset=True)
 session = PromptSession()
@@ -20,11 +20,8 @@ command_queue = []
 stop_event = asyncio.Event()
 
 # Estruturas de Comandos:
-
 #TODO Adicionar na biblioteca a lista de comandos para cada ferramenta
-
 #TODO Adicionar menu para outras ferramentas
-
 tools_commands = {
     "nmap": {
         "target_spec": {
@@ -264,7 +261,7 @@ async def edit_queue_menu():
  /_/    \_\_|  \_\ |_____/ \___|_| |_|\___|\__,_|\__,_|_|\___|_|   
 
  {Fore.YELLOW}+ -- --=[ https://github.com/LuizWT/
- {Fore.YELLOW}+ -- --=[ AutoRecon v1.3.1 {update_message}
+ {Fore.YELLOW}+ -- --=[ AutoRecon {__version__} {update_message}
         """)
 
         if command_queue:

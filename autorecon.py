@@ -15,7 +15,7 @@ from functions.check_and_install_tool import check_and_install_tool  # Função 
 from functions.set_global_target import set_global_target, bindings, state  # Funções e variáveis para configuração do alvo global
 from configurations.ar_updater import parse_args, update_repository, new_version_checker # Verifica se a ferramenta está atualizada
 from configurations.configure_alias import configure_global_command  # Configura o alias global "autorecon"
-
+from configurations.version import __version__
 # Importação de configurações e ferramentas
 from setup_tools.setup import TOOLS_CONFIG, install_tool, check_proxychains
 from tools.submenu.automation_submenu import automation_setup_menu
@@ -65,7 +65,7 @@ def main_menu():
  /_/    \_\__,_|\__\___/|_|  \_\___|\___\___/|_| |_|
 
  {Fore.YELLOW}+ -- --=[ https://github.com/LuizWT/
- {Fore.YELLOW}+ -- --=[ AutoRecon v1.3.1 {update_message}
+ {Fore.YELLOW}+ -- --=[ AutoRecon {__version__} {update_message}
 
     {Fore.CYAN}[1] {Fore.RESET}SNIPER
     {Fore.CYAN}[2] {Fore.RESET}NMAP
