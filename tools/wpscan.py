@@ -4,7 +4,7 @@ from functions.create_output_file import execute_command_and_log
 from functions.proxy_chains import is_proxychains_enabled
 from functions.set_global_target import state, set_global_target
 from functions.toggle_info import toggle_info, is_info_visible
-from functions.validate_protocol import validate_url
+from functions.validate_protocol import validate_url, validate_domain_extension
 from prompt_toolkit import PromptSession
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.formatted_text import HTML
@@ -86,7 +86,8 @@ async def wpscan_menu_loop(global_target):
 
         # Adiciona http:// ou https://, se necessário
         target = validate_url(target)
-        
+
+
         clear_terminal()
 
         global_target_display = f"Alvo: {target}" if target else "Alvo: Não definido"
