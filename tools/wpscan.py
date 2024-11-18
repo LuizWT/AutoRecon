@@ -87,7 +87,6 @@ async def wpscan_menu_loop(global_target):
         # Adiciona http:// ou https://, se necessário
         target = validate_url(target)
 
-
         clear_terminal()
 
         global_target_display = f"Alvo: {target}" if target else "Alvo: Não definido"

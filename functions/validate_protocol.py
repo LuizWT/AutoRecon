@@ -2,19 +2,26 @@ from colorama import Fore, init
 import re
 init(autoreset=True)
 
+#TODO Resolver bug: caso a entrada seja "www.exemplo", a validação de extensão não ocorre
 def validate_url(url):
-    # DEVE validar primeiramente a extensão do domínio
+
     url = validate_domain_extension(url)
     
-    if not url.startswith(('http://www.', 'https://www.')):
-        print(f"{Fore.YELLOW}Para o funcionamento da ferramenta, o URL fornecido deve conter 'http://www.' ou 'https://www.'.\nEscolha qual protocolo será usado:\n{Fore.CYAN}[1] {Fore.RESET}https://www.\n{Fore.CYAN}[2] {Fore.RESET}http://www.")
+    domain = url.split("://")[-1].split("/")[0]
+    if domain.startswith("www."):
+        domain = domain[4:]  # Remove o www.
+
+    if not url.startswith(('http://', 'https://')):
+        print(f"{Fore.YELLOW}O URL não contém protocolo. Escolha qual protocolo será usado:\n{Fore.CYAN}[1] {Fore.RESET}https://\n{Fore.CYAN}[2] {Fore.RESET}http://")
         
         while True:
             choice = input(f"{Fore.GREEN}Escolha o protocolo do alvo [1/2]: ").strip()
             if choice == '1':
-                return f"https://www.{url}"
+                url = f"https://www.{domain}"
+                break
             elif choice == '2':
-                return f"http://www.{url}"
+                url = f"http://www.{domain}"
+                break
             else:
                 print(f"{Fore.RED}Opção inválida. Por favor, escolha {Fore.GREEN}[1]{Fore.RED} para{Fore.GREEN} https://{Fore.RED} ou {Fore.GREEN}[2]{Fore.RED} para{Fore.GREEN} http://.")
     
@@ -38,4 +45,4 @@ def validate_domain_extension(url):
                 print(f"{Fore.RED}A extensão fornecida é inválida. Tente novamente.")
 
     # URL com o domínio corrigido (sem protocolo por enquanto)
-    return domain
+    return f"{domain}"
