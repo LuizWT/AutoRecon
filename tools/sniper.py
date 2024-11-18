@@ -1,9 +1,11 @@
 from colorama import init, Fore
 from functions.clear_terminal import clear_terminal
+from functions.check_cidr import is_valid_cidr
 from functions.create_output_file import execute_command_and_log
 from functions.proxy_chains import is_proxychains_enabled
 from functions.set_global_target import state, set_global_target
 from functions.toggle_info import toggle_info, is_info_visible
+from functions.validate_ports import validate_ports
 from prompt_toolkit import PromptSession
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.formatted_text import HTML
@@ -32,7 +34,7 @@ def get_command_explanation(mode):
         'webscan': f"{Fore.CYAN}| [INFO] {Fore.BLUE}Web Scan Mode: Realiza uma varredura completa em busca de vulnerabilidades web no alvo.",
         'bruteforce': f"{Fore.CYAN}| [INFO] {Fore.BLUE}Bruteforce Mode: Realiza ataques de força bruta para tentar descobrir senhas no alvo."
     }
-    return explanations.get(mode, f"{Fore.RED}| [INFO]Modo não identificado.")
+    return explanations.get(mode, f"{Fore.RED}| [INFO] Modo não identificado.")
 
 def sniper(target, mode, additional_param=None):
     base_command = "sudo sniper " if not is_proxychains_enabled() else "sudo proxychains sniper "
@@ -56,16 +58,30 @@ def sniper(target, mode, additional_param=None):
         execute_command_and_log(command, "sniper")
 
 def get_target(global_target):
-    return global_target if global_target else input(f"{Fore.RED}Digite o alvo ou [B] para voltar: ")
+    return global_target if global_target else input(f"{Fore.GREEN}Digite o alvo ou {Fore.RED}[B]{Fore.GREEN} para voltar:{Fore.RESET} ")
 
 def get_cidr():
-    return input(f"{Fore.GREEN}Digite o CIDR (EX: 192.168.0.0/24) ou {Fore.RED}[B]{Fore.GREEN} para voltar: ")
+    while True:
+        cidr = input(f"{Fore.GREEN}Digite o CIDR (EX: 192.168.0.0/24) ou {Fore.RED}[B]{Fore.GREEN} para voltar:{Fore.RESET} ").strip()
+        if cidr.lower() == 'b':
+            return 'b'
+        if is_valid_cidr(cidr):
+            return cidr
+        else:
+            print(f"{Fore.RED}[ERROR] CIDR inválido!{Fore.RESET}")
 
 def get_workspace():
-    return input(f"{Fore.GREEN}Digite o nome do Workspace ou {Fore.RED}[B]{Fore.GREEN} para voltar: ")
+    return input(f"{Fore.GREEN}Digite o nome do Workspace ou {Fore.RED}[B]{Fore.GREEN} para voltar:{Fore.RESET} ")
 
 def get_port():
-    return input(f"{Fore.GREEN}Digite o número da porta ou {Fore.RED}[B]{Fore.GREEN} para voltar: ")
+    while True:
+        port_string = input(f"{Fore.GREEN}Digite o número da porta ou {Fore.RED}[B]{Fore.GREEN} para voltar:{Fore.RESET} ").strip()
+        if port_string.lower() == 'b':
+            return 'b'
+        if validate_ports(port_string):
+            return int(port_string)
+        else:
+           print(f"{Fore.RED}[ERROR] Porta inválida (1-65536).{Fore.RESET}")
 
 def sniper_options(option, global_target):
     target = get_target(global_target)
@@ -91,7 +107,7 @@ def sniper_options(option, global_target):
         sniper(cidr, 'discover', workspace)
     elif option == "5":
         port = get_port()
-        if port.lower() == 'b':
+        if port == 'b':
             clear_terminal()
             return  
         sniper(target, 'port', port)
@@ -101,13 +117,13 @@ def sniper_options(option, global_target):
         sniper(target, 'web')
     elif option == "8":
         port = get_port()
-        if port.lower() == 'b':
+        if port == 'b':
             clear_terminal()
             return  
         sniper(target, 'webporthttp', port)
     elif option == "9":
         port = get_port()
-        if port.lower() == 'b':
+        if port == 'b':
             clear_terminal()
             return  
         sniper(target, 'webporthttps', port)
@@ -115,7 +131,6 @@ def sniper_options(option, global_target):
         sniper(target, 'webscan')
     elif option == "11":
         sniper(target, 'bruteforce')
-
 async def sniper_menu_loop(global_target):
     while True:
         clear_terminal()

@@ -6,6 +6,7 @@ from colorama import Fore, Style, init
 from functions.clear_terminal import clear_terminal
 from functions.set_global_target import state
 from functions.create_output_file import execute_command_and_log_submenu
+from functions.validate_ports import validate_ports
 from prompt_toolkit.formatted_text import HTML
 from configurations.ar_updater import new_version_checker
 from configurations.version import __version__
@@ -130,29 +131,85 @@ tools_commands = {
             "command": "sudo nuclei",
             "params": lambda target: f"-target {target} -dashboard"
         }
-    }
+    },
+
+    "sniper": {
+        "normal": {
+            "command": "sudo sniper",
+            "params": lambda target: f"-t {target}"
+        },
+        "osint_recon": {
+            "command": "sudo sniper",
+            "params": lambda target: f"-t {target} -o -re"
+        },
+        "stealth": {
+            "command": "sudo sniper",
+            "params": lambda target: f"-t {target} -m stealth -o -re"
+        },
+        "discover": {
+            "command": "sudo sniper",
+            "params": lambda target, wordlist: f"-t {target} -m discover -w {wordlist}"
+        },
+        "port": {
+            "command": "sudo sniper",
+            "params": lambda target, ports: f"-t {target} -m port -p {ports}"
+        },
+        "fullportonly": {
+            "command": "sudo sniper",
+            "params": lambda target: f"-t {target} -fp"
+        },
+        "web": {
+            "command": "sudo sniper",
+            "params": lambda target: f"-t {target} -m web"
+        },
+        "webporthttp": {
+            "command": "sudo sniper",
+            "params": lambda target, ports: f"-t {target} -m webporthttp -p {ports}"
+        },
+        "webporthttps": {
+            "command": "sudo sniper",
+            "params": lambda target, ports: f"-t {target} -m webporthttps -p {ports}"
+        },
+        "webscan": {
+            "command": "sudo sniper",
+            "params": lambda target: f"-t {target} -m webscan"
+        },
+        "bruteforce": {
+            "command": "sudo sniper",
+            "params": lambda target: f"-t {target} -b"
+        }
+    },
 }
 
 
 # Funções de Formatação e Adição de Comandos:
 def format_command(tool, mode, target, additional_param=None):
     if mode in tools_commands[tool]:
-        if mode == "scan_technique":
-            return f"{tools_commands[tool][mode]['command']} {tools_commands[tool][mode]['params'](additional_param, target)}"
-        elif mode == "port_spec":
-            return f"{tools_commands[tool][mode]['command']} {tools_commands[tool][mode]['params'](target, additional_param)}"
-        elif mode == "host_discovery":
-            return f"{tools_commands[tool][mode]['command']} {tools_commands[tool][mode]['params'](target)}"
-        elif mode == "timing":
-            return f"{tools_commands[tool][mode]['command']} {tools_commands[tool][mode]['params'](target, additional_param)}"
-        elif mode == "severity":
-            return f"{tools_commands[tool][mode]['command']} {tools_commands[tool][mode]['params'](target, additional_param)}"
+        command = tools_commands[tool][mode]['command']
+        params_function = tools_commands[tool][mode]['params']
+
+        # Modos que precisam de additional_param antes do target
+        if mode in {"scan_technique", "port_spec", "timing", "severity"}:
+            if additional_param is None:
+                raise ValueError(f"O modo '{mode}' requer um parâmetro adicional.")
+            return f"{command} {params_function(additional_param, target)}"
+
+        elif mode in {"host_discovery"}:
+            return f"{command} {params_function(target)}"
+
         elif mode == "all_commands":
-            commands = tools_commands[tool][mode]["params"](target)
-            return "\n".join([f"{tools_commands[tool][mode]['command']} {cmd}" for cmd in commands])
+            commands = params_function(target)
+            return "\n".join([f"{command} {cmd}" for cmd in commands])
+
+        # Modos padrão (target e additional_param (se fornecido))
         else:
-            return f"{tools_commands[tool][mode]['command']} {tools_commands[tool][mode]['params'](target)}"
-    return f"{tool} {target}" 
+            if additional_param:
+                return f"{command} {params_function(target, additional_param)}"
+            return f"{command} {params_function(target)}"
+
+    # Comando genérico caso nada seja definido
+    return f"{tool} {target}"
+
 
 def add_command_to_queue(tool_name, mode, target, additional_param=None):
     formatted_command = format_command(tool_name, mode, target, additional_param)
@@ -269,7 +326,7 @@ async def edit_queue_menu():
             for idx, cmd in enumerate(command_queue, start=1):
                 print(f"{Fore.CYAN}[{idx}]{Fore.RESET} {cmd['command']}")
 
-            print(f"\n{'_' * 30}\n\n{Fore.CYAN}[A]{Fore.RESET} Adicionar comando customizado\n{Fore.CYAN}[E]{Fore.RESET} Editar um comando\n{Fore.RED}[R]{Fore.RESET} Remover um comando\n{Fore.RED}[B]{Fore.RESET} Voltar\n")
+            print(f"\n{'_' * 30}\n\n{Fore.CYAN}[A]{Fore.RESET} Adicionar comando customizado\n{Fore.CYAN}[E]{Fore.RESET} Editar um comando\n{Fore.RED}[R]{Fore.RESET} Remover um comando\n{Fore.RED}[RA]{Fore.RESET} Remover todos os comandos\n{Fore.RED}[B]{Fore.RESET} Voltar\n")
 
             
             choice = await session.prompt_async(
@@ -277,6 +334,17 @@ async def edit_queue_menu():
             )
             if choice.lower() == 'r':
                 await remove_command_from_queue()
+            elif choice.lower() == 'ra':
+                while True:
+                    confirm = await session.prompt_async(HTML("<ansiyellow>Tem certeza que deseja remover todos os comandos da fila? (y/n):</ansiyellow> "))
+    
+                    if confirm.lower() in ['s', 'y']:
+                        command_queue.clear()
+                        break
+                    if confirm.lower() == 'n':
+                        break
+                    else:
+                        print(f"{Fore.RED}[ERROR] Digite um valor válido (y/n)")
             elif choice.lower() == 'a':
                 await add_custom_command_to_queue()
             elif choice.lower() == 'e':
@@ -313,7 +381,6 @@ async def remove_command_from_queue():
             print(f"{Fore.RED}Índice fora do intervalo.")
     except ValueError:
         print(f"{Fore.RED}Entrada inválida. Por favor, insira um número válido.")
-
 
 async def edit_command_in_queue():
     try:
@@ -420,6 +487,7 @@ async def nuclei_menu():
                     break
                 elif severity.lower() in ['low','medium', 'high', 'critical']:
                     add_command_to_queue("nuclei", "severity", target, severity)
+                    break
                 else:
                     print(f"{Fore.RED}Entrada inválida. Por favor, forneça uma severidade (low, medium, high, critical) ou [B] para voltar.")
         elif option == '3':
@@ -427,7 +495,7 @@ async def nuclei_menu():
                 target = await session.prompt_async(HTML(f"<ansiyellow>Digite o caminho para o arquivo com a lista de alvos ou</ansiyellow> <ansired>[B]</ansired> <ansiyellow>para voltar:</ansiyellow> "))
                 if target.lower() == 'b':
                     clear_terminal()
-                    continue
+                    break
                 if os.path.isfile(target):
                     add_command_to_queue("nuclei", "multi_target", target)
                     print(f"{Fore.GREEN}Arquivo encontrado:{Fore.RESET} {target}")
@@ -437,15 +505,16 @@ async def nuclei_menu():
         elif option == '4':
             add_command_to_queue("nuclei", "network_scan", target)
         elif option == '5':
-            template = await session.prompt_async(HTML("<ansiyellow>Digite a URL e o template separados por espaço:</ansiyellow> "))
-            if template.lower() == 'b':
-                clear_terminal()
-                continue
-            template_data = template.split()
-            if len(template_data) == 2:
-                add_command_to_queue("nuclei", "custom_template", template_data)
-            else:
-                print(f"{Fore.RED}Entrada inválida. Por favor, forneça uma URL e um template separados.")
+            while True:
+                template = await session.prompt_async(HTML("<ansiyellow>Digite a URL e o template separados por espaço ou</ansiyellow> <ansired>[B]</ansired> <ansiyellow>para voltar:</ansiyellow> "))
+                if template.lower() == 'b':
+                    clear_terminal()
+                    break
+                template_data = template.split()
+                if len(template_data) == 2:
+                    add_command_to_queue("nuclei", "custom_template", template_data)
+                else:
+                    print(f"{Fore.RED}Entrada inválida. Por favor, forneça uma URL e um template separados.")
         elif option == '6':
             add_command_to_queue("nuclei", "dashboard", target)
         elif option.lower() == 'b':
@@ -555,6 +624,101 @@ async def nmap_menu():
         else:
             clear_terminal()
 
+async def sniper_menu():
+    target = state['global_target']
+    global_target_display = f"Alvo: {state['global_target']}" if state['global_target'] else "Alvo: Não definido"
+    while True:
+        print(rf"""
+        {Fore.RED}                  
+        _____       _                 
+        /  ___|     (_)                
+        \ `--. _ __  _ _ __   ___ _ __ 
+         `--. \ '_ \| | '_ \ / _ \ '__|
+        /\__/ / | | | | |_) |  __/ |   
+        \____/|_| |_|_| .__/ \___|_|   {Fore.YELLOW}{global_target_display}{Fore.RED}
+                      | |              
+                      |_|              
+        {Fore.CYAN}[1] {Fore.RESET}MODO PADRÃO
+        {Fore.CYAN}[2] {Fore.RESET}MODO OSINT + RECONHECIMENTO
+        {Fore.CYAN}[3] {Fore.RESET}MODO FURTIVO + OSINT + RECONHECIMENTO
+        {Fore.CYAN}[4] {Fore.RESET}MODO DE DESCOBERTA
+        {Fore.CYAN}[5] {Fore.RESET}ESCANEAR APENAS PORTA ESPECÍFICA
+        {Fore.CYAN}[6] {Fore.RESET}ESCANEAR TODAS AS PORTAS ABERTAS
+        {Fore.CYAN}[7] {Fore.RESET}MODO WEB
+        {Fore.CYAN}[8] {Fore.RESET}ESCANEAR PORTA HTTP
+        {Fore.CYAN}[9] {Fore.RESET}ESCANEAR PORTA HTTPS
+        {Fore.CYAN}[10] {Fore.RESET}ESCANEAR VULNERABILIDADES WEB
+        {Fore.CYAN}[11] {Fore.RESET}FORÇA BRUTA
+        {Fore.RED}[B] {Fore.RESET}Voltar""")
+
+        mode_choice = await session.prompt_async(HTML(f"<ansiyellow>\nEscolha um modo para Sn1per:</ansiyellow> "))
+
+        if mode_choice == '1':
+            add_command_to_queue("sniper", "normal", target)
+        elif mode_choice == '2':
+            add_command_to_queue("sniper", "osint_recon", target)
+        elif mode_choice == '3':
+            add_command_to_queue("sniper", "stealth", target)
+        elif mode_choice == '4':
+            while True:
+                wordlist = await session.prompt_async(HTML("<ansiyellow>Digite o caminho para o wordlist ou</ansiyellow> <ansired>[B]</ansired> <ansiyellow>para voltar:</ansiyellow> "))
+                if wordlist.lower() == 'b':
+                    clear_terminal()
+                    break
+                if not os.path.isfile(wordlist):
+                    clear_terminal
+                    print(f"{Fore.RED}Arquivo não encontrado. Tente novamente.")
+                    continue
+                add_command_to_queue("sniper", "discover", target, wordlist)
+        elif mode_choice == '5':
+            while True:
+                ports = await session.prompt_async(HTML("<ansiyellow>Digite o número da porta ou</ansiyellow> <ansired>[B]</ansired> <ansiyellow>para voltar:</ansiyellow> "))
+                if ports.lower() == 'b':
+                    clear_terminal()
+                    continue
+                if not validate_ports(ports):
+                    print("[ERROR] Porta inválida (1-65536).")
+                    continue
+                add_command_to_queue("sniper", "port", target, ports)
+                break
+        elif mode_choice == '6':
+            add_command_to_queue("sniper", "fullportonly", target)
+        elif mode_choice == '7':
+            add_command_to_queue("sniper", "web", target)
+        elif mode_choice == '8':
+            while True:
+                ports = await session.prompt_async(HTML("<ansiyellow>Digite o número da porta ou</ansiyellow> <ansired>[B]</ansired> <ansiyellow>para voltar:</ansiyellow> "))
+                if ports.lower() == 'b':
+                    clear_terminal()
+                    break
+                if not validate_ports(ports):
+                    print("Portas inválidas! Insira números de 1 a 65535 separados por vírgulas.")
+                    continue
+                add_command_to_queue("sniper", "webporthttp", target, ports)
+                break
+        elif mode_choice == '9':
+            while True:
+                ports = await session.prompt_async(HTML("<ansiyellow>Digite o número da porta ou</ansiyellow> <ansired>[B]</ansired> <ansiyellow>para voltar:</ansiyellow> "))
+                if ports.lower() == 'b':
+                    clear_terminal()
+                    break
+                if not validate_ports(ports):
+                    print("[ERROR] Porta inválida (1-65536).")
+                    continue
+                add_command_to_queue("sniper", "webporthttps", target, ports)
+                break
+        elif mode_choice == '10':
+            add_command_to_queue("sniper", "webscan", target)
+        elif mode_choice == '11':
+            add_command_to_queue("sniper", "bruteforce", target)
+        elif mode_choice.lower() == 'b':
+            clear_terminal()
+            return
+        else:
+            clear_terminal()
+
+
+
 async def automation_setup_menu():
     if new_version_checker():
         update_message = f"{Fore.RED}Outdated{Fore.YELLOW} - @LuizWt {Fore.RED}\nUtilize 'sudo autorecon -update' para atualizar"
@@ -578,6 +742,7 @@ async def automation_setup_menu():
     {Fore.YELLOW}Escolha uma ferramenta para adicionar comandos à fila de automação:
     {Fore.CYAN}[1]{Fore.RESET} NMAP
     {Fore.CYAN}[2]{Fore.RESET} NUCLEI
+    {Fore.CYAN}[3]{Fore.RESET} SNIPER
     {Fore.CYAN}[A]{Fore.RESET} Iniciar Automação
     {Fore.CYAN}[Q]{Fore.RESET} Editar Queue
     {Fore.RED}[B]{Fore.RESET} Sair""")
@@ -590,6 +755,9 @@ async def automation_setup_menu():
         if choice == '2':
             clear_terminal()
             await nuclei_menu()
+        if choice == '3':
+            clear_terminal()
+            await sniper_menu()
         
         elif choice.lower() == 'a':
             while True:
@@ -614,7 +782,7 @@ async def automation_setup_menu():
             await edit_queue_menu()
         elif choice.lower() == 'b':
             if is_running:
-                print("Automação em andamento. Conclua ou interrompa a execução antes de sair.")
+                print(f"{Fore.YELLOW}Automação em andamento. Conclua ou interrompa a execução antes de sair.{Fore.RESET}")
             else:
                 clear_terminal()
                 print(f"{Fore.GREEN}Saindo da configuração de automação...\nPressione {Fore.RED}Enter{Fore.GREEN} para continuar.")
