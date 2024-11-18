@@ -717,8 +717,6 @@ async def sniper_menu():
         else:
             clear_terminal()
 
-
-
 async def automation_setup_menu():
     if new_version_checker():
         update_message = f"{Fore.RED}Outdated{Fore.YELLOW} - @LuizWt {Fore.RED}\nUtilize 'sudo autorecon -update' para atualizar"

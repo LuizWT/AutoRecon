@@ -1,4 +1,5 @@
 from colorama import init, Fore
+from functions.validate_ports import validate_ports
 from functions.clear_terminal import clear_terminal
 from functions.create_output_file import execute_command_and_log
 from functions.proxy_chains import is_proxychains_enabled
@@ -221,7 +222,15 @@ def get_range():
             print(f"{Fore.RED}Formato inválido. Por favor, insira um endereço CIDR válido.")
 
 def get_ports():
-    return input(f"{Fore.GREEN}Digite as portas ou faixa de portas (EX: 21,22 ou 1-100) ou {Fore.RED}[B]{Fore.GREEN} para voltar: ")
+    while True:
+        ports_string = input(f"{Fore.GREEN}Digite as portas ou faixa de portas (EX: 21,22 ou 1-100) ou {Fore.RED}[B]{Fore.GREEN} para voltar: ").strip()
+        if ports_string.lower() == 'b':
+            return 'b'
+        if validate_ports(ports_string):
+            return ports_string
+        else:
+            print(f"{Fore.RED}Entrada inválida! Certifique-se de usar o formato correto, como 21,22 ou 1-100.{Fore.RESET}")
+
 
 def get_scan_technique():
     print(f"""
