@@ -23,19 +23,19 @@ def validate_url(url):
 def validate_domain_extension(url):
     # Remoção do protocolo HTTP ou HTTPS para melhor funcionamento do REGEX
     domain = url.split("://")[-1].split("/")[0]
-    
-    # Regex para validar a extensão do domínio
-    if not re.search(r'\.\w{2,}$', domain):
+
+    if not re.search(r'\.\w{2,}(\.\w{2,})*$', domain):
         print(f"{Fore.YELLOW}O domínio fornecido não contém uma extensão válida.\n\nExemplos de extensões:\n{Fore.GREEN}.com, .org,\n.net, .br,\n.io, .edu")
-        
+
         while True:
             extension = input(f"{Fore.YELLOW}Digite a extensão do domínio:{Fore.RESET} ").strip()
-            
-            if re.match(r'\.\w{2,}$', extension):
+
+            # Verifica se a extensão está no formato correto, como: .com.br, .gov.sp, .org, etc.
+            if re.match(r'^\.\w{2,}(\.\w{2,})*$', extension):
                 domain += extension
                 break
             else:
                 print(f"{Fore.RED}A extensão fornecida é inválida. Tente novamente.")
-    
+
     # URL com o domínio corrigido (sem protocolo por enquanto)
     return domain
