@@ -2,7 +2,7 @@ from colorama import Fore, init
 import re
 init(autoreset=True)
 
-#TODO Resolver bug: caso a entrada seja "www.exemplo", a validação de extensão não ocorre
+#TODO Resolver bug: caso a entrada seja "www.exemplo", a validação de extensão (.com, .gov.br, etc) não ocorre
 def validate_url(url):
 
     url = validate_domain_extension(url)
