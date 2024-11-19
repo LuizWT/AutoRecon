@@ -41,7 +41,6 @@ def validate_domain_extension(url):
     if domain.startswith("www."):
         domain = domain[4:]
 
-    # Verifica se a extensão do domínio está no formato correto
     if not re.search(r'\.\w{2,}(\.\w{2,})*$', domain):
         print(f"{Fore.YELLOW}O domínio fornecido não contém uma extensão válida.\n\nExemplos de extensões:\n{Fore.GREEN}.com, .org,\n.net, .br,\n.io, .edu")
 
@@ -55,10 +54,10 @@ def validate_domain_extension(url):
             else:
                 print(f"{Fore.RED}A extensão fornecida é inválida. Tente novamente.")
 
-    # Retorna o domínio corrigido, sem o protocolo por enquanto
+    # Retorna o domínio corrigido (sem o protocolo por enquanto)
     return f"{domain}"
 
 def is_valid_url(url):
-    # Verifica se a URL tem um protocolo e uma extensão válida
+    # Verifica se a URL tem um protocolo e uma extensão de domínio válida
     pattern = r'^(https?://)?(www\.)?[\w-]+\.[a-z]{2,}(\.[a-z]{2,})*(/.*)?$'
     return bool(re.match(pattern, url))
