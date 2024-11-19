@@ -5,6 +5,7 @@ from prompt_toolkit import PromptSession
 from colorama import Fore, Style, init
 from functions.clear_terminal import clear_terminal
 from functions.set_global_target import state
+from functions.check_cidr import is_valid_cidr
 from functions.create_output_file import execute_command_and_log_submenu
 from functions.validate_ports import validate_ports
 from prompt_toolkit.formatted_text import HTML
@@ -181,6 +182,16 @@ tools_commands = {
     },
 }
 
+
+async def get_network_target_submenu():
+    while True:
+        target = await session.prompt_async(HTML(f"<ansigreen>Digite o alvo da rede (EX: 192.168.1.0/24) ou</ansigreen> <ansired>[B]</ansired> <ansigreen>para voltar:</ansigreen> "))
+        if target.lower() == 'b':
+            return None
+        if is_valid_cidr(target):
+            return target
+        else:
+            print(f"{Fore.RED}Formato inválido. Por favor, insira um endereço CIDR válido.{Fore.RESET}")
 
 # Funções de Formatação e Adição de Comandos:
 def format_command(tool, mode, target, additional_param=None):
@@ -503,6 +514,10 @@ async def nuclei_menu():
                 else:
                     print(f"{Fore.RED}Arquivo não encontrado. Tente novamente.")
         elif option == '4':
+            target = await get_network_target_submenu()
+            if target is None:
+                clear_terminal()
+                return
             add_command_to_queue("nuclei", "network_scan", target)
         elif option == '5':
             while True:

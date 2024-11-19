@@ -151,7 +151,7 @@ async def nuclei_menu_loop(global_target):
             target = get_network_target()
             if target is None:
                 clear_terminal()
-                return
+                break
             nuclei(target, 'network_scan')
         if option in [str(i) for i in range(1, 7)]:
             nuclei_options(option, global_target)
