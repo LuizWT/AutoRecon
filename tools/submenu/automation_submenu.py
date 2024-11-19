@@ -492,13 +492,13 @@ async def nuclei_menu():
                     print(f"{Fore.RED}Entrada inválida. Por favor, forneça uma severidade (low, medium, high, critical) ou [B] para voltar.")
         elif option == '3':
             while True:
-                target = await session.prompt_async(HTML(f"<ansiyellow>Digite o caminho para o arquivo com a lista de alvos ou</ansiyellow> <ansired>[B]</ansired> <ansiyellow>para voltar:</ansiyellow> "))
-                if target.lower() == 'b':
+                multiple_target = await session.prompt_async(HTML(f"<ansiyellow>Digite o caminho para o arquivo com a lista de alvos ou</ansiyellow> <ansired>[B]</ansired> <ansiyellow>para voltar:</ansiyellow> "))
+                if multiple_target.lower() == 'b':
                     clear_terminal()
                     break
-                if os.path.isfile(target):
-                    add_command_to_queue("nuclei", "multi_target", target)
-                    print(f"{Fore.GREEN}Arquivo encontrado:{Fore.RESET} {target}")
+                if os.path.isfile(multiple_target):
+                    add_command_to_queue("nuclei", "multi_target", multiple_target)
+                    print(f"{Fore.GREEN}Arquivo encontrado:{Fore.RESET} {multiple_target}")
                     break
                 else:
                     print(f"{Fore.RED}Arquivo não encontrado. Tente novamente.")
