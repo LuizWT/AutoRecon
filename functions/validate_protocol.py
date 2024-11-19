@@ -2,12 +2,6 @@ from colorama import Fore, init
 import re
 init(autoreset=True)
 
-#TODO Resolver bug: caso a entrada seja "www.exemplo", a validação de extensão (.com, .gov.br, etc) não ocorre
-
-from colorama import Fore, init
-import re
-init(autoreset=True)
-
 # Função principal de validação da URL
 def validate_url(url):
 
