@@ -230,8 +230,8 @@ async def apply_proxychains_to_command():
         while True:
             
             print(f"{Fore.CYAN}Comandos na Fila de Automação:{Style.RESET_ALL}")
-            for idx, cmd in enumerate(command_queue, start=1):
-                print(f"{Fore.CYAN}[{idx}]{Fore.RESET} {cmd['command']}")
+            formatted_commands = [f"{Fore.CYAN}[{idx}]{Fore.RESET} {cmd['command']}" for idx, cmd in enumerate(command_queue, start=1)]
+            print("\n".join(formatted_commands))
 
             user_input = await session.prompt_async(HTML("<ansiyellow>Digite o índice do comando (ou use números separados por vírgula)</ansiyellow> <ansired>[B]</ansired> <ansiyellow>para voltar:</ansiyellow> "))
             if user_input.lower() == 'b':
@@ -277,19 +277,18 @@ async def apply_proxychains_to_command():
 
 def add_command_to_queue(tool_name, mode, target, additional_param=None):
     formatted_command = format_command(tool_name, mode, target, additional_param)
+    commands_added = []
 
     if mode == "all_commands":
-        # Adiciona comando por comando, separadamente
         commands = formatted_command.split('\n')
         for cmd in commands:
             command_data = {
                 "tool": tool_name,
                 "mode": mode,
-                "command": cmd.strip()  # Remove possíveis espaços extras
+                "command": cmd.strip()
             }
             command_queue.append(command_data)
-            clear_terminal()
-            print(f"{Fore.GREEN}Comando adicionado: {cmd.strip()}")
+            commands_added.append(cmd.strip())
     else:
         command_data = {
             "tool": tool_name,
@@ -297,8 +296,12 @@ def add_command_to_queue(tool_name, mode, target, additional_param=None):
             "command": formatted_command
         }
         command_queue.append(command_data)
-        clear_terminal()
-        print(f"{Fore.GREEN}Comando adicionado: {formatted_command}")
+        commands_added.append(formatted_command)
+
+
+    clear_terminal()
+    print(f"{Fore.GREEN}Comandos adicionados:\n" + "\n".join(commands_added))
+
 
 # Funções de Execução:
 def stop_execution():
@@ -387,8 +390,8 @@ async def edit_queue_menu():
 
         if command_queue:
             print(f"{Fore.CYAN}Comandos na Fila de Automação:{Style.RESET_ALL}")
-            for idx, cmd in enumerate(command_queue, start=1):
-                print(f"{Fore.CYAN}[{idx}]{Fore.RESET} {cmd['command']}")
+            formatted_commands = [f"{Fore.CYAN}[{idx}]{Fore.RESET} {cmd['command']}" for idx, cmd in enumerate(command_queue, start=1)]
+            print("\n".join(formatted_commands))
 
             print(f"\n{'_' * 30}\n\n{Fore.CYAN}[A]{Fore.RESET} Adicionar comando customizado\n{Fore.CYAN}[E]{Fore.RESET} Editar um comando\n{Fore.CYAN}[P]{Fore.RESET} Aplicar Proxychains\n{Fore.RED}[R]{Fore.RESET} Remover um comando\n{Fore.RED}[RA]{Fore.RESET} Remover todos os comandos\n{Fore.RED}[B]{Fore.RESET} Voltar\n")
 
