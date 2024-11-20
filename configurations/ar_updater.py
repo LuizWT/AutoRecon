@@ -6,6 +6,7 @@ from colorama import Fore, init
 
 init(autoreset=True)
 
+# Função para verificar se o script está sendo executado dentro de um repositório Git
 def is_git_repo(path):
     try:
         subprocess.check_call(['git', 'rev-parse', '--is-inside-work-tree'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, cwd=path)
@@ -13,6 +14,7 @@ def is_git_repo(path):
     except subprocess.CalledProcessError:
         return False
 
+# Função para obter o diretório do repositório Git
 def get_git_repo_path(start_path=None):
     if start_path is None:
         start_path = os.getcwd()
