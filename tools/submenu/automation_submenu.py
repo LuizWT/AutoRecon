@@ -228,37 +228,49 @@ async def apply_proxychains_to_command():
 
     try:
         while True:
-            clear_terminal()
+            
             print(f"{Fore.CYAN}Comandos na Fila de Automação:{Style.RESET_ALL}")
             for idx, cmd in enumerate(command_queue, start=1):
                 print(f"{Fore.CYAN}[{idx}]{Fore.RESET} {cmd['command']}")
 
-            user_input = await session.prompt_async(HTML("<ansiyellow>Informe o número do comando para aplicar o ProxyChains ou</ansiyellow> <ansired>[B]</ansired> <ansiyellow>para voltar:</ansiyellow> "))
-            
+            user_input = await session.prompt_async(HTML("<ansiyellow>Digite o índice do comando (ou use números separados por vírgula)</ansiyellow> <ansired>[B]</ansired> <ansiyellow>para voltar:</ansiyellow> "))
             if user_input.lower() == 'b':
                 break
             
-            index = int(user_input) - 1
-            if 0 <= index < len(command_queue):
-                command = command_queue[index]['command']
+            try:
+                indices = [int(x.strip()) - 1 for x in user_input.split(',')]
                 
-                if command.startswith("proxychains ") or command.startswith("proxychains4 "):
-                    print(f"{Fore.YELLOW}[INFO] O comando '{command}' já está configurado com ProxyChains.{Style.RESET_ALL}")
-                elif command.startswith("sudo "):
-                    if not command.startswith("sudo proxychains "):
-                        new_command = command.replace("sudo ", "sudo proxychains ", 1)
-                        command_queue[index]['command'] = new_command
-                        print(f"{Fore.GREEN}[INFO] {command} -> {new_command}{Style.RESET_ALL}")
+                for index in indices:
+                    if 0 <= index < len(command_queue):
+                        command = command_queue[index]['command']
+                        
+                        if command.startswith("proxychains ") or command.startswith("proxychains4 "):
+                            clear_terminal()
+                            print(f"{Fore.YELLOW}[INFO] O comando '{command}' já está configurado com ProxyChains.{Style.RESET_ALL}\n")
+                        elif command.startswith("sudo "):
+                            if not command.startswith("sudo proxychains "):
+                                new_command = command.replace("sudo ", "sudo proxychains ", 1)
+                                command_queue[index]['command'] = new_command
+                                clear_terminal()
+                                print(f"{Fore.GREEN}[INFO] {command} -> {new_command}{Style.RESET_ALL}\n")
+                            else:
+                                clear_terminal()
+                                print(f"{Fore.YELLOW}[INFO] O comando '{command}' já está configurado com ProxyChains.{Style.RESET_ALL}\n")
+                        else:
+                            new_command = f"proxychains {command}"
+                            command_queue[index]['command'] = new_command
+                            clear_terminal()
+                            print(f"{Fore.GREEN}[INFO] {command} -> {new_command}{Style.RESET_ALL}\n")
                     else:
-                        print(f"{Fore.YELLOW}[INFO] O comando '{command}' já está configurado com ProxyChains.{Style.RESET_ALL}")
-                else:
-                    new_command = f"proxychains {command}"
-                    command_queue[index]['command'] = new_command
-                    print(f"{Fore.GREEN}[INFO] {command} -> {new_command}{Style.RESET_ALL}")
-            else:
-                print(f"{Fore.RED}[ERROR] Índice inválido. Tente novamente.{Style.RESET_ALL}")
+                        clear_terminal()
+                        print(f"{Fore.RED}[ERROR] Índice inválido: {index + 1}. Ignorado.{Style.RESET_ALL}\n")
+
+            except ValueError:
+                clear_terminal()
+                print(f"{Fore.RED}[ERROR] Entrada inválida. Tente novamente com índices válidos, separados por vírgulas.{Style.RESET_ALL}\n")
             
     except ValueError:
+        clear_terminal()
         print(f"{Fore.RED}[ERROR] Entrada inválida. Tente novamente.{Style.RESET_ALL}")
 
 
