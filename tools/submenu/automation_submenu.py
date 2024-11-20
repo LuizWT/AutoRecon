@@ -27,64 +27,64 @@ stop_event = asyncio.Event()
 tools_commands = {
     "nmap": {
         "target_spec": {
-            "command": "nmap",
+            "command": "sudo nmap",
             "params": lambda target: f"{target}"
         },
         "scan_technique": {
-            "command": "nmap",
+            "command": "sudo nmap",
             "params": lambda technique, target: f"{technique} {target}",
             "all": ['-sS', '-sT', '-sU', '-sF', '-sN', '-sX'],
         },
         "host_discovery": {
-            "command": "nmap",
+            "command": "sudo nmap",
             "params": lambda target: f"-sn {target}"
         },
         "port_spec": {
-            "command": "nmap",
+            "command": "sudo nmap",
             "params": lambda target, port: f"-p {port} {target}"
         },
         "service_detection": {
-            "command": "nmap",
+            "command": "sudo nmap",
             "params": lambda target: f"-sV {target}"
         },
         "os_detection": {
-            "command": "nmap",
+            "command": "sudo nmap",
             "params": lambda target: f"-O {target}"
         },
         "timing": {
-            "command": "nmap",
+            "command": "sudo nmap",
             "params": lambda target, level: f"-T {level} {target}"
         },
         "http_title": {
-            "command": "nmap",
+            "command": "sudo nmap",
             "params": lambda target: f"-p 80,443 --script=http-title {target}"
         },
         "ssl_cert": {
-            "command": "nmap",
+            "command": "sudo nmap",
             "params": lambda target: f"-p 443 --script=ssl-cert {target}"
         },
         "vuln": {
-            "command": "nmap",
+            "command": "sudo nmap",
             "params": lambda target: f"-p 80,443 --script=vuln {target}"
         },
         "smb_os_discovery": {
-            "command": "nmap",
+            "command": "sudo nmap",
             "params": lambda target: f"-p 445 --script=smb-os-discovery {target}"
         },
         "http_robots_txt": {
-            "command": "nmap",
+            "command": "sudo nmap",
             "params": lambda target: f"-p 80,443 --script=http-robots.txt {target}"
         },
         "ssh_hostkey": {
-            "command": "nmap",
+            "command": "sudo nmap",
             "params": lambda target: f"-p 22 --script=ssh-hostkey {target}"
         },
         "dns_brute": {
-            "command": "nmap",
+            "command": "sudo nmap",
             "params": lambda target: f"--script=dns-brute --script-args dns-brute.domain={target}"
         },
         "all_commands": {
-            "command": "nmap",
+            "command": "sudo nmap",
             "params": lambda target: [
                 f"-sS -v {target}",                      # TCP SYN scan
                 f"-sT -v {target}",                      # TCP connect scan
@@ -221,6 +221,47 @@ def format_command(tool, mode, target, additional_param=None):
     # Comando genérico caso nada seja definido
     return f"{tool} {target}"
 
+async def apply_proxychains_to_command():
+    if not command_queue:
+        print(f"{Fore.YELLOW}[INFO] A fila de comandos está vazia. Nada a aplicar.{Style.RESET_ALL}")
+        return
+
+    try:
+        while True:
+            clear_terminal()
+            print(f"{Fore.CYAN}Comandos na Fila de Automação:{Style.RESET_ALL}")
+            for idx, cmd in enumerate(command_queue, start=1):
+                print(f"{Fore.CYAN}[{idx}]{Fore.RESET} {cmd['command']}")
+
+            user_input = await session.prompt_async(HTML("<ansiyellow>Informe o número do comando para aplicar o ProxyChains ou</ansiyellow> <ansired>[B]</ansired> <ansiyellow>para voltar:</ansiyellow> "))
+            
+            if user_input.lower() == 'b':
+                break
+            
+            index = int(user_input) - 1
+            if 0 <= index < len(command_queue):
+                command = command_queue[index]['command']
+                
+                if command.startswith("proxychains ") or command.startswith("proxychains4 "):
+                    print(f"{Fore.YELLOW}[INFO] O comando '{command}' já está configurado com ProxyChains.{Style.RESET_ALL}")
+                elif command.startswith("sudo "):
+                    if not command.startswith("sudo proxychains "):
+                        new_command = command.replace("sudo ", "sudo proxychains ", 1)
+                        command_queue[index]['command'] = new_command
+                        print(f"{Fore.GREEN}[INFO] {command} -> {new_command}{Style.RESET_ALL}")
+                    else:
+                        print(f"{Fore.YELLOW}[INFO] O comando '{command}' já está configurado com ProxyChains.{Style.RESET_ALL}")
+                else:
+                    new_command = f"proxychains {command}"
+                    command_queue[index]['command'] = new_command
+                    print(f"{Fore.GREEN}[INFO] {command} -> {new_command}{Style.RESET_ALL}")
+            else:
+                print(f"{Fore.RED}[ERROR] Índice inválido. Tente novamente.{Style.RESET_ALL}")
+            
+    except ValueError:
+        print(f"{Fore.RED}[ERROR] Entrada inválida. Tente novamente.{Style.RESET_ALL}")
+
+
 
 def add_command_to_queue(tool_name, mode, target, additional_param=None):
     formatted_command = format_command(tool_name, mode, target, additional_param)
@@ -337,7 +378,7 @@ async def edit_queue_menu():
             for idx, cmd in enumerate(command_queue, start=1):
                 print(f"{Fore.CYAN}[{idx}]{Fore.RESET} {cmd['command']}")
 
-            print(f"\n{'_' * 30}\n\n{Fore.CYAN}[A]{Fore.RESET} Adicionar comando customizado\n{Fore.CYAN}[E]{Fore.RESET} Editar um comando\n{Fore.RED}[R]{Fore.RESET} Remover um comando\n{Fore.RED}[RA]{Fore.RESET} Remover todos os comandos\n{Fore.RED}[B]{Fore.RESET} Voltar\n")
+            print(f"\n{'_' * 30}\n\n{Fore.CYAN}[A]{Fore.RESET} Adicionar comando customizado\n{Fore.CYAN}[E]{Fore.RESET} Editar um comando\n{Fore.CYAN}[P]{Fore.RESET} Aplicar Proxychains\n{Fore.RED}[R]{Fore.RESET} Remover um comando\n{Fore.RED}[RA]{Fore.RESET} Remover todos os comandos\n{Fore.RED}[B]{Fore.RESET} Voltar\n")
 
             
             choice = await session.prompt_async(
@@ -360,6 +401,9 @@ async def edit_queue_menu():
                 await add_custom_command_to_queue()
             elif choice.lower() == 'e':
                 await edit_command_in_queue()
+            elif choice.lower() == 'p':
+                clear_terminal()
+                await apply_proxychains_to_command()
             elif choice.lower() == 'b':
                 clear_terminal()
                 return
