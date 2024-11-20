@@ -22,12 +22,6 @@ O **AutoRecon** é um projeto de automação de ferramentas de segurança focado
   
 <hr>
 
-### Atualizações v1.3.0
-Esta atualização introduz novas funcionalidades que aprimoram a experiência do usuário e tornam o AutoRecon mais eficiente e flexível. As principais mudanças incluem:
-
-- **Criação do Alias Global `autorecon`:** O AutoRecon agora é como um comando global no sistema, permitindo que seja executado de qualquer lugar utilizando o comando `sudo autorecon`. Isso facilita o acesso e a execução do script, sem a necessidade de navegar até o diretório específico.
-
-- **Adição do comando `-update`:** Agora é possível atualizar o código do AutoRecon diretamente pela linha de comando, garantindo que os usuários sempre utilizem a versão mais recente do projeto. Este comando automatiza o processo de *git pull* e *git fetch* para manter o repositório sincronizado com a última versão bastanto escrever **`sudo autorecon -update`**.
   
 <hr>
   
@@ -59,12 +53,31 @@ Acesse o diretório:
 
 Instale as dependências:
 
-    ~$ sudo pip install -r requirements.txt
+    ~$ sudo pip3 install -r requirements.txt
 
 Execute a ferramenta:
 
     ~$ sudo python3 autorecon.py
+
+Após a primeira execução, você terá a possibilidade de usar o alias "autorecon":
+
+    ~$ sudo autorecon
   
+
+### Atualização
+
+Execute o comando:
+
+    ~$ sudo autorecon -update
+
+Caso o alias "autorecon" não esteja disponível:
+
+    Entre no diretório do projeto AutoRecon:
+
+        ~$ cd AutoRecon/
+
+        ~$ sudo python3 autorecon.py -update
+
 <hr>
 
 ### Uso
