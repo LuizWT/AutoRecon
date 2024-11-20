@@ -5,7 +5,7 @@ import sys
 from colorama import Fore, init
 
 init(autoreset=True)
-# Função para verificar se o script está sendo executado dentro de um repositório Git
+
 def is_git_repo(path):
     try:
         subprocess.check_call(['git', 'rev-parse', '--is-inside-work-tree'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, cwd=path)
@@ -13,7 +13,6 @@ def is_git_repo(path):
     except subprocess.CalledProcessError:
         return False
 
-# Função para obter o diretório do repositório Git
 def get_git_repo_path(start_path=None):
     if start_path is None:
         start_path = os.getcwd()
@@ -28,7 +27,7 @@ def get_git_repo_path(start_path=None):
 
 # Função para atualizar o repositório
 def update_repository():
-    # Pega o caminho absoluto do script do autorecon
+
     script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../autorecon.py"))
     repo_path = get_git_repo_path(start_path=os.path.dirname(script_path))
 
@@ -44,15 +43,16 @@ def update_repository():
         sys.exit(1)
 
     try:
-        # Evita erro de propriedade
-        subprocess.check_call(['git', 'config', '--global', '--add', 'safe.directory', repo_path], cwd=repo_path)
+        os.chdir(repo_path)
 
-        # Define a variável de ambiente GIT_DISCOVERY_ACROSS_FILESYSTEM
+        # Evita erro de propriedade
+        subprocess.check_call(['git', 'config', '--global', '--add', 'safe.directory', repo_path])
+
         env = os.environ.copy()
         env['GIT_DISCOVERY_ACROSS_FILESYSTEM'] = '1'
 
-        subprocess.run(['sudo', 'git', 'fetch'], check=True, cwd=repo_path, env=env)
-        subprocess.run(['sudo', 'git', 'pull'], check=True, cwd=repo_path, env=env)
+        subprocess.run(['sudo', 'git', 'fetch'], check=True, env=env)
+        subprocess.run(['sudo', 'git', 'pull'], check=True, env=env)
 
         print(f"{Fore.GREEN}Código atualizado com sucesso.")
     except subprocess.CalledProcessError as e:
@@ -65,8 +65,17 @@ def parse_args():
     return parser.parse_args()
 
 def new_version_checker():
-
     try:
+        script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../autorecon.py"))
+        repo_path = get_git_repo_path(start_path=os.path.dirname(script_path))
+
+        if not repo_path:
+            print("[ERROR] O script não está sendo executado dentro de um repositório Git.")
+            return False
+
+        # Define o diretório de trabalho como o local do script
+        os.chdir(repo_path)
+
         result = subprocess.run(['git', 'fetch'], capture_output=True, text=True)
         if result.returncode != 0:
             return False
