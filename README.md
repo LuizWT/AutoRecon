@@ -1,4 +1,9 @@
-# AutoRecon
+<div align="center">
+  <h1>AutoRecon</h1>
+  <img src="https://github.com/user-attachments/assets/69dedab4-379b-4f19-9470-d5314cebdeec" alt="autorecon" width="200" height="200">
+</div>
+
+<hr>
 
 ### Descrição
 
