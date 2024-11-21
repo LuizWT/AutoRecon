@@ -22,6 +22,40 @@ O **AutoRecon** é um projeto de automação de ferramentas de segurança focado
   
 <hr>
 
+### **Atualização 1.5.6**
+Esta atualização introduz novas funcionalidades que aprimoram a experiência do usuário e tornam o AutoRecon mais eficiente e flexível:
+
+- **Otimização do Desempenho:**  
+   A listagem e execução de comandos foram aprimoradas, reduzindo a lentidão ao processar filas extensas.
+
+- **Atualizações Gerais de Estabilidade:**  
+   Vários bugs menores foram corrigidos para tornar o AutoRecon mais robusto e confiável, além de melhorar validações.
+
+-  **Verificação de Atualizações Inteligente:**  
+   Agora o AutoRecon verifica o repositório antes de executar o comando `-update`, avisando o usuário nos casos que ocorrerem.
+
+-  **Correção de Bugs no Gerenciamento de Diretórios Git:**  
+   Ajustes foram feitos para garantir que os comandos Git sejam sempre executados no diretório correto do projeto, evitando erros em ambientes diversos.
+
+-  **Melhorias no Menu de Scheduler:**  
+   O menu de agendamento recebeu melhorias visuais (nova arte ASCII) e de usabilidade, diferenciando-se do menu principal e tornando a navegação mais intuitiva.
+   Além disso, foi adicionado as seguintes opções e funcionalidades:
+   
+    - As ferramentas SNIPER e NUCLEI estão disponíveis no AR Scheduler.
+   
+    - Opção "[RA]" para remover todos os comandos da Queue.
+   
+    - Opção para usar ProxyChains: Entre em "[Q] Editar Queue" e utilize a opção "[P] Aplicar Proxychains" (a opção aparecerá apenas se houver um comando na lista), possibilitando aadicionar o uso de proxychains para os comandos desejados. Veja o exemplo abaixo:
+
+<div align="center">
+
+![image](https://github.com/user-attachments/assets/077aaab5-e849-4110-9c58-e6afc71ee38b)
+
+<hr>
+
+![image](https://github.com/user-attachments/assets/5ac3ff7c-acec-410a-9715-e193c7c69c46)
+
+</div>
   
 <hr>
   
