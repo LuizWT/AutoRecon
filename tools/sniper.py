@@ -1,6 +1,6 @@
 from colorama import init, Fore
 from functions.clear_terminal import clear_terminal
-from functions.check_cidr import is_valid_cidr
+from functions.is_valid import is_valid_cidr
 from functions.create_output_file import execute_command_and_log
 from functions.proxy_chains import is_proxychains_enabled
 from functions.set_global_target import state, set_global_target
