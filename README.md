@@ -31,7 +31,7 @@ O **AutoRecon** é um projeto de automação de ferramentas de segurança focado
 Esta atualização introduz novas funcionalidades que aprimoram a experiência do usuário e tornam o AutoRecon mais eficiente e flexível:
 
 - **Otimização do Desempenho e Maior Estabilidade:**  
-   A listagem e execução de comandos foram otimizadas, reduzindo a lentidão em filas extensas. Diversos bugs menores foram corrigidos, incluindo ajustes no gerenciamento de diretórios Git para garantir que os comandos sejam executados no local correto, tornando o projeto mais robusto e confiável.
+   A listagem e execução de comandos foram otimizadas, reduzindo a lentidão em filas extensas. Diversos bugs menores foram corrigidos, incluindo ajustes no gerenciamento de diretórios Git para garantir que os comandos sejam executados no local correto e a criação de funções para melhores validações, tornando o projeto mais robusto e confiável.
 
 -  **Verificação de Atualizações Inteligente:**  
    Agora o AutoRecon verifica o repositório antes de executar o comando `-update`, avisando o usuário nos casos que ocorrerem.
