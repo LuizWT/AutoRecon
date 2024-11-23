@@ -22,10 +22,10 @@ if [ -f {CONFIG_FILE} ]; then
     if [ -f "$script_path" ]; then
         sudo python3 "$script_path" "$@"
     else
-        echo "[ERROR]: O arquivo $script_path não foi encontrado. Reconfigure o 'autorecon'\n'sudo python3 /AutoRecon/configurations/configure_alias.py -m update_autorecon_path'."
+        echo "[ERROR]: O arquivo $script_path não foi encontrado. Reconfigure o 'autorecon'\n\nAtualize o diretório da ferramenta em 'sudo nano /etc/autorecon_path.conf'"
     fi
 else
-    echo "[ERROR]: Arquivo de configuração {CONFIG_FILE} não encontrado. Reconfigure o 'autorecon'\n'sudo python3 /AutoRecon/configurations/configure_alias.py -m update_autorecon_path'."
+    echo "[ERROR]: Arquivo de configuração {CONFIG_FILE} não encontrado. Reconfigure o 'autorecon'\n\n'Atualize o diretório da ferramenta em 'sudo nano /etc/autorecon_path.conf'"
 fi
 """
 
