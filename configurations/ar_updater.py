@@ -63,7 +63,7 @@ def update_repository():
 
 def parse_args():
     parser = argparse.ArgumentParser(description="AutoRecon - Ferramenta de Automação de Segurança")
-    parser.add_argument('-update', action='store_true', help="Atualiza o código para a versão mais recente")
+    parser.add_argument('-u', '--update', action='store_true', help="Atualiza o código para a versão mais recente")
     return parser.parse_args()
 
 def new_version_checker():
