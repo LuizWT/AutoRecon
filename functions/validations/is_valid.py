@@ -39,7 +39,7 @@ def is_valid_ip(ip):
 
     return bool(ipv4_regex.match(ip))
 
-def is_valid_domain(domain):
+def is_valid_domain(domain: str) -> bool:
 
     # Regex para validar domínios
     domain_regex = re.compile(
