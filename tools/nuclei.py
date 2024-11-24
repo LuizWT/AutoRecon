@@ -2,7 +2,7 @@ from colorama import init, Fore
 from functions.clear_terminal import clear_terminal
 from functions.create_output_file import execute_command_and_log
 from functions.proxy_chains import is_proxychains_enabled
-from functions.is_valid import is_valid_cidr
+from functions.validations.is_valid import is_valid_cidr
 from functions.set_global_target import state, set_global_target
 from functions.toggle_info import toggle_info, is_info_visible
 from prompt_toolkit import PromptSession

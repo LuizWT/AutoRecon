@@ -5,9 +5,9 @@ from prompt_toolkit import PromptSession
 from colorama import Fore, Style, init
 from functions.clear_terminal import clear_terminal
 from functions.set_global_target import state
-from functions.is_valid import is_valid_cidr
+from functions.validations.is_valid import is_valid_cidr
 from functions.create_output_file import execute_command_and_log_submenu
-from functions.validate_ports import validate_ports
+from functions.validations.validate_ports import validate_ports
 from prompt_toolkit.formatted_text import HTML
 from configurations.ar_updater import new_version_checker
 from configurations.version import __version__

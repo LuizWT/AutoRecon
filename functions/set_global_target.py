@@ -1,4 +1,4 @@
-from functions.is_valid import is_valid_ip_or_domain
+from functions.validations.is_valid import is_valid_ip_or_domain
 from prompt_toolkit import PromptSession
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.formatted_text import HTML
