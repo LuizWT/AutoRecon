@@ -78,7 +78,7 @@ Atualmente, o AutoRecon é compatível apenas com sistemas operacionais baseados
 
 Clone o repositório:
 
-    ~$ git clone https://github.com/LuizWT/AutoRecon.git
+    ~$ git clone https://github.com/LuizWT/AutoRecon.git ~/AutoRecon
 
 Acesse o diretório:
 
