@@ -11,7 +11,7 @@ echo "Verificando pré-requisitos..."
 # Verifica o ambiente gráfico
 if [ -z "$XDG_CURRENT_DESKTOP" ]; then
     echo "Aviso: Ambiente gráfico não detectado. Arquivos .desktop podem não ser suportados."
-elif [[ "$XDG_CURRENT_DESKTOP" =~ "KDE"|"GNOME"|"XFCE"|"LXDE"|"MATE"|"Cinnamon" ]]; then
+elif [[ "$XDG_CURRENT_DESKTOP" =~ "KDE"|"GNOME"|"XFCE"|"LXDE"|"MATE"|"Cinnamon"|"Hyprland" ]]; then
     echo "Ambiente gráfico detectado: $XDG_CURRENT_DESKTOP."
 else
     echo "Aviso: Ambiente gráfico '$XDG_CURRENT_DESKTOP' não testado. Proceda com cautela."
