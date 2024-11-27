@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=AutoRecon
+Comment=Ferramenta de Reconhecimento Automático
+Exec={PROJECT_DIR}/launcher/launch_autorecon.sh
+Icon={PROJECT_DIR}/launcher/icons/autorecon.png
+Terminal=false
+Type=Application
+Categories=Utility;Network;
