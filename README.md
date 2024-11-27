@@ -12,7 +12,7 @@ O **AutoRecon** é um projeto de automação de ferramentas de segurança focado
 <hr>
 
 ### **Atualização 1.6.0**
-Esta atualização introduz novas funcionalidades que aprimoram ainda mais a experiência do usuário e a flexibilidade do AutoRecon:
+Esta versão introduz novas funcionalidades que aprimoram ainda mais a experiência do usuário e a flexibilidade da ferramenta:
 
 - **Otimização do Desempenho e Maior Estabilidade:**  
    A listagem e execução de comandos foram otimizadas, reduzindo a lentidão em filas extensas. Diversos bugs menores foram corrigidos, incluindo ajustes no gerenciamento de diretórios Git para garantir que os comandos sejam executados no local correto e a criação de funções para melhores validações, tornando o projeto mais robusto e confiável.
@@ -22,21 +22,29 @@ Esta atualização introduz novas funcionalidades que aprimoram ainda mais a exp
 
 - **Melhorias no Menu de Scheduler:**  
    O menu de agendamento recebeu melhorias visuais (nova arte ASCII) e de usabilidade, diferenciando-se do menu principal e tornando a navegação mais intuitiva.
-   Além disso, foi adicionado as seguintes opções e funcionalidades:
-   
-    - As ferramentas SNIPER e NUCLEI estão disponíveis no AR Scheduler.
-   
-    - Opção "[RA]" para remover todos os comandos da Queue.
-   
-    - Opção para usar ProxyChains: Entre em "[Q] Editar Queue" e utilize a opção "[P] Aplicar Proxychains" (a opção aparecerá apenas se houver um comando na lista), possibilitando adicionar o uso de ProxyChains para os comandos desejados. Veja o exemplo abaixo:
 
 <div align="center">
 
-![image](https://github.com/user-attachments/assets/077aaab5-e849-4110-9c58-e6afc71ee38b)
+![1732716073_grim](https://github.com/user-attachments/assets/30ac5cc7-cd26-4ce1-87c8-cba217421688)
+
+
+</div>
+
+Além disso, foi adicionado as seguintes opções e funcionalidades:
+   
+- As ferramentas SNIPER e NUCLEI estão disponíveis no AR Scheduler.
+   
+- Opção "[RA]" para remover todos os comandos da Queue.
+   
+- Opção para usar ProxyChains: Entre em "[Q] Editar Queue" e utilize a opção "[P] Aplicar Proxychains" (a opção aparecerá apenas se houver um comando na lista), possibilitando adicionar o uso de ProxyChains para os comandos desejados. Veja o exemplo abaixo:
+
+<div align="center">
+
+![1732716209_grim](https://github.com/user-attachments/assets/76b3bd9b-5191-4fa0-ac1e-4dcac513969d)
 
 <hr>
 
-![image](https://github.com/user-attachments/assets/5ac3ff7c-acec-410a-9715-e193c7c69c46)
+![1732716223_grim](https://github.com/user-attachments/assets/b04b51ca-f8e3-427e-be1c-bfb4bbc48244)
 
 </div>
   
@@ -50,6 +58,18 @@ Entre no diretório do projeto:
 Execute o script:
 
     ~$ bash launcher/create_launcher.sh
+
+<br>
+
+<div align="center">
+
+![1732716570_grim](https://github.com/user-attachments/assets/a389d9fa-cdbb-4d67-9d8d-1a419aae7ed1)
+
+<hr>
+
+![1732716689_grim](https://github.com/user-attachments/assets/a33f2e05-b527-4352-97d4-d2df1917df3e)
+
+</div>
 
 <hr>
 
