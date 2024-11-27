@@ -51,6 +51,7 @@ Execute o script:
 
     ~$ bash launcher/create_launcher.sh
 
+<hr>
 
 ### Funcionalidades
 - **Automatização de Ferramentas**: Execute varreduras do Nmap, Nuclei, WPScan, Nikto e outras ferramentas, com diferentes modos e técnicas como detecção de serviços, descoberta de hosts, verificação de vulnerabilidades e força bruta de DNS.
