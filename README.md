@@ -9,6 +9,49 @@
 
 O **AutoRecon** é um projeto de automação de ferramentas de segurança focado em facilitar o processo de varredura e coleta de informações em ambientes de rede. Ele integra diversas ferramentas de reconhecimento e varredura, como **Nmap**, **Sn1per**, **WPScan**, **Nuclei** e **Nikto**, oferecendo uma interface simplificada para realizar diversas operações com um único comando. O AutoRecon permite que administradores e profissionais de segurança testem e identifiquem vulnerabilidades em suas infraestruturas de maneira automatizada e organizada.
 
+<hr>
+
+### **Atualização 1.6.0**
+Esta atualização introduz novas funcionalidades que aprimoram ainda mais a experiência do usuário e a flexibilidade do AutoRecon:
+
+- **Otimização do Desempenho e Maior Estabilidade:**  
+   A listagem e execução de comandos foram otimizadas, reduzindo a lentidão em filas extensas. Diversos bugs menores foram corrigidos, incluindo ajustes no gerenciamento de diretórios Git para garantir que os comandos sejam executados no local correto e a criação de funções para melhores validações, tornando o projeto mais robusto e confiável.
+
+- **Verificação de Atualizações Inteligente:**  
+   Agora o AutoRecon verifica o repositório antes de executar o comando `-update`, avisando o usuário nos casos que ocorrerem.
+
+- **Melhorias no Menu de Scheduler:**  
+   O menu de agendamento recebeu melhorias visuais (nova arte ASCII) e de usabilidade, diferenciando-se do menu principal e tornando a navegação mais intuitiva.
+   Além disso, foi adicionado as seguintes opções e funcionalidades:
+   
+    - As ferramentas SNIPER e NUCLEI estão disponíveis no AR Scheduler.
+   
+    - Opção "[RA]" para remover todos os comandos da Queue.
+   
+    - Opção para usar ProxyChains: Entre em "[Q] Editar Queue" e utilize a opção "[P] Aplicar Proxychains" (a opção aparecerá apenas se houver um comando na lista), possibilitando adicionar o uso de ProxyChains para os comandos desejados. Veja o exemplo abaixo:
+
+<div align="center">
+
+![image](https://github.com/user-attachments/assets/077aaab5-e849-4110-9c58-e6afc71ee38b)
+
+<hr>
+
+![image](https://github.com/user-attachments/assets/5ac3ff7c-acec-410a-9715-e193c7c69c46)
+
+</div>
+  
+- **Nova Funcionalidade de Lançadores:**  
+A funcionalidade de **lançadores** no AutoRecon permite criar um atalho no menu do sistema para facilitar a execução da ferramenta com um ícone e comando pré-configurado. Para criar o lançador, basta executar o script `create_launcher.sh`:
+
+Entre no diretório do projeto:
+
+    ~$ cd ~/AutoRecon
+
+Execute o script:
+
+    ~$ bash launcher/create_launcher.sh
+
+
 ### Funcionalidades
 - **Automatização de Ferramentas**: Execute varreduras do Nmap, Nuclei, WPScan, Nikto e outras ferramentas, com diferentes modos e técnicas como detecção de serviços, descoberta de hosts, verificação de vulnerabilidades e força bruta de DNS.
 - **Execução Sequencial**: Execute múltiplos comandos em sequência para uma varredura completa, evitando a necessidade de rodar cada comando individualmente.
@@ -24,37 +67,6 @@ O **AutoRecon** é um projeto de automação de ferramentas de segurança focado
 - **Comandos Customizados**: É possível criar e executar comandos específicos diretamente, sem as limitações dos predefinidos.
 - **Edição da Fila de Execução**: Visualize, edite ou remova comandos da fila para adaptar o escopo das execuções conforme necessário.
 - **Intervalo de Execução Personalizável**: Defina intervalos customizados para a execução automática de comandos, tornando o processo mais adaptável às necessidades de cada análise.
-  
-<hr>
-
-### **Atualização 1.5.6**
-Esta atualização introduz novas funcionalidades que aprimoram a experiência do usuário e tornam o AutoRecon mais eficiente e flexível:
-
-- **Otimização do Desempenho e Maior Estabilidade:**  
-   A listagem e execução de comandos foram otimizadas, reduzindo a lentidão em filas extensas. Diversos bugs menores foram corrigidos, incluindo ajustes no gerenciamento de diretórios Git para garantir que os comandos sejam executados no local correto e a criação de funções para melhores validações, tornando o projeto mais robusto e confiável.
-
--  **Verificação de Atualizações Inteligente:**  
-   Agora o AutoRecon verifica o repositório antes de executar o comando `-update`, avisando o usuário nos casos que ocorrerem.
-
--  **Melhorias no Menu de Scheduler:**  
-   O menu de agendamento recebeu melhorias visuais (nova arte ASCII) e de usabilidade, diferenciando-se do menu principal e tornando a navegação mais intuitiva.
-   Além disso, foi adicionado as seguintes opções e funcionalidades:
-   
-    - As ferramentas SNIPER e NUCLEI estão disponíveis no AR Scheduler.
-   
-    - Opção "[RA]" para remover todos os comandos da Queue.
-   
-    - Opção para usar ProxyChains: Entre em "[Q] Editar Queue" e utilize a opção "[P] Aplicar Proxychains" (a opção aparecerá apenas se houver um comando na lista), possibilitando aadicionar o uso de proxychains para os comandos desejados. Veja o exemplo abaixo:
-
-<div align="center">
-
-![image](https://github.com/user-attachments/assets/077aaab5-e849-4110-9c58-e6afc71ee38b)
-
-<hr>
-
-![image](https://github.com/user-attachments/assets/5ac3ff7c-acec-410a-9715-e193c7c69c46)
-
-</div>
   
 <hr>
   
@@ -75,6 +87,9 @@ Atualmente, o AutoRecon é compatível apenas com sistemas operacionais baseados
 <hr>
 
 ### Instalação
+
+> [!WARNING]  
+> É altamente recomendado que a ferramenta seja instalada na pasta `home` (`~/AutoRecon`), pois isso garante a compatibilidade com o script de criação de lançadores e a configuração do alias "autorecon".
 
 Clone o repositório:
 
