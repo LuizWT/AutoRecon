@@ -996,11 +996,11 @@ async def automation_setup_menu():
  {Fore.YELLOW}+ -- --=[ AutoRecon {__version__} {update_message}    
         
     {Fore.YELLOW}Escolha uma ferramenta para adicionar comandos à fila de automação:
-    {Fore.CYAN}[1]{Fore.RESET} NMAP
-    {Fore.CYAN}[2]{Fore.RESET} NUCLEI
-    {Fore.CYAN}[3]{Fore.RESET} SNIPER
-    {Fore.CYAN}[4]{Fore.RESET} NIKTO
-    {Fore.CYAN}[5]{Fore.RESET} WPSCAN
+    {Fore.CYAN}[1] {Fore.RESET}SNIPER
+    {Fore.CYAN}[2] {Fore.RESET}NMAP
+    {Fore.CYAN}[3] {Fore.RESET}WPSCAN
+    {Fore.CYAN}[4] {Fore.RESET}NUCLEI
+    {Fore.CYAN}[5] {Fore.RESET}NIKTO
     {Fore.CYAN}[A]{Fore.RESET} Iniciar Automação
     {Fore.CYAN}[Q]{Fore.RESET} Editar Queue
     {Fore.RED}[B]{Fore.RESET} Sair""")
@@ -1009,20 +1009,20 @@ async def automation_setup_menu():
 
         if choice == '1':
             clear_terminal()
-            await nmap_menu()
+            await sniper_menu()
         if choice == '2':
             clear_terminal()
-            await nuclei_menu()
+            await nmap_menu()
         if choice == '3':
             clear_terminal()
-            await sniper_menu()
+            await wpscan_menu()
         if choice == '4':
             clear_terminal()
-            await nikto_menu()
+            await nuclei_menu()
         if choice == '5':
             clear_terminal()
-            await wpscan_menu()
-        
+            await nikto_menu()
+            
         elif choice.lower() == 'a':
             while True:
                 interval_input = await session.prompt_async(HTML("<ansiyellow>Digite o intervalo (em minutos) ou</ansiyellow> <ansired>[B]</ansired> <ansiyellow>para voltar:</ansiyellow> "))
