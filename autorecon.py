@@ -129,8 +129,6 @@ async def main_loop():
                 else:
                     print(f"{Fore.RED}[INFO] Retornando ao menu principal...")
 
-
-
 if __name__ == "__main__":
     args = parse_args()
     if args.update:

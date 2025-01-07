@@ -5,12 +5,14 @@ from prompt_toolkit import PromptSession
 from colorama import Fore, Style, init
 from functions.clear_terminal import clear_terminal
 from functions.set_global_target import state
+from functions.validations.validate_protocol import validate_url
 from functions.validations.is_valid import is_valid_cidr
 from functions.create_output_file import execute_command_and_log_submenu
 from functions.validations.validate_ports import validate_ports
 from prompt_toolkit.formatted_text import HTML
 from configurations.ar_updater import new_version_checker
 from configurations.version import __version__
+
 # Inicialização e Configurações:
 init(autoreset=True)
 session = PromptSession()
@@ -180,6 +182,72 @@ tools_commands = {
             "params": lambda target: f"-t {target} -b"
         }
     },
+
+    "nikto": {
+        "vuln_checks": {
+            "command": "sudo nikto",
+            "params": lambda target: f"-h {target} -C all"
+        },
+        "server_modules": {
+            "command": "sudo nikto",
+            "params": lambda target: f"-h {target} -M all"
+        },
+        "config_files": {
+            "command": "sudo nikto",
+            "params": lambda target: f"-h {target} -e all"
+        },
+        "cookie_security": {
+            "command": "sudo nikto",
+            "params": lambda target: f"-h {target} -C -p"
+        },
+        "protocols": {
+            "command": "sudo nikto",
+            "params": lambda target: f"-h {target} -p"
+        },
+        "dir_file_scan": {
+            "command": "sudo nikto",
+            "params": lambda target: f"-h {target} -d"
+        },
+        "third_party_scripts": {
+            "command": "sudo nikto",
+            "params": lambda target: f"-h {target} -T"
+        },
+        "all_commands": {
+            "command": "sudo nikto",
+            "params": lambda target: [
+                f"-h {target} -C all",     # Vulnerability checks
+                f"-h {target} -M all",     # Server modules checks
+                f"-h {target} -e all",     # Configuration files tests
+                f"-h {target} -C -p",      # Cookie security
+                f"-h {target} -p",         # Protocols checks
+                f"-h {target} -d",         # Directory and file scan
+                f"-h {target} -T"          # Third-party scripts checks
+            ]
+        }
+    },
+
+    "wpscan": {
+        "normal": {
+            "command": "sudo wpscan",
+            "params": lambda target: f"--url {target}"
+        },
+        "enumerate_users": {
+            "command": "sudo wpscan",
+            "params": lambda target: f"--url {target} --enumerate u"
+        },
+        "enumerate_plugins": {
+            "command": "sudo wpscan",
+            "params": lambda target: f"--url {target} --enumerate p"
+        },
+        "enumerate_themes": {
+            "command": "sudo wpscan",
+            "params": lambda target: f"--url {target} --enumerate t"
+        },
+        "scan": {
+            "command": "sudo wpscan",
+            "params": lambda target, api_token: f"--url {target} --api-token {api_token}"
+        }
+    }
 }
 
 
@@ -698,6 +766,121 @@ async def nmap_menu():
         else:
             clear_terminal()
 
+async def nikto_menu():
+    target = state['global_target']
+    global_target_display = f"Alvo: {state['global_target']}" if state['global_target'] else "Alvo: Não definido"
+
+    while True:
+        clear_terminal()
+        print(rf"""
+        {Fore.BLUE}
+          _   _ _ _    _        
+         | \ | (_) |  | |   Pressione Ctrl+T para definir o alvo
+         |  \| |_| | _| |_ ___  {Fore.YELLOW}{global_target_display}{Fore.BLUE}
+         | . ` | | |/ / __/ _ \ 
+         | |\  | |   <| || (_) |
+         |_| \_|_|_|\_\\__\___/ 
+                                
+        {Fore.CYAN}[1] {Fore.RESET}VERIFICAÇÕES DE VULNERABILIDADES
+        {Fore.CYAN}[2] {Fore.RESET}VERIFICAÇÕES DE MÓDULOS
+        {Fore.CYAN}[3] {Fore.RESET}TESTE DE ARQUIVOS DE CONFIGURAÇÃO
+        {Fore.CYAN}[4] {Fore.RESET}CONFIGURAÇÕES DE COOKIES
+        {Fore.CYAN}[5] {Fore.RESET}VERIFICAÇÕES DE PROTOCOLOS
+        {Fore.CYAN}[6] {Fore.RESET}VARREDURA DE DIRETÓRIOS
+        {Fore.CYAN}[7] {Fore.RESET}VERIFICAÇÕES DE SCRIPTS DE TERCEIROS
+        {Fore.CYAN}[8] {Fore.RESET}EXECUTAR TODOS OS COMANDOS
+        {Fore.RED}[B] {Fore.RESET}Voltar
+        """)
+
+        mode_choice = await session.prompt_async(HTML(f"<ansiyellow>\nEscolha um modo para Nikto:</ansiyellow> "))
+
+        if mode_choice.lower() == 'b':
+            break
+
+        if mode_choice == "1":
+            add_command_to_queue("nikto", "vuln_checks", target)
+        elif mode_choice == "2":
+            add_command_to_queue("nikto", "server_modules", target)
+        elif mode_choice == "3":
+            add_command_to_queue("nikto", "config_files", target)
+        elif mode_choice == "4":
+            add_command_to_queue("nikto", "cookie_security", target)
+        elif mode_choice == "5":
+            add_command_to_queue("nikto", "protocols", target)
+        elif mode_choice == "6":
+            add_command_to_queue("nikto", "dir_file_scan", target)
+        elif mode_choice == "7":
+            add_command_to_queue("nikto", "third_party_scripts", target)
+        elif mode_choice == "8":
+            add_command_to_queue("nikto", "all_commands", target)
+        else:
+            clear_terminal()
+            print(f"{Fore.RED}Opção inválida. Tente novamente.")
+            await asyncio.sleep(2)
+
+async def wpscan_menu():
+    target = state['global_target']
+    target = validate_url(target)
+    global_target_display = f"Alvo: {target}" if target else "Alvo: Não definido"
+
+    while True:
+        clear_terminal()
+        print(rf"""
+        {Fore.BLUE}
+        __          _______   _____  _____          _   _ Pressione Ctrl+T para definir o alvo
+        \ \        / /  __ \ / ____|/ ____|   /\   | \ | |       {Fore.YELLOW}{global_target_display}{Fore.BLUE}
+         \ \  /\  / /| |__) | (___ | |       /  \  |  \| |
+          \ \/  \/ / |  ___/ \___ \| |      / /\ \ | . ` |
+           \  /\  /  | |     ____) | |____ / ____ \| |\  |
+            \/  \/   |_|    |_____/ \_____/_/    \_\_| \_|
+        
+        {Fore.CYAN}[1] {Fore.RESET}Modo Normal
+        {Fore.CYAN}[2] {Fore.RESET}Enumerar Usuários
+        {Fore.CYAN}[3] {Fore.RESET}Enumerar Plugins
+        {Fore.CYAN}[4] {Fore.RESET}Enumerar Temas
+        {Fore.CYAN}[5] {Fore.RESET}Scan Completo
+        {Fore.RED}[B] {Fore.RESET}Voltar
+        """)
+
+        mode_choice = await session.prompt_async(HTML(f"<ansiyellow>\nEscolha um modo para WPSCAN:</ansiyellow> "))
+
+        if mode_choice.lower() == 'b':
+            break
+
+        if not target:
+            print(f"{Fore.RED}Nenhum alvo definido. Pressione Ctrl+T para configurar um.")
+            await asyncio.sleep(2)
+            continue
+
+        if mode_choice == "1":
+            add_command_to_queue("wpscan", "normal", target)
+        elif mode_choice == "2":
+            add_command_to_queue("wpscan", "enumerate_users", target)
+        elif mode_choice == "3":
+            add_command_to_queue("wpscan", "enumerate_plugins", target)
+        elif mode_choice == "4":
+            add_command_to_queue("wpscan", "enumerate_themes", target)
+        elif mode_choice == "5":
+            while True:
+                api_token = await session.prompt_async(HTML("<ansiyellow>Digite seu API Token para WPSCAN ou</ansiyellow> <ansired>[B]</ansired> <ansiyellow>para voltar:</ansiyellow> "))
+
+                if api_token.lower() == 'b':
+                    clear_terminal()
+                    break
+
+                if not api_token.strip():
+                    clear_terminal()
+                    print(f"{Fore.RED}API Token inválido. Tente novamente.")
+                    continue
+
+                add_command_to_queue("wpscan", "scan", target, api_token)
+                break
+
+        else:
+            clear_terminal()
+            print(f"{Fore.RED}Opção inválida. Tente novamente.")
+            await asyncio.sleep(2)
+
 async def sniper_menu():
     target = state['global_target']
     global_target_display = f"Alvo: {state['global_target']}" if state['global_target'] else "Alvo: Não definido"
@@ -792,7 +975,6 @@ async def sniper_menu():
             clear_terminal()
 
 #TODO Adicionar a opção de utilizar ProxyChains para ARScheduler
-
 async def automation_setup_menu():
     if new_version_checker():
         update_message = f"{Fore.RED}Outdated{Fore.YELLOW} - @LuizWt {Fore.RED}\nUtilize 'sudo autorecon -update' para atualizar"
@@ -817,6 +999,8 @@ async def automation_setup_menu():
     {Fore.CYAN}[1]{Fore.RESET} NMAP
     {Fore.CYAN}[2]{Fore.RESET} NUCLEI
     {Fore.CYAN}[3]{Fore.RESET} SNIPER
+    {Fore.CYAN}[4]{Fore.RESET} NIKTO
+    {Fore.CYAN}[5]{Fore.RESET} WPSCAN
     {Fore.CYAN}[A]{Fore.RESET} Iniciar Automação
     {Fore.CYAN}[Q]{Fore.RESET} Editar Queue
     {Fore.RED}[B]{Fore.RESET} Sair""")
@@ -832,6 +1016,12 @@ async def automation_setup_menu():
         if choice == '3':
             clear_terminal()
             await sniper_menu()
+        if choice == '4':
+            clear_terminal()
+            await nikto_menu()
+        if choice == '5':
+            clear_terminal()
+            await wpscan_menu()
         
         elif choice.lower() == 'a':
             while True:
