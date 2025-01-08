@@ -42,7 +42,7 @@ TOOLS_CONFIG = {
         "check_command": ["ruby", "--version"],
         "install_commands": {
             "debian": "sudo apt-get update && sudo apt-get install -y ruby",
-            "redhat": "sudo dnf install -y ruby",
+            "redhat": "sudo dnf install -y ruby && sudo dnf install ruby-devel",
             "arch": "sudo pacman -Syu --noconfirm ruby",
             "suse": "sudo zypper refresh && sudo zypper install -y ruby"
         },
