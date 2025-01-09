@@ -49,11 +49,13 @@ def get_api_token():
     return input(f"{Fore.GREEN}Digite seu API Token ou {Fore.RED}[B]{Fore.GREEN} para voltar: ")
 
 def wpscan_options(option, global_target):
-    target = state['global_target'] if state['global_target'] else input(f"{Fore.RED}Digite o alvo ou [B] para voltar: ")
+    # Usa o global_target diretamente, sem pedir ao usuário se ele já estiver definido
+    target = global_target if global_target else input(f"{Fore.RED}Digite o alvo ou [B] para voltar: ")
+
     if target.lower() == 'b':
         clear_terminal()
-        return  
-    
+        return
+
     if option == "1":
         clear_terminal()
         wpscan(target, 'normal')
@@ -118,4 +120,4 @@ async def wpscan_menu_loop(global_target):
             continue
 
         if option in [str(i) for i in range(1, 6)]:
-            wpscan_options(option, global_target)
+            wpscan_options(option, target)
