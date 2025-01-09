@@ -175,4 +175,4 @@ Quer apoiar ainda mais? Faça uma doação e ajude a manter este projeto vivo!
   
 <hr>
 
-Este projeto está licenciado sob a MIT License.
+Este projeto está licenciado sob a GNU Affero General Public License v3.0 (Modificada)
