@@ -32,7 +32,7 @@ def get_command_explanation(mode):
     return explanations.get(mode, f"{Fore.RED}| [INFO] Modo não identificado.")
 
 def nuclei(target, mode, additional_param=None):
-    base_command = "sudo nuclei " if not is_proxychains_enabled() else "sudo proxychains nuclei "
+    base_command = "nuclei " if not is_proxychains_enabled() else "proxychains nuclei "
     command = None
 
     if mode == 'target_spec':

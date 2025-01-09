@@ -71,24 +71,32 @@ TOOLS_CONFIG = {
         "install_commands": {
             "go_required": True,  # Nuclei depende de Go
             "install_script": """
-                USER_HOME=$(eval echo ~$SUDO_USER) &&
+                USER_HOME=$(eval echo ~$SUDO_USER) && 
+
                 cd $USER_HOME && 
                 rm -rf nuclei && 
                 sudo -u $SUDO_USER git clone https://github.com/projectdiscovery/nuclei.git && 
-                cd nuclei && 
-                sudo -u $SUDO_USER git config --global --add safe.directory $USER_HOME/nuclei && 
+
+                cd $USER_HOME/nuclei && 
+
                 sudo -u $SUDO_USER mkdir -p $USER_HOME/nuclei/bin && 
+
                 sudo -u $SUDO_USER go build -v -buildvcs=false -o $USER_HOME/nuclei/bin/nuclei ./cmd/nuclei && 
+
+                # Adicionando o binário ao PATH
                 if [ -n "$BASH_VERSION" ]; then 
                     echo 'export PATH=$PATH:$USER_HOME/nuclei/bin' >> $USER_HOME/.bashrc; 
+                    source $USER_HOME/.bashrc;
                 elif [ -n "$ZSH_VERSION" ]; then 
                     echo 'export PATH=$PATH:$USER_HOME/nuclei/bin' >> $USER_HOME/.zshrc; 
-                fi &&
+                    source $USER_HOME/.zshrc;
+                fi && 
+
                 sudo cp $USER_HOME/nuclei/bin/nuclei /usr/local/bin/nuclei
             """
         }
-
     },
+
     "nikto": {
         "check_command": ["nikto", "-Version"],
         "install_commands": {
