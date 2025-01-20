@@ -2,7 +2,7 @@
 import readline
 import asyncio
 import sys
-
+import os
 # Bibliotecas de terceiros
 from colorama import init, Fore, Style
 from prompt_toolkit import PromptSession
@@ -50,6 +50,7 @@ def main_menu():
     else:
         update_message = f"{Fore.GREEN}Latest{Fore.YELLOW} - @LuizWt"
     configure_global_command()
+    wpscan_arch_info = f"{Fore.CYAN}[ARCH INFO] WPSCAN deve ser instalado via DOCKER para garantir estabilidade." if "arch-release" in os.listdir("/etc") else ""
     proxychains_info = " (/etc/proxychains.conf)" if check_proxychains_installed() else ""
     proxychains_status = f"{Fore.GREEN}ON" if proxychains_enabled else f"{Fore.RED}OFF"
     
@@ -69,7 +70,7 @@ def main_menu():
 
     {Fore.CYAN}[1] {Fore.RESET}SNIPER
     {Fore.CYAN}[2] {Fore.RESET}NMAP
-    {Fore.CYAN}[3] {Fore.RESET}WPSCAN
+    {Fore.CYAN}[3] {Fore.RESET}WPSCAN {wpscan_arch_info}{Fore.RESET}
     {Fore.CYAN}[4] {Fore.RESET}NUCLEI
     {Fore.CYAN}[5] {Fore.RESET}NIKTO
     {Fore.CYAN}[0] {Fore.RESET}ProxyChains [{proxychains_status}{Fore.RESET}] {proxychains_info}
@@ -100,8 +101,11 @@ async def main_loop():
             clear_terminal()
             await check_and_install_tool("nmap", nmap_menu_loop, state['global_target'])
         elif option == "3":
-            clear_terminal()
-            await check_and_install_tool("wpscan", wpscan_menu_loop, state['global_target'])
+            if "arch-release" in os.listdir("/etc"):
+                await check_and_install_tool("wpscan_docker", wpscan_menu_loop, state['global_target'])
+            else:
+                clear_terminal()
+                await check_and_install_tool("wpscan", wpscan_menu_loop, state['global_target'])
         elif option == "4":
             clear_terminal()
             await check_and_install_tool("nuclei", nuclei_menu_loop, state['global_target'])

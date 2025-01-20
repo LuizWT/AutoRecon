@@ -5,10 +5,13 @@ from functions.proxy_chains import is_proxychains_enabled
 from functions.set_global_target import state, set_global_target
 from functions.toggle_info import toggle_info, is_info_visible
 from functions.validations.validate_protocol import validate_url, validate_domain_extension
+from functions.docker import is_docker_running
 from prompt_toolkit import PromptSession
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.formatted_text import HTML
+import subprocess
 import asyncio
+import os
 
 init(autoreset=True)  # inicia o colorama
 
@@ -31,7 +34,17 @@ def get_command_explanation(mode):
 
 
 def wpscan(target, mode, api_token=None):
-    base_command = "wpscan" if not is_proxychains_enabled() else "proxychains4 wpscan"
+    if "arch-release" in os.listdir("/etc"):
+
+        if not is_docker_running():
+            print(f"{Fore.CYAN}[INFO] Docker não está em execução. Iniciando...")
+
+            subprocess.run("sudo systemctl start docker", shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            subprocess.run("sudo systemctl enable docker", shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+        base_command = "sudo docker run -it --rm wpscanteam/wpscan"
+    else:
+        base_command = "wpscan" if not is_proxychains_enabled() else "proxychains4 wpscan"
     
     commands = {
         'normal': f"{base_command} --url {target}",
@@ -77,6 +90,7 @@ def wpscan_options(option, global_target):
         wpscan(target, 'scan', api_token)
 
 async def wpscan_menu_loop(global_target):
+ 
     while True:
         clear_terminal()
         if not global_target:

@@ -21,10 +21,21 @@ TOOLS_CONFIG = {
     "wpscan": {
         "check_command": ["wpscan", "--version"],
         "install_commands": {
-            "ruby_required": True,  # WPScan depende de Ruby
-            "install_script": "sudo gem install wpscan"
+            "ruby_required": True,  # Gem WPScan depende de Ruby
+            "debian": "sudo gem install wpscan",
+            "redhat": "sudo gem install wpscan",
+            "suse": "sudo gem install wpscan"
         }
     },
+
+    "wpscan_docker": {
+        "check_command": ["sudo docker run -it --rm wpscanteam/wpscan", "--version"],  # Tenta verificar se o WPScan está instalado
+        "install_commands": {
+            "docker_required": True,  # WPScan Docker depende de Docker
+            "arch": "sudo systemctl start docker && docker pull wpscanteam/wpscan",
+        }
+    },
+
     "sniper": {
         "check_command": ["sudo", "sniper"],
         "install_commands": {
@@ -38,12 +49,20 @@ TOOLS_CONFIG = {
         }
     },
 
+    "docker":{
+        "check_command": ["docker"],
+        "install_commands": {
+            "arch": "sudo pacman -Syu docker",
+        },
+        "min_version": "27.0.0"
+    },
+
     "ruby": {
         "check_command": ["ruby", "--version"],
         "install_commands": {
             "debian": "sudo apt-get update && sudo apt-get install -y ruby",
             "redhat": "sudo dnf install -y ruby && sudo dnf install ruby-devel",
-            "arch": "sudo pacman -Syu --noconfirm ruby",
+            "arch": "sudo pacman -S base-devel && sudo pacman -S ruby rubygems ruby-erb",
             "suse": "sudo zypper refresh && sudo zypper install -y ruby"
         },
         "min_version": "3.0.0"
@@ -100,8 +119,13 @@ TOOLS_CONFIG = {
     "nikto": {
         "check_command": ["nikto", "-Version"],
         "install_commands": {
-            "git_clone": "https://github.com/sullo/nikto",
-            "link_script": "cd nikto/program && sudo ln -s $(pwd)/nikto.pl /usr/local/bin/nikto"
+            "install_script": """
+                cd ~ &&
+                sudo rm -rf nikto &&
+                git clone https://github.com/sullo/nikto &&
+                cd nikto/program &&
+                sudo ln -s $(pwd)/nikto.pl /usr/local/bin/nikto
+            """
         }
     }
 }
@@ -149,18 +173,15 @@ def install_tool(tool):
             print(f"{Fore.RED}[ERROR] Distribuição não suportada para a instalação de {tool}.")
             return
 
-        if "git_clone" in tool_config["install_commands"]:
-            os.system(f"git clone {tool_config['install_commands']['git_clone']}")
-
         if command:
             os.system(command)
+            result = subprocess.run(command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            print(result.stdout.decode())  # Mostrar a saída do comando
+            print(result.stderr.decode())  # Mostrar os erros, se houver
 
         if "install_script" in tool_config["install_commands"]:
             os.system(tool_config["install_commands"]["install_script"])
 
-        if "link_script" in tool_config["install_commands"]:
-            os.system(tool_config["install_commands"]["link_script"])
-        
         clear_terminal()
         print(f"{Fore.CYAN}[INFO] {tool.capitalize()} instalado com sucesso.")
 
