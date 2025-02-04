@@ -29,7 +29,7 @@ TOOLS_CONFIG = {
     },
 
     "wpscan_docker": {
-        "check_command": ["sudo docker run -it --rm wpscanteam/wpscan", "--version"],  # Tenta verificar se o WPScan está instalado
+        "check_command": ["sudo", "docker", "run", "--rm", "wpscanteam/wpscan", "--version"],  # Tenta verificar se o WPScan está instalado
         "install_commands": {
             "docker_required": True,  # WPScan Docker depende de Docker
             "arch": "sudo systemctl start docker && docker pull wpscanteam/wpscan",
