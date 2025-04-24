@@ -705,7 +705,14 @@ async def nmap_menu():
             if technique.lower() == 'b':
                 clear_terminal()
                 continue
-            add_command_to_queue("nmap", "scan_technique", target, technique)
+
+            if technique == 'all':
+                techniques = ['-sS', '-sT', '-sU', '-sF', '-sN', '-sX']
+                for tech in techniques:
+                    add_command_to_queue("nmap", "scan_technique", target, tech)
+            else:
+                add_command_to_queue("nmap", "scan_technique", target, technique)
+
         elif mode_choice == '3':
             add_command_to_queue("nmap", "host_discovery", target)
         elif mode_choice == '4':
@@ -769,9 +776,9 @@ async def nmap_menu():
 async def nikto_menu():
     target = state['global_target']
     global_target_display = f"Alvo: {state['global_target']}" if state['global_target'] else "Alvo: Não definido"
-
+    clear_terminal()
     while True:
-        clear_terminal()
+        
         print(rf"""
         {Fore.BLUE}
           _   _ _ _    _        
@@ -822,9 +829,9 @@ async def wpscan_menu():
     target = state['global_target']
     target = validate_url(target)
     global_target_display = f"Alvo: {target}" if target else "Alvo: Não definido"
-
+    clear_terminal()
     while True:
-        clear_terminal()
+        
         print(rf"""
         {Fore.BLUE}
         __          _______   _____  _____          _   _ Pressione Ctrl+T para definir o alvo
@@ -884,6 +891,7 @@ async def wpscan_menu():
 async def sniper_menu():
     target = state['global_target']
     global_target_display = f"Alvo: {state['global_target']}" if state['global_target'] else "Alvo: Não definido"
+    clear_terminal()
     while True:
         print(rf"""
         {Fore.RED}                  
