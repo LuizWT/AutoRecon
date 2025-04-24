@@ -1,6 +1,8 @@
 # Bibliotecas e Dependências:
 import asyncio
 import os
+import json
+from pathlib import Path
 from prompt_toolkit import PromptSession
 from colorama import Fore, Style, init
 from functions.clear_terminal import clear_terminal
@@ -20,8 +22,11 @@ is_running = False
 automation_lock = asyncio.Lock()
 
 # Variáveis Globais:
-command_queue = []
 stop_event = asyncio.Event()
+
+# Caminho fixo para o armazenamento dos comandos
+QUEUE_DIR = Path("AutoRecon/storage")
+QUEUE_FILE = QUEUE_DIR / "commands_queue.txt"
 
 # Estruturas de Comandos:
 #TODO Adicionar na biblioteca a lista de comandos para cada ferramenta
@@ -251,15 +256,9 @@ tools_commands = {
 }
 
 
-async def get_network_target_submenu():
-    while True:
-        target = await session.prompt_async(HTML(f"<ansigreen>Digite o alvo da rede (EX: 192.168.1.0/24) ou</ansigreen> <ansired>[B]</ansired> <ansigreen>para voltar:</ansigreen> "))
-        if target.lower() == 'b':
-            return None
-        if is_valid_cidr(target):
-            return target
-        else:
-            print(f"{Fore.RED}Formato inválido. Por favor, insira um endereço CIDR válido.{Fore.RESET}")
+# Funções de Execução:
+def stop_execution():
+    stop_event.set()
 
 # Funções de Formatação e Adição de Comandos:
 def format_command(tool, mode, target, additional_param=None):
@@ -289,63 +288,33 @@ def format_command(tool, mode, target, additional_param=None):
     # Comando genérico caso nada seja definido
     return f"{tool} {target}"
 
-async def apply_proxychains_to_command():
-    if not command_queue:
-        print(f"{Fore.YELLOW}[INFO] A fila de comandos está vazia. Nada a aplicar.{Style.RESET_ALL}")
-        return
+# Cria o diretório e arquivo, se necessário
+def ensure_queue_file():
+    QUEUE_DIR.mkdir(parents=True, exist_ok=True)
+    if not QUEUE_FILE.exists():
+        QUEUE_FILE.write_text("")
 
-    try:
-        while True:
-            
-            print(f"{Fore.CYAN}Comandos na Fila de Automação:{Style.RESET_ALL}")
-            formatted_commands = [f"{Fore.CYAN}[{idx}]{Fore.RESET} {cmd['command']}" for idx, cmd in enumerate(command_queue, start=1)]
-            print("\n".join(formatted_commands))
+# Carrega os comandos do arquivo
+def load_command_queue():
+    ensure_queue_file()
+    lines = QUEUE_FILE.read_text().strip().splitlines()
+    return [json.loads(line) for line in lines if line.strip()]
 
-            user_input = await session.prompt_async(HTML("<ansiyellow>Digite o índice do comando (ou use números separados por vírgula)</ansiyellow> <ansired>[B]</ansired> <ansiyellow>para voltar:</ansiyellow> "))
-            if user_input.lower() == 'b':
-                break
-            
-            try:
-                indices = [int(x.strip()) - 1 for x in user_input.split(',')]
-                
-                for index in indices:
-                    if 0 <= index < len(command_queue):
-                        command = command_queue[index]['command']
-                        
-                        if command.startswith("proxychains ") or command.startswith("proxychains4 "):
-                            clear_terminal()
-                            print(f"{Fore.YELLOW}[INFO] O comando '{command}' já está configurado com ProxyChains.{Style.RESET_ALL}\n")
-                        elif command.startswith("sudo "):
-                            if not command.startswith("sudo proxychains "):
-                                new_command = command.replace("sudo ", "sudo proxychains ", 1)
-                                command_queue[index]['command'] = new_command
-                                clear_terminal()
-                                print(f"{Fore.GREEN}[INFO] {command} -> {new_command}{Style.RESET_ALL}\n")
-                            else:
-                                clear_terminal()
-                                print(f"{Fore.YELLOW}[INFO] O comando '{command}' já está configurado com ProxyChains.{Style.RESET_ALL}\n")
-                        else:
-                            new_command = f"proxychains {command}"
-                            command_queue[index]['command'] = new_command
-                            clear_terminal()
-                            print(f"{Fore.GREEN}[INFO] {command} -> {new_command}{Style.RESET_ALL}\n")
-                    else:
-                        clear_terminal()
-                        print(f"{Fore.RED}[ERROR] Índice inválido: {index + 1}. Ignorado.{Style.RESET_ALL}\n")
+# Salva a fila inteira (sobrescreve)
+def save_command_queue(queue):
+    ensure_queue_file()
+    with QUEUE_FILE.open("w") as f:
+        for command in queue:
+            f.write(json.dumps(command) + "\n")
 
-            except ValueError:
-                clear_terminal()
-                print(f"{Fore.RED}[ERROR] Entrada inválida. Tente novamente com índices válidos, separados por vírgulas.{Style.RESET_ALL}\n")
-            
-    except ValueError:
-        clear_terminal()
-        print(f"{Fore.RED}[ERROR] Entrada inválida. Tente novamente.{Style.RESET_ALL}")
-
-
-
+# Adiciona um novo comando ao arquivo (storage/commands_queue.txt)
 def add_command_to_queue(tool_name, mode, target, additional_param=None):
+    from tools.submenu.automation_submenu import format_command, clear_terminal
+
     formatted_command = format_command(tool_name, mode, target, additional_param)
     commands_added = []
+
+    queue = load_command_queue()
 
     if mode == "all_commands":
         commands = formatted_command.split('\n')
@@ -355,7 +324,7 @@ def add_command_to_queue(tool_name, mode, target, additional_param=None):
                 "mode": mode,
                 "command": cmd.strip()
             }
-            command_queue.append(command_data)
+            queue.append(command_data)
             commands_added.append(cmd.strip())
     else:
         command_data = {
@@ -363,37 +332,119 @@ def add_command_to_queue(tool_name, mode, target, additional_param=None):
             "mode": mode,
             "command": formatted_command
         }
-        command_queue.append(command_data)
+        queue.append(command_data)
         commands_added.append(formatted_command)
 
+    save_command_queue(queue)
 
     clear_terminal()
     print(f"{Fore.GREEN}Comandos adicionados:\n" + "\n".join(commands_added))
 
+# Remove comando pelo índice
+def remove_command_by_index(index):
+    queue = load_command_queue()
+    if 0 <= index < len(queue):
+        queue.pop(index)
+        save_command_queue(queue)
 
-# Funções de Execução:
-def stop_execution():
-    stop_event.set()
+# Limpa todos os comandos
+def clear_command_queue():
+    save_command_queue([])
+
+# Edita um comando específico
+def edit_command(index, new_command):
+    queue = load_command_queue()
+    if 0 <= index < len(queue):
+        queue[index]["command"] = new_command
+        save_command_queue(queue)
+
+# Lista os comandos (formatados)
+def get_formatted_command_list():
+    queue = load_command_queue()
+    return [f"{Fore.CYAN}[{i + 1}]{Fore.RESET} {cmd['command']}" for i, cmd in enumerate(queue)]
+
+# Aplica proxychains aos comandos escolhidos via índice
+async def apply_proxychains_to_command():
+    queue = load_command_queue()
+
+    if not queue:
+        print(f"{Fore.YELLOW}[INFO] A fila de comandos está vazia. Nada a aplicar.{Style.RESET_ALL}")
+        return
+
+    try:
+        while True:
+            print(f"{Fore.CYAN}Comandos na Fila de Automação:{Style.RESET_ALL}")
+            formatted_commands = get_formatted_command_list()
+            print("\n".join(formatted_commands))
+
+            user_input = await session.prompt_async(
+                HTML("<ansiyellow>Digite o índice do comando (ou use números separados por vírgula)</ansiyellow> <ansired>[B]</ansired> <ansiyellow>para voltar:</ansiyellow> ")
+            )
+            if user_input.lower() == 'b':
+                break
+
+            try:
+                indices = [int(x.strip()) - 1 for x in user_input.split(',')]
+
+                for index in indices:
+                    if 0 <= index < len(queue):
+                        command = queue[index]['command']
+
+                        if command.startswith("proxychains ") or command.startswith("proxychains4 "):
+                            clear_terminal()
+                            print(f"{Fore.YELLOW}[INFO] O comando '{command}' já está configurado com ProxyChains.{Style.RESET_ALL}\n")
+                        elif command.startswith("sudo "):
+                            if not command.startswith("sudo proxychains "):
+                                new_command = command.replace("sudo ", "sudo proxychains ", 1)
+                                queue[index]['command'] = new_command
+                                clear_terminal()
+                                print(f"{Fore.GREEN}[INFO] {command} -> {new_command}{Style.RESET_ALL}\n")
+                            else:
+                                clear_terminal()
+                                print(f"{Fore.YELLOW}[INFO] O comando '{command}' já está configurado com ProxyChains.{Style.RESET_ALL}\n")
+                        else:
+                            new_command = f"proxychains {command}"
+                            queue[index]['command'] = new_command
+                            clear_terminal()
+                            print(f"{Fore.GREEN}[INFO] {command} -> {new_command}{Style.RESET_ALL}\n")
+                    else:
+                        clear_terminal()
+                        print(f"{Fore.RED}[ERROR] Índice inválido: {index + 1}. Ignorado.{Style.RESET_ALL}\n")
+
+                save_command_queue(queue)
+
+            except ValueError:
+                clear_terminal()
+                print(f"{Fore.RED}[ERROR] Entrada inválida. Tente novamente com índices válidos, separados por vírgulas.{Style.RESET_ALL}\n")
+
+    except ValueError:
+        clear_terminal()
+        print(f"{Fore.RED}[ERROR] Entrada inválida. Tente novamente.{Style.RESET_ALL}")
 
 async def execute_commands_in_intervals(interval_minutes):
-    global is_running
+
     is_running = True
 
     try:
         while is_running:
-            for command_data in command_queue:
+            queue = load_command_queue()
+            for command_data in queue:
                 if stop_event.is_set():
                     is_running = False
                     break
                 await process_command(command_data)
-            
+
             if not is_running:
                 break
-            
+
             print(f"{Fore.CYAN}Iniciando automação com intervalos de {interval_minutes} minutos\nPressione {Fore.RED}Enter{Fore.CYAN} para interromper a execução.\n{Fore.YELLOW}Aguardando {interval_minutes} minutos para a próxima execução...{Fore.RESET}\n")
-            await asyncio.wait([asyncio.create_task(stop_event.wait()), asyncio.create_task(asyncio.sleep(interval_minutes * 60))], return_when=asyncio.FIRST_COMPLETED)
+            await asyncio.wait([
+                asyncio.create_task(stop_event.wait()),
+                asyncio.create_task(asyncio.sleep(interval_minutes * 60))
+            ], return_when=asyncio.FIRST_COMPLETED)
             if stop_event.is_set():
                 is_running = False
+                stop_event.clear()
                 break
 
     except asyncio.CancelledError:
@@ -430,22 +481,20 @@ async def process_command(command_data):
     except Exception as e:
         print(f"Erro ao executar o comando: {e}")
 
-async def edit_queue_menu():
+async def edit_queue_menu(session, new_version_checker, state):
     while True:
         clear_terminal()
         update_message = (
-            f"{Fore.RED}Outdated{Fore.YELLOW} - @LuizWt {Fore.RED}\n"
-            f"Utilize 'sudo autorecon -update' para atualizar"
-            if new_version_checker()
-            else f"{Fore.GREEN}Latest{Fore.YELLOW} - @LuizWt"
+            f"{Fore.RED}Outdated{Fore.YELLOW} - @LuizWt {Fore.RED}\nUtilize 'sudo autorecon -update' para atualizar"
+            if new_version_checker() else f"{Fore.GREEN}Latest{Fore.YELLOW} - @LuizWt"
         )
         global_target_display = (
             f"Alvo: {state['global_target']}" if state['global_target'] else "Alvo: Não definido"
         )
 
         print(rf"""
-            {Fore.BLUE}{Style.BRIGHT}
-           _____     _____      _              _       _  {Fore.GREEN}Edição de Queue{Fore.BLUE}{Style.BRIGHT}         
+            {Fore.BLUE}
+           _____     _____      _              _       _  {Fore.GREEN}Edição de Queue{Fore.BLUE}         
      /\   |  __ \   / ____|    | |            | |     | |  {Fore.YELLOW}{global_target_display}{Fore.BLUE}        
     /  \  | |__) | | (___   ___| |__   ___  __| |_   _| | ___ _ __ 
    / /\ \ |  _  /   \___ \ / __| '_ \ / _ \/ _` | | | | |/ _ \ '__|
@@ -453,106 +502,94 @@ async def edit_queue_menu():
  /_/    \_\_|  \_\ |_____/ \___|_| |_|\___|\__,_|\__,_|_|\___|_|   
 
  {Fore.YELLOW}+ -- --=[ https://github.com/LuizWT/
- {Fore.YELLOW}+ -- --=[ AutoRecon {__version__} {update_message}
+ {Fore.YELLOW}+ -- --=[ AutoRecon {update_message}
         """)
 
-        if command_queue:
-            print(f"{Fore.CYAN}Comandos na Fila de Automação:{Style.RESET_ALL}")
-            formatted_commands = [f"{Fore.CYAN}[{idx}]{Fore.RESET} {cmd['command']}" for idx, cmd in enumerate(command_queue, start=1)]
+        queue = load_command_queue()
+
+        if queue:
+            print(f"{Fore.CYAN}Comandos na Fila de Automação:{Fore.RESET}")
+            formatted_commands = get_formatted_command_list()
             print("\n".join(formatted_commands))
 
             print(f"\n{'_' * 30}\n\n{Fore.CYAN}[A]{Fore.RESET} Adicionar comando customizado\n{Fore.CYAN}[E]{Fore.RESET} Editar um comando\n{Fore.CYAN}[P]{Fore.RESET} Aplicar Proxychains\n{Fore.RED}[R]{Fore.RESET} Remover um comando\n{Fore.RED}[RA]{Fore.RESET} Remover todos os comandos\n{Fore.RED}[B]{Fore.RESET} Voltar\n")
 
-            
-            choice = await session.prompt_async(
-                HTML("<ansiyellow>Escolha uma opção:</ansiyellow> ")
-            )
+            choice = await session.prompt_async(HTML("<ansiyellow>Escolha uma opção:</ansiyellow> "))
             if choice.lower() == 'r':
-                await remove_command_from_queue()
+                await remove_command_from_queue(session)
             elif choice.lower() == 'ra':
                 while True:
                     confirm = await session.prompt_async(HTML("<ansiyellow>Tem certeza que deseja remover todos os comandos da fila? (y/n):</ansiyellow> "))
-    
                     if confirm.lower() in ['s', 'y']:
-                        command_queue.clear()
+                        clear_command_queue()
                         break
-                    if confirm.lower() == 'n':
+                    elif confirm.lower() == 'n':
                         break
                     else:
                         print(f"{Fore.RED}[ERROR] Digite um valor válido (y/n)")
             elif choice.lower() == 'a':
-                await add_custom_command_to_queue()
+                await add_custom_command_to_queue(session)
             elif choice.lower() == 'e':
-                await edit_command_in_queue()
+                await edit_command_in_queue(session)
             elif choice.lower() == 'p':
+                from tools.submenu.automation_submenu import apply_proxychains_to_command
                 clear_terminal()
                 await apply_proxychains_to_command()
             elif choice.lower() == 'b':
                 clear_terminal()
                 return
-            else:
-                pass
         else:
-            print(f"{Fore.YELLOW}A fila de comandos está vazia.{Style.RESET_ALL}")
+            print(f"{Fore.YELLOW}A fila de comandos está vazia.{Fore.RESET}")
             print(f"\n{'_' * 30}\n\n{Fore.CYAN}[A]{Fore.RESET} Adicionar comando customizado\n{Fore.RED}[B]{Fore.RESET} Voltar\n")
 
-            choice = await session.prompt_async(
-                HTML("<ansiyellow>Escolha uma opção:</ansiyellow> ")
-            )
+            choice = await session.prompt_async(HTML("<ansiyellow>Escolha uma opção:</ansiyellow> "))
             if choice.lower() == 'a':
-                await add_custom_command_to_queue()
+                await add_custom_command_to_queue(session)
             elif choice.lower() == 'b':
                 clear_terminal()
                 return
-            else:
-                pass
 
-async def remove_command_from_queue():
-
+async def remove_command_from_queue(session):
+    queue = load_command_queue()
     idx_input = await session.prompt_async(HTML("<ansiyellow>Digite o índice do comando a ser removido:</ansiyellow> "))
-    
     try:
         idx = int(idx_input)
-        if 1 <= idx <= len(command_queue):
-            command_queue.pop(idx - 1)
+        if 1 <= idx <= len(queue):
+            remove_command_by_index(idx - 1)
         else:
             print(f"{Fore.RED}Índice fora do intervalo.")
     except ValueError:
         print(f"{Fore.RED}Entrada inválida. Por favor, insira um número válido.")
 
-async def edit_command_in_queue():
+async def edit_command_in_queue(session):
+    queue = load_command_queue()
     try:
         index = int(await session.prompt_async(HTML("<ansiyellow>Informe o número do comando para editar:</ansiyellow> "))) - 1
-        if 0 <= index < len(command_queue):
-            command = command_queue[index]
-            old_command = command['command']
+        if 0 <= index < len(queue):
+            old_command = queue[index]['command']
             clear_terminal()
-            print(f"{Fore.CYAN}Comando atual: {old_command}{Style.RESET_ALL}")
+            print(f"{Fore.CYAN}Comando atual: {old_command}{Fore.RESET}")
 
-            # Permite editar o comando na linha completa
-            edited_command = await session.prompt_async(HTML(f"<ansiyellow>Edite o comando (ou deixe em branco para manter o atual): </ansiyellow> "), default=old_command)
-            
-            # Se o usuário pressionar Enter sem digitar nada, mantém o comando original
+            edited_command = await session.prompt_async(HTML("<ansiyellow>Edite o comando (ou deixe em branco para manter o atual): </ansiyellow> "), default=old_command)
+
             if edited_command.strip() == "":
-                print(f"{Fore.YELLOW}Comando mantido: {old_command}{Style.RESET_ALL}")
+                print(f"{Fore.YELLOW}Comando mantido: {old_command}{Fore.RESET}")
             else:
-                command_queue[index]['command'] = edited_command.strip()
+                edit_command(index, edited_command.strip())
         else:
-            print(f"{Fore.RED}Índice inválido. Tente novamente.{Style.RESET_ALL}")
+            print(f"{Fore.RED}Índice inválido. Tente novamente.{Fore.RESET}")
     except ValueError:
-        print(f"{Fore.RED}Entrada inválida. Tente novamente.{Style.RESET_ALL}")
+        print(f"{Fore.RED}Entrada inválida. Tente novamente.{Fore.RESET}")
 
-
-async def add_custom_command_to_queue():
+async def add_custom_command_to_queue(session):
     custom_command = await session.prompt_async(HTML("<ansiyellow>Digite o comando customizado:</ansiyellow> "))
-    command_data = {
+    queue = load_command_queue()
+    queue.append({
         "tool": "custom",
         "mode": "custom",
         "command": custom_command
-    }
-    command_queue.append(command_data)
-
-
+    })
+    save_command_queue(queue)
 
 async def get_scan_technique():
     clear_terminal()
@@ -589,6 +626,15 @@ async def get_scan_technique():
         return await get_scan_technique()
     
 
+async def get_network_target_submenu():
+    while True:
+        target = await session.prompt_async(HTML(f"<ansigreen>Digite o alvo da rede (EX: 192.168.1.0/24) ou</ansigreen> <ansired>[B]</ansired> <ansigreen>para voltar:</ansigreen> "))
+        if target.lower() == 'b':
+            return None
+        if is_valid_cidr(target):
+            return target
+        else:
+            print(f"{Fore.RED}Formato inválido. Por favor, insira um endereço CIDR válido.{Fore.RESET}")
 
 # MENUS:
 async def nuclei_menu():
@@ -1051,7 +1097,7 @@ async def automation_setup_menu():
                 except ValueError:
                     print(f"{Fore.RED}Entrada inválida. Por favor, insira um número inteiro.")
         elif choice.lower() == 'q':
-            await edit_queue_menu()
+            await edit_queue_menu(session, new_version_checker, state)
         elif choice.lower() == 'b':
             if is_running:
                 print(f"{Fore.YELLOW}Automação em andamento. Conclua ou interrompa a execução antes de sair.{Fore.RESET}")
