@@ -101,9 +101,6 @@ async def main_loop():
             clear_terminal()
             await check_and_install_tool("nmap", nmap_menu_loop, state['global_target'])
         elif option == "3":
-            if "arch-release" in os.listdir("/etc"):
-                await check_and_install_tool("wpscan_docker", wpscan_menu_loop, state['global_target'])
-            else:
                 clear_terminal()
                 await check_and_install_tool("wpscan", wpscan_menu_loop, state['global_target'])
         elif option == "4":

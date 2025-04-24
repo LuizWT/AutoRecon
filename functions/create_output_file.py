@@ -1,3 +1,4 @@
+from pathlib import Path
 import os
 from colorama import init, Fore
 from functions.clear_terminal import clear_terminal
@@ -7,13 +8,13 @@ import asyncio
 init(autoreset=True)
 
 def create_output_file(script_name):
-    output_dir = "output"
-    output_file = os.path.join(output_dir, f"{script_name}_output.txt")
-    os.makedirs(output_dir, exist_ok=True)
-    return output_file
+    output_dir = Path("output")
+    output_dir.mkdir(parents=True, exist_ok=True)
+    return output_dir / f"{script_name}_output.txt"
+
 
 def get_project_root():
-    script_path = os.path.abspath(os.path.join(os.path.dirname(__file__)))
+    script_path = Path(__file__).resolve().parent
     repo_path = get_git_repo_path(start_path=script_path)
     if not repo_path:
         raise FileNotFoundError("[ERROR] Diretório raiz do projeto não encontrado.")
@@ -21,21 +22,16 @@ def get_project_root():
 
 def execute_command_and_log(command, script_name):
     try:
-
         project_root = get_project_root()
+        output_dir = project_root / "output"
+        output_dir.mkdir(parents=True, exist_ok=True)
+        output_file = output_dir / f"{script_name}_output.txt"
 
-        output_dir = os.path.join(project_root, "output")
-        output_file = os.path.join(output_dir, f"{script_name}_output.txt")
-
-        os.makedirs(output_dir, exist_ok=True)
-
-        with open(output_file, 'a') as f:
+        with output_file.open('a') as f:
             f.write(f"\n\n\nExecutando comando: {command}\n")
-        
+
         print(f"{Fore.YELLOW}Executando comando: {command}")
-
-        result = os.system(command + f" >> {output_file} 2>&1")
-
+        os.system(f"{command} >> {output_file} 2>&1")
         clear_terminal()
         print(f"{Fore.GREEN}Resultados salvos em: {output_file}")
 
@@ -46,13 +42,11 @@ def execute_command_and_log(command, script_name):
 async def execute_command_and_log_submenu(command, tool_name):
     try:
         project_root = get_project_root()
+        output_dir = project_root / "output"
+        output_dir.mkdir(parents=True, exist_ok=True)
+        output_file = output_dir / f"{tool_name}_output.txt"
 
-        output_dir = os.path.join(project_root, "output")
-        output_file = os.path.join(output_dir, f"{tool_name}_output.txt")
-
-        os.makedirs(output_dir, exist_ok=True)
-
-        with open(output_file, 'a') as f:
+        with output_file.open('a') as f:
             f.write(f"\n\n\nExecutando comando: {command}\n")
 
         full_command = f"{command} >> {output_file} 2>&1"
@@ -64,9 +58,8 @@ async def execute_command_and_log_submenu(command, tool_name):
             stderr=asyncio.subprocess.PIPE
         )
 
-        # Captura a saída e escreve no arquivo de log
         stdout, stderr = await process.communicate()
-        with open(output_file, 'a') as f:
+        with output_file.open('a') as f:
             if stdout:
                 f.write(stdout.decode())
             if stderr:

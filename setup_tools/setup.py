@@ -24,15 +24,8 @@ TOOLS_CONFIG = {
             "ruby_required": True,  # Gem WPScan depende de Ruby
             "debian": "sudo gem install wpscan",
             "redhat": "sudo gem install wpscan",
-            "suse": "sudo gem install wpscan"
-        }
-    },
-
-    "wpscan_docker": {
-        "check_command": ["sudo", "docker", "run", "--rm", "wpscanteam/wpscan", "--version"],  # Tenta verificar se o WPScan está instalado
-        "install_commands": {
-            "docker_required": True,  # WPScan Docker depende de Docker
-            "arch": "sudo systemctl start docker && docker pull wpscanteam/wpscan",
+            "suse": "sudo gem install wpscan",
+            "arch": "sudo gem install wpscan -n /usr/local/bin"
         }
     },
 
@@ -47,14 +40,6 @@ TOOLS_CONFIG = {
                 sudo bash install.sh
             """
         }
-    },
-
-    "docker":{
-        "check_command": ["docker"],
-        "install_commands": {
-            "arch": "sudo pacman -Syu docker",
-        },
-        "min_version": "27.0.0"
     },
 
     "ruby": {

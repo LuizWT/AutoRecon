@@ -12,12 +12,14 @@ def is_git_repo(path: Path) -> bool:
     # fallback simples: basta existir .git
     return (path / '.git').is_dir()
 
-def get_git_repo_path(start_path: Path | None = None) -> Path | None:
-    path = start_path or Path.cwd()
+def get_git_repo_path(start_path: Path | str | None = None) -> Path | None:
+    # garante que start_path seja um Path, mesmo que venha como string
+    path = Path(start_path) if start_path is not None else Path.cwd()
     for parent in [path, *path.parents]:
         if (parent / '.git').is_dir():
             return parent
     return None
+
 
 def update_repository() -> None:
     repo_root = get_git_repo_path(Path.cwd())
@@ -48,9 +50,9 @@ def update_repository() -> None:
         print(f"{Fore.RED}[ERROR]{Fore.RESET} Falha ao atualizar o repositório: {e}")
         sys.exit(1)
 
+
 def new_version_checker() -> bool:
     # Verifica se o repositório está atrás do remoto (precisa de update), a partir do CWD.
-    
     repo_root = get_git_repo_path(Path.cwd())
     if not repo_root:
         print(f"{Fore.RED}[ERROR]{Fore.RESET} Não encontrado repositório Git em {Path.cwd()}.")
@@ -78,3 +80,4 @@ def parse_args() -> argparse.Namespace:
         '-u', '--update', action='store_true', help="Atualiza o código para a versão mais recente"
     )
     return parser.parse_args()
+

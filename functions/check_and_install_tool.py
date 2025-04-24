@@ -70,21 +70,6 @@ async def check_and_install_tool(tool_name, menu_func, global_target):
                     else:
                         print(f"{Fore.RED}[INFO] Retornando ao menu principal...")
                         return
-                    
-            if install_commands.get("docker_required"):
-                try:
-                    subprocess.run(TOOLS_CONFIG["docker"]["check_command"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
-                except FileNotFoundError:
-                    install_dep = input(f"{Fore.YELLOW}[INFO] {tool_name} requer Docker.\nDeseja instalar Docker e {tool_name}? (y/n): ").lower()
-                    if install_dep in ['s', 'y']:
-                        install_tool("docker")
-                        install_tool(tool_name)
-                        is_installed = True
-                        print(f"{Fore.GREEN}[INFO] Abrindo o menu {tool_name.upper()}...")
-                        await menu_func(global_target)
-                    else:
-                        print(f"{Fore.RED}[INFO] Retornando ao menu principal...")
-                        return
 
         if is_installed == False:
             install_choice = input(f"{Fore.YELLOW}[INFO] {tool_name} não está instalado. Deseja instalar o {tool_name}? (y/n): ").lower()

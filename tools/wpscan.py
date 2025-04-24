@@ -5,7 +5,6 @@ from functions.proxy_chains import is_proxychains_enabled
 from functions.set_global_target import state, set_global_target
 from functions.toggle_info import toggle_info, is_info_visible
 from functions.validations.validate_protocol import validate_url, validate_domain_extension
-from functions.docker import is_docker_running
 from prompt_toolkit import PromptSession
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.formatted_text import HTML
@@ -34,17 +33,8 @@ def get_command_explanation(mode):
 
 
 def wpscan(target, mode, api_token=None):
-    if "arch-release" in os.listdir("/etc"):
 
-        if not is_docker_running():
-            print(f"{Fore.CYAN}[INFO] Docker não está em execução. Iniciando...")
-
-            subprocess.run("sudo systemctl start docker", shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            subprocess.run("sudo systemctl enable docker", shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-        base_command = "sudo docker run -it --rm wpscanteam/wpscan"
-    else:
-        base_command = "wpscan" if not is_proxychains_enabled() else "proxychains4 wpscan"
+    base_command = "sudo wpscan" if not is_proxychains_enabled() else "sudo proxychains4 wpscan"
     
     commands = {
         'normal': f"{base_command} --url {target}",
@@ -56,7 +46,7 @@ def wpscan(target, mode, api_token=None):
 
     command = commands.get(mode)
     if command:
-        execute_command_and_log(command, "wpscan")
+        execute_command_and_log(command, "sudo wpscan")
 
 def get_api_token():
     return input(f"{Fore.GREEN}Digite seu API Token ou {Fore.RED}[B]{Fore.GREEN} para voltar: ")
