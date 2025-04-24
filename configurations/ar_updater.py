@@ -7,7 +7,6 @@ from colorama import Fore, init
 
 init(autoreset=True)
 
-
 def is_git_repo(path: Path) -> bool:
     # fallback simples: basta existir .git
     return (path / '.git').is_dir()
@@ -20,9 +19,9 @@ def get_git_repo_path(start_path: Path | str | None = None) -> Path | None:
             return parent
     return None
 
-
 def update_repository() -> None:
-    repo_root = get_git_repo_path(Path.cwd())
+    script_dir = Path(__file__).resolve().parent
+    repo_root = get_git_repo_path(script_dir)
     if not repo_root:
         print(f"{Fore.RED}[ERROR]{Fore.RESET} Não encontrado repositório Git em {Path.cwd()}")
         sys.exit(1)
@@ -50,12 +49,12 @@ def update_repository() -> None:
         print(f"{Fore.RED}[ERROR]{Fore.RESET} Falha ao atualizar o repositório: {e}")
         sys.exit(1)
 
-
 def new_version_checker() -> bool:
     # Verifica se o repositório está atrás do remoto (precisa de update), a partir do CWD.
-    repo_root = get_git_repo_path(Path.cwd())
+    script_dir = Path(__file__).resolve().parent
+    repo_root = get_git_repo_path(script_dir)
     if not repo_root:
-        print(f"{Fore.RED}[ERROR]{Fore.RESET} Não encontrado repositório Git em {Path.cwd()}.")
+        print(f"{Fore.RED}[ERROR]{Fore.RESET} Não encontrado repositório Git em {script_dir}.")
         return False
 
     try:
@@ -70,7 +69,6 @@ def new_version_checker() -> bool:
     except subprocess.CalledProcessError as e:
         print(f"{Fore.RED}[ERROR]{Fore.RESET} Erro ao verificar commits: {e}")
         return False
-
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
