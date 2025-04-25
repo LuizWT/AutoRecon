@@ -2,6 +2,7 @@
 import asyncio
 import os
 import json
+from threading import Event
 from pathlib import Path
 from prompt_toolkit import PromptSession
 from colorama import Fore, Style, init
@@ -25,8 +26,9 @@ automation_lock = asyncio.Lock()
 stop_event = asyncio.Event()
 
 # Caminho fixo para o armazenamento dos comandos
-QUEUE_DIR = Path("AutoRecon/storage")
-QUEUE_FILE = QUEUE_DIR / "commands_queue.txt"
+BASE_DIR    = Path(__file__).resolve().parent
+QUEUE_DIR   = BASE_DIR / "storage"
+QUEUE_FILE  = QUEUE_DIR / "commands_queue.txt"
 
 # Estruturas de Comandos:
 #TODO Adicionar na biblioteca a lista de comandos para cada ferramenta
@@ -257,6 +259,12 @@ tools_commands = {
 
 
 # Funções de Execução:
+async def wait_for_enter():
+    loop = asyncio.get_event_loop()
+    await loop.run_in_executor(None, input)
+
+    stop_event.set()
+
 def stop_execution():
     stop_event.set()
 
@@ -422,14 +430,16 @@ async def apply_proxychains_to_command():
         print(f"{Fore.RED}[ERROR] Entrada inválida. Tente novamente.{Style.RESET_ALL}")
 
 async def execute_commands_in_intervals(interval_minutes):
-
     is_running = True
+
+    # Cria uma tarefa para aguardar o Enter
+    enter_task = asyncio.create_task(wait_for_enter())
 
     try:
         while is_running:
             queue = load_command_queue()
             for command_data in queue:
-                if stop_event.is_set():
+                if stop_event.is_set():  # Verifica se o usuário solicitou parada
                     is_running = False
                     break
                 await process_command(command_data)
@@ -437,49 +447,50 @@ async def execute_commands_in_intervals(interval_minutes):
             if not is_running:
                 break
 
-            print(f"{Fore.CYAN}Iniciando automação com intervalos de {interval_minutes} minutos\nPressione {Fore.RED}Enter{Fore.CYAN} para interromper a execução.\n{Fore.YELLOW}Aguardando {interval_minutes} minutos para a próxima execução...{Fore.RESET}\n")
-            await asyncio.wait([
-                asyncio.create_task(stop_event.wait()),
-                asyncio.create_task(asyncio.sleep(interval_minutes * 60))
-            ], return_when=asyncio.FIRST_COMPLETED)
-            if stop_event.is_set():
+            print(
+                f"{Fore.CYAN}Iniciando automação com intervalos de {interval_minutes} minutos"
+                f"\nPressione {Fore.RED}Enter{Fore.CYAN} para interromper a execução."
+                f"\n{Fore.YELLOW}Aguardando {interval_minutes} minutos para a próxima execução...{Fore.RESET}\n"
+            )
+
+            # Cria explicitamente uma Task para o sleep (asyncio.wait não aceita coroutines)
+            sleep_task = asyncio.create_task(asyncio.sleep(interval_minutes * 60))
+            # Aguarda um Enter ou o sleep
+            done, pending = await asyncio.wait(
+                [enter_task, sleep_task],
+                return_when=asyncio.FIRST_COMPLETED
+            )
+
+            # Se Enter = True, para e cancela o sleep
+            if enter_task in done:
                 is_running = False
-                stop_event.clear()
+                # Cancela o sleep caso ainda esteja pendente (certa precaução)
+                if not sleep_task.done():
+                    sleep_task.cancel()
                 break
+
+            # Se sleep = True, continua o loop e recria o sleep na próxima iteração
+            if sleep_task in done:
+                # Reinicia a tarefa de Enter para a próxima iteração
+                enter_task = asyncio.create_task(wait_for_enter())
 
     except asyncio.CancelledError:
         print("\nAutomação interrompida pelo usuário.\nVoltando para o Submenu...")
     finally:
+        # Reseta o evento para permitir futuras execuções -- Essa função só me da trabalho, não aguento mais
         stop_event.clear()
 
+
 async def process_command(command_data):
+    # Executa um comando da fila usando EXATAMENTE a string que foi salva em command_data['command'],
+
     tool = command_data.get("tool")
-    command = command_data.get("command")
+    cmd_str = command_data.get("command")
 
     try:
-        if tool == "custom":
-            await execute_command_and_log_submenu(command, tool)
-        elif tool in tools_commands:
-            mode = command_data.get("mode")
-            target = command_data.get("target", state.get('global_target'))
-            param = command_data.get("param")
-
-            if mode == "all_commands":
-                commands = tools_commands[tool][mode]["params"](target)
-                for cmd in commands:
-                    await execute_command_and_log_submenu(f"{tools_commands[tool][mode]['command']} {cmd}", tool)
-            elif mode == "scan_technique":
-                command_func = tools_commands[tool][mode]["params"]
-                command = command_func(param, target)
-                await execute_command_and_log_submenu(f"{tools_commands[tool][mode]['command']} {command}", tool)
-            else:
-                command_func = tools_commands[tool][mode]["params"]
-                command = command_func(target, param) if param else command_func(target)
-                await execute_command_and_log_submenu(f"{tools_commands[tool][mode]['command']} {command}", tool)
-        else:
-            print(f"Modo '{mode}' não encontrado na biblioteca de comandos para '{tool}'.")
+        await execute_command_and_log_submenu(cmd_str, tool)
     except Exception as e:
-        print(f"Erro ao executar o comando: {e}")
+        print(f"[ERRO] Falha ao executar '{cmd_str}': {e}")
 
 async def edit_queue_menu(session, new_version_checker, state):
     while True:
@@ -1028,7 +1039,6 @@ async def sniper_menu():
         else:
             clear_terminal()
 
-#TODO Adicionar a opção de utilizar ProxyChains para ARScheduler
 async def automation_setup_menu():
     if new_version_checker():
         update_message = f"{Fore.RED}Outdated{Fore.YELLOW} - @LuizWt {Fore.RED}\nUtilize 'sudo autorecon -update' para atualizar"
