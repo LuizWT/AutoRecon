@@ -135,4 +135,8 @@ if __name__ == "__main__":
         update_repository()
         sys.exit(0)
 
-    asyncio.run(main_loop())
+    try:
+        asyncio.run(main_loop())
+    except KeyboardInterrupt:
+        clear_terminal()
+        print(f"{Fore.RED}[INFO] Saindo do AutoRecon via Ctrl+C.")
