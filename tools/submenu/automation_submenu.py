@@ -449,7 +449,7 @@ async def execute_commands_in_intervals(interval_minutes):
 
             print(
                 f"{Fore.CYAN}Iniciando automação com intervalos de {interval_minutes} minutos"
-                f"\nPressione {Fore.RED}Enter{Fore.CYAN} para interromper a execução."
+                f"\nPressione {Fore.RED}Enter (x2){Fore.CYAN} para interromper a execução."
                 f"\n{Fore.YELLOW}Aguardando {interval_minutes} minutos para a próxima execução...{Fore.RESET}\n"
             )
 
