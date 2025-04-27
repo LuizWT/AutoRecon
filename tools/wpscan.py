@@ -1,7 +1,7 @@
 from colorama import init, Fore
 from functions.clear_terminal import clear_terminal
 from functions.create_output_file import execute_command_and_log
-from functions.proxy_chains import is_proxychains_enabled
+from functions.proxy_chains import ProxyManager
 from functions.set_global_target import state, set_global_target
 from functions.toggle_info import toggle_info, is_info_visible
 from functions.validations.validate_protocol import validate_url, validate_domain_extension
@@ -34,7 +34,7 @@ def get_command_explanation(mode):
 
 def wpscan(target, mode, api_token=None):
 
-    base_command = "sudo wpscan" if not is_proxychains_enabled() else "sudo proxychains4 wpscan"
+    base_command = "sudo wpscan" if not ProxyManager.is_enabled() else "sudo proxychains4 wpscan"
     
     commands = {
         'normal': f"{base_command} --url {target}",

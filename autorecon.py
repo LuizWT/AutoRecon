@@ -7,6 +7,7 @@ import os
 from colorama import init, Fore, Style
 from prompt_toolkit import PromptSession
 from prompt_toolkit.formatted_text import HTML  # Formatar o texto com HTML no prompt_toolkit pois não é possível usar o colorama
+from prompt_toolkit.key_binding import KeyBindings
 
 # Importações internas de funções específicas
 from functions.check_system import check_system  # Verifica se o sistema é Linux
@@ -17,31 +18,18 @@ from configurations.ar_updater import parse_args, update_repository, new_version
 from configurations.configure_alias import configure_global_command  # Configura o alias global "autorecon"
 from configurations.version import __version__
 # Importação de configurações e ferramentas
-from setup_tools.setup import TOOLS_CONFIG, install_tool, check_proxychains
+from setup_tools.setup import TOOLS_CONFIG, install_tool
 from tools.submenu.automation_submenu import automation_setup_menu
 from tools.sniper import sniper_menu_loop
 from tools.nmap import nmap_menu_loop
 from tools.wpscan import wpscan_menu_loop
 from tools.nuclei import nuclei_menu_loop
 from tools.nikto import nikto_menu_loop
-from functions.proxy_chains import toggle_proxychains, proxychains_enabled, check_proxychains_installed
+from functions.proxy_chains import ProxyManager 
 
 # Inicializa a colorama e cria a sessão para receber entradas de forma interativa
 init(autoreset=True)
 session = PromptSession()
-
-
-# Função de atalho para automação de comandos (Ctrl+A)
-@bindings.add('c-a')
-async def _(event):
-    if state['global_target']:
-        clear_terminal()
-        await automation_setup_menu()
-    else:
-        clear_terminal()
-        print(f"{Fore.RED}Você deve definir um alvo global antes de acessar este submenu.\n{Fore.CYAN}Pressione Enter para retornar...")
-        return
-
 
 # Função que exibe o menu principal
 def main_menu():
@@ -50,8 +38,8 @@ def main_menu():
     else:
         update_message = f"{Fore.GREEN}Latest{Fore.YELLOW} - @LuizWt"
     configure_global_command()
-    proxychains_info = " (/etc/proxychains.conf)" if check_proxychains_installed() else ""
-    proxychains_status = f"{Fore.GREEN}ON" if proxychains_enabled else f"{Fore.RED}OFF"
+    proxychains_info = " (/etc/proxychains.conf)" if ProxyManager.check_installed() else ""
+    proxychains_status = f"{Fore.GREEN}ON" if ProxyManager.is_enabled() else f"{Fore.RED}OFF"
     
     global_target_display = f"Alvo: {state['global_target']}" if state['global_target'] else f"Alvo: {Fore.RED}Não definido"
     automation_commands = f"{Fore.GREEN}ON" if state['global_target'] else f"{Fore.RED}OFF"
@@ -79,7 +67,27 @@ def main_menu():
 
 # Função assíncrona Main
 async def main_loop():
-    global proxychains_enabled
+
+    # Função de atalho para automação de comandos (Ctrl+A)
+    bindings = KeyBindings()
+    @bindings.add('c-a')
+    async def _(event):
+        if state['global_target']:
+            clear_terminal()
+            await automation_setup_menu()
+        else:
+            clear_terminal()
+            print(f"{Fore.RED}Você deve definir um alvo global antes de acessar este submenu.\n{Fore.CYAN}Pressione Enter para retornar...")
+            return
+
+    OPTIONS = {
+        "1": ("sniper", sniper_menu_loop),
+        "2": ("nmap", nmap_menu_loop),
+        "3": ("wpscan", wpscan_menu_loop),
+        "4": ("nuclei", nuclei_menu_loop),
+        "5": ("nikto", nikto_menu_loop)
+    }
+
     if not check_system():
         return
 
@@ -93,41 +101,32 @@ async def main_loop():
             clear_terminal()
             print(f"{Fore.RED}[INFO] Saindo do AutoRecon.")
             break
-        elif option == "1":
+
+        elif option in OPTIONS:
+            tool_name, menu_func = OPTIONS[option]
             clear_terminal()
-            await check_and_install_tool("sniper", sniper_menu_loop, state['global_target'])
-        elif option == "2":
-            clear_terminal()
-            await check_and_install_tool("nmap", nmap_menu_loop, state['global_target'])
-        elif option == "3":
-                clear_terminal()
-                await check_and_install_tool("wpscan", wpscan_menu_loop, state['global_target'])
-        elif option == "4":
-            clear_terminal()
-            await check_and_install_tool("nuclei", nuclei_menu_loop, state['global_target'])
-        elif option == "5":
-            clear_terminal()
-            await check_and_install_tool("nikto", nikto_menu_loop, state['global_target'])
+            await check_and_install_tool(tool_name, menu_func, state['global_target'])
+
         elif option == "0":
             clear_terminal()
             print(f"{Fore.GREEN}[INFO] Verificando a instalação do ProxyChains...")
 
-            if check_proxychains():
-                proxychains_enabled = toggle_proxychains()
-                status = 'ON' if proxychains_enabled else 'OFF'
-                color = Fore.GREEN if proxychains_enabled else Fore.RED
-                print(f"{Fore.GREEN}[INFO] ProxyChains [{color}{status}{Fore.RESET}].")
+            if ProxyManager.check_installed():
+                ProxyManager.toggle()
             else:
                 install_choice = await session.prompt_async(HTML(f"<ansiyellow>[INFO] ProxyChains não está instalado. Deseja instalar o ProxyChains? (y/n): </ansiyellow>"))
                 if install_choice.lower() in ['s', 'y']:
                     install_tool("proxychains")
-                    if check_proxychains():
-                        proxychains_enabled = toggle_proxychains()
-                        print(f"{Fore.GREEN}[INFO] ProxyChains ativado [{Fore.GREEN}ON{Fore.RESET}].")
+                    # Aqui é o importante: depois da instalação, verificar de novo
+                    if ProxyManager.check_installed():
+                        ProxyManager.toggle()
                     else:
                         print(f"{Fore.RED}[ERROR] Falha ao instalar o ProxyChains.")
+                    input(f"{Fore.YELLOW}Pressione Enter para retornar ao menu principal...")
                 else:
                     print(f"{Fore.RED}[INFO] Retornando ao menu principal...")
+                    input(f"{Fore.YELLOW}Pressione Enter para retornar ao menu principal...")
+
 
 if __name__ == "__main__":
     args = parse_args()

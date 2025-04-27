@@ -1,18 +1,22 @@
 import subprocess
 
-def check_proxychains_installed():
-    try:
-        subprocess.run(["proxychains", "true"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        return True
-    except FileNotFoundError:
-        return False
+class ProxyManager:
+    _enabled = False
 
-def is_proxychains_enabled():
-    return proxychains_enabled
+    @classmethod
+    def check_installed(cls):
+        try:
+            subprocess.run(["proxychains", "true"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            return True
+        except FileNotFoundError:
+            return False
 
-def toggle_proxychains():
-    global proxychains_enabled
-    proxychains_enabled = not proxychains_enabled
-    return proxychains_enabled
+    @classmethod
+    def toggle(cls):
+        cls._enabled = not cls._enabled
+        return cls._enabled
 
-proxychains_enabled = False
+    @classmethod
+    def is_enabled(cls):
+        return cls._enabled
+

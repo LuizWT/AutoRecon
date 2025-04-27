@@ -1,7 +1,7 @@
 from colorama import init, Fore
 from functions.clear_terminal import clear_terminal
 from functions.create_output_file import execute_command_and_log
-from functions.proxy_chains import is_proxychains_enabled
+from functions.proxy_chains import ProxyManager
 from functions.validations.is_valid import is_valid_cidr
 from functions.set_global_target import state, set_global_target
 from functions.toggle_info import toggle_info, is_info_visible
@@ -32,7 +32,7 @@ def get_command_explanation(mode):
     return explanations.get(mode, f"{Fore.RED}| [INFO] Modo não identificado.")
 
 def nuclei(target, mode, additional_param=None):
-    base_command = "nuclei " if not is_proxychains_enabled() else "proxychains nuclei "
+    base_command = "nuclei " if not ProxyManager.is_enabled() else "proxychains nuclei "
     command = None
 
     if mode == 'target_spec':

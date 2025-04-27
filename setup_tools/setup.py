@@ -138,50 +138,37 @@ def check_tool(tool):
 
 # Funções de Instalação de Ferramenta:
 def install_tool(tool):
-    tool_config = TOOLS_CONFIG.get(tool)
-    if not tool_config:
+    config = TOOLS_CONFIG.get(tool)
+    if not config:
         print(f"{Fore.RED}[ERROR] Configuração para {tool} não encontrada.")
         return
-
+    print(f"{Fore.CYAN}[INFO] Instalando {tool}...")
+    # Detecta distro apenas uma vez
+    distro = None
+    if os.path.exists("/etc/debian_version"):
+        distro = "debian"
+    elif os.path.exists("/etc/redhat-release"):
+        distro = "redhat"
+    elif os.path.exists("/etc/arch-release"):
+        distro = "arch"
+    elif os.path.exists("/etc/SuSE-release"):
+        distro = "suse"
+    if distro is None:
+        print(f"{Fore.RED}[ERROR] Distribuição não suportada.")
+        return
+    # Obtém comando
+    command = config["install_commands"].get(distro)
+    if not command and "install_script" in config["install_commands"]:
+        command = config["install_commands"]["install_script"]
+    if not command:
+        print(f"{Fore.RED}[ERROR] Nenhum comando de instalação definido para {tool}.")
+        return
     try:
-        print(f"{Fore.CYAN}[INFO] Iniciando a instalação do {tool.capitalize()}...")
-
-        if "debian_version" in os.listdir("/etc"):
-            command = tool_config["install_commands"].get("debian")
-        elif "redhat-release" in os.listdir("/etc"):
-            command = tool_config["install_commands"].get("redhat")
-        elif "arch-release" in os.listdir("/etc"):
-            command = tool_config["install_commands"].get("arch")
-        elif "SuSE-release" in os.listdir("/etc"):
-            command = tool_config["install_commands"].get("suse")
-        else:
-            print(f"{Fore.RED}[ERROR] Distribuição não suportada para a instalação de {tool}.")
-            return
-
-        if command:
-            os.system(command)
-            result = subprocess.run(command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            print(result.stdout.decode())  # Mostrar a saída do comando
-            print(result.stderr.decode())  # Mostrar os erros, se houver
-
-        if "install_script" in tool_config["install_commands"]:
-            os.system(tool_config["install_commands"]["install_script"])
-
+        result = subprocess.run(command, shell=True, check=True,
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        print(result.stdout.decode())
+        print(result.stderr.decode())
         clear_terminal()
         print(f"{Fore.CYAN}[INFO] {tool.capitalize()} instalado com sucesso.")
-
     except Exception as e:
-        print(f"{Fore.RED}[ERROR] Ocorreu um erro durante a instalação de {tool.capitalize()}: {e}")
-
-# Função específica de ProxyChains:
-def check_proxychains():
-    try:
-        subprocess.run(['proxychains4', 'true'], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        print(f"{Fore.CYAN}[INFO] ProxyChains já está instalado.")
-        return True
-    except FileNotFoundError:
-        print(f"{Fore.RED}[INFO] ProxyChains não está instalado.")
-        return False
-    except subprocess.CalledProcessError:
-        print(f"{Fore.RED}[INFO] ProxyChains não está funcionando corretamente.")
-        return False
+        print(f"{Fore.RED}[ERROR] Erro na instalação de {tool}: {e}")
