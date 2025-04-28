@@ -7,7 +7,7 @@ from pathlib import Path
 from prompt_toolkit import PromptSession
 from colorama import Fore, Style, init
 from functions.clear_terminal import clear_terminal
-from functions.set_global_target import state
+from functions.set_global_target import global_target
 from functions.validations.validate_protocol import validate_url
 from functions.validations.is_valid import is_valid_cidr
 from functions.create_output_file import execute_command_and_log_submenu
@@ -492,7 +492,7 @@ async def process_command(command_data):
     except Exception as e:
         print(f"[ERRO] Falha ao executar '{cmd_str}': {e}")
 
-async def edit_queue_menu(session, new_version_checker, state):
+async def edit_queue_menu(session, new_version_checker):
     while True:
         clear_terminal()
         update_message = (
@@ -500,7 +500,7 @@ async def edit_queue_menu(session, new_version_checker, state):
             if new_version_checker() else f"{Fore.GREEN}Latest{Fore.YELLOW} - @LuizWt"
         )
         global_target_display = (
-            f"Alvo: {state['global_target']}" if state['global_target'] else "Alvo: Não definido"
+            f"Alvo: {global_target.value}" if global_target.value else "Alvo: Não definido"
         )
 
         print(rf"""
@@ -649,8 +649,8 @@ async def get_network_target_submenu():
 
 # MENUS:
 async def nuclei_menu():
-    target = state['global_target']
-    global_target_display = f"Alvo: {state['global_target']}" if state['global_target'] else "Alvo: Não definido"
+    target = global_target.value
+    global_target_display = f"Alvo: {global_target.value}" or "Alvo: Não definido"
     while True:
 
         print(rf"""{Fore.BLUE}
@@ -725,8 +725,8 @@ async def nuclei_menu():
 
 
 async def nmap_menu():
-    target = state['global_target']
-    global_target_display = f"Alvo: {state['global_target']}" if state['global_target'] else "Alvo: Não definido"
+    target = global_target.value
+    global_target_display = f"Alvo: {global_target.value}" or "Alvo: Não definido"
     while True:
         print(rf"""
         {Fore.BLUE}                  
@@ -831,8 +831,8 @@ async def nmap_menu():
             clear_terminal()
 
 async def nikto_menu():
-    target = state['global_target']
-    global_target_display = f"Alvo: {state['global_target']}" if state['global_target'] else "Alvo: Não definido"
+    target = global_target.value
+    global_target_display = f"Alvo: {global_target.value}" or "Alvo: Não definido"
     clear_terminal()
     while True:
         
@@ -883,7 +883,7 @@ async def nikto_menu():
             await asyncio.sleep(2)
 
 async def wpscan_menu():
-    target = state['global_target']
+    target = global_target.value
     target = validate_url(target)
     global_target_display = f"Alvo: {target}" if target else "Alvo: Não definido"
     clear_terminal()
@@ -946,8 +946,8 @@ async def wpscan_menu():
             await asyncio.sleep(2)
 
 async def sniper_menu():
-    target = state['global_target']
-    global_target_display = f"Alvo: {state['global_target']}" if state['global_target'] else "Alvo: Não definido"
+    target = global_target.value
+    global_target_display = f"Alvo: {global_target.value}" or "Alvo: Não definido"
     clear_terminal()
     while True:
         print(rf"""
@@ -1045,7 +1045,11 @@ async def automation_setup_menu():
     else:
         update_message = f"{Fore.GREEN}Latest{Fore.YELLOW} - @LuizWt"
     global is_running
-    global_target_display = f"Alvo: {state['global_target']}" if state['global_target'] else "Alvo: Não definido"
+    global_target_display = (
+        f"Alvo: {Fore.GREEN}{global_target.value}{Fore.RESET}"
+        if global_target.value
+        else f"Alvo: {Fore.RED}Não definido{Fore.RESET}"
+    )
     while True:
         print(rf"""
             {Fore.BLUE}{Style.BRIGHT}
@@ -1107,7 +1111,7 @@ async def automation_setup_menu():
                 except ValueError:
                     print(f"{Fore.RED}Entrada inválida. Por favor, insira um número inteiro.")
         elif choice.lower() == 'q':
-            await edit_queue_menu(session, new_version_checker, state)
+            await edit_queue_menu(session, new_version_checker, global_target.value)
         elif choice.lower() == 'b':
             if is_running:
                 print(f"{Fore.YELLOW}Automação em andamento. Conclua ou interrompa a execução antes de sair.{Fore.RESET}")

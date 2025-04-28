@@ -1,7 +1,7 @@
 from colorama import init, Fore
 from functions.create_output_file import execute_command_and_log
 from functions.clear_terminal import clear_terminal
-from functions.set_global_target import state, set_global_target
+from functions.set_global_target import set_global_target, global_target
 from functions.toggle_info import toggle_info, is_info_visible
 from prompt_toolkit import PromptSession
 from prompt_toolkit.key_binding import KeyBindings
@@ -67,7 +67,7 @@ def execute_all_nikto_commands(target):
         execute_command_and_log(f"nikto {cmd}", "nikto")
 
 def nikto_options(option):
-    target = state['global_target'] if state['global_target'] else input(f"{Fore.RED}Digite o alvo: ")
+    target = global_target.value or input(f"{Fore.RED}Digite o alvo: ")
     clear_terminal()
     if option == "1":
         nikto(target, 'vuln_checks')
@@ -86,10 +86,14 @@ def nikto_options(option):
     elif option == "8":
         execute_all_nikto_commands(target)
 
-async def nikto_menu_loop(global_target):
+async def nikto_menu_loop():
     while True:
         clear_terminal()
-        global_target_display = f"Alvo: {state['global_target']}" if state['global_target'] else "Alvo: Não definido"
+        global_target_display = (
+            f"Alvo: {Fore.GREEN}{global_target.value}{Fore.RESET}"
+            if global_target.value
+            else f"Alvo: {Fore.RED}Não definido{Fore.RESET}"
+        )
         print(rf"""
         {Fore.BLUE}
           _   _ _ _    _        

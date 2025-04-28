@@ -3,7 +3,7 @@ from functions.clear_terminal import clear_terminal
 from functions.validations.is_valid import is_valid_cidr
 from functions.create_output_file import execute_command_and_log
 from functions.proxy_chains import ProxyManager
-from functions.set_global_target import state, set_global_target
+from functions.set_global_target import set_global_target, global_target
 from functions.toggle_info import toggle_info, is_info_visible
 from functions.validations.validate_ports import validate_ports
 from prompt_toolkit import PromptSession
@@ -131,10 +131,14 @@ def sniper_options(option, global_target):
         sniper(target, 'webscan')
     elif option == "11":
         sniper(target, 'bruteforce')
-async def sniper_menu_loop(global_target):
+async def sniper_menu_loop():
     while True:
         clear_terminal()
-        global_target_display = f"Alvo: {state['global_target']}" if state['global_target'] else "Alvo: Não definido"
+        global_target_display = (
+            f"Alvo: {Fore.GREEN}{global_target.value}{Fore.RESET}"
+            if global_target.value
+            else f"Alvo: {Fore.RED}Não definido{Fore.RESET}"
+        )
 
         print(rf"""
         {Fore.BLUE}
@@ -171,4 +175,4 @@ async def sniper_menu_loop(global_target):
             continue
 
         if option in [str(i) for i in range(1, 12)]:
-            sniper_options(option, state['global_target'])
+            sniper_options(option)

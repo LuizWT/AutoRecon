@@ -1,15 +1,17 @@
+from dataclasses import dataclass
 from colorama import init, Fore
+from prompt_toolkit import PromptSession
+from prompt_toolkit.key_binding import KeyBindings
+from prompt_toolkit.formatted_text import HTML
+import asyncio
+
 from functions.validations.validate_ports import validate_ports
 from functions.clear_terminal import clear_terminal
 from functions.create_output_file import execute_command_and_log
 from functions.proxy_chains import ProxyManager
 from functions.validations.is_valid import is_valid_cidr
-from functions.set_global_target import state, set_global_target
-from functions.toggle_info import toggle_info, is_info_visible
-from prompt_toolkit import PromptSession
-from prompt_toolkit.key_binding import KeyBindings
-from prompt_toolkit.formatted_text import HTML
-import asyncio
+from functions.set_global_target import global_target, set_global_target, TargetValidator
+from functions.toggle_info import toggle_info, is_info_visible  
 
 init(autoreset=True)  # inicia o colorama
 
@@ -109,9 +111,11 @@ def execute_all_nmap_commands(target):
     for cmd in commands:
         execute_command_and_log(f"sudo nmap {cmd}", "nmap")
 
-def nmap_options(option, global_target):
-    target = state['global_target'] if state['global_target'] else input(f"{Fore.RED}Digite o alvo ou [B] para voltar: ")
-
+def nmap_options(option):
+    target = global_target.value or input(f"{Fore.RED}Digite o alvo ou [B] para voltar: ")
+    if target.lower() == 'b':
+        clear_terminal()
+        return
     if option == "1":
         clear_terminal()
         if target.lower() == 'b':
@@ -264,10 +268,14 @@ def get_scan_technique():
         print(f"{Fore.RED}[ERRO] Opção inválida. Tente novamente.")
         return get_scan_technique()
 
-async def nmap_menu_loop(global_target):
+async def nmap_menu_loop():
     while True:
         clear_terminal()
-        global_target_display = f"Alvo: {state['global_target']}" if state['global_target'] else "Alvo: Não definido"  # Move this inside the loop
+        global_target_display = (
+            f"Alvo: {Fore.GREEN}{global_target.value}{Fore.RESET}"
+            if global_target.value
+            else f"Alvo: {Fore.RED}Não definido{Fore.RESET}"
+        )
 
         print(rf"""
         {Fore.BLUE}                  
@@ -306,4 +314,4 @@ async def nmap_menu_loop(global_target):
             continue
 
         if option in [str(i) for i in range(1, 16)]:
-            nmap_options(option, global_target)
+            nmap_options(option)

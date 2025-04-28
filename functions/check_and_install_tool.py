@@ -33,7 +33,7 @@ async def check_and_install_tool(tool_name, menu_func, global_target):
     if is_installed:
         print(f"{Fore.GREEN}[INFO] Abrindo o menu {tool_name.upper()}...")
 
-        await menu_func(global_target)
+        await menu_func()
         
     else:
         if tool_config.get("install_commands"):
@@ -50,7 +50,7 @@ async def check_and_install_tool(tool_name, menu_func, global_target):
                         install_tool(tool_name)
                         is_installed =  True
                         print(f"{Fore.GREEN}[INFO] Abrindo o menu {tool_name.upper()}...")
-                        await menu_func(global_target)
+                        await menu_func()
                     else:
                         print(f"{Fore.RED}[INFO] Retornando ao menu principal...")
                         return
@@ -66,7 +66,7 @@ async def check_and_install_tool(tool_name, menu_func, global_target):
                         install_tool(tool_name)
                         is_installed = True
                         print(f"{Fore.GREEN}[INFO] Abrindo o menu {tool_name.upper()}...")
-                        await menu_func(global_target)
+                        await menu_func()
                     else:
                         print(f"{Fore.RED}[INFO] Retornando ao menu principal...")
                         return
@@ -77,6 +77,6 @@ async def check_and_install_tool(tool_name, menu_func, global_target):
                 install_tool(tool_name)
                 print(f"{Fore.GREEN}[INFO] Abrindo o menu {tool_name.upper()}...")
 
-                await menu_func(global_target)
+                await menu_func()
             else:
                 print(f"{Fore.RED}[INFO] Retornando ao menu principal...")

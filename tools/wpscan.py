@@ -1,16 +1,18 @@
+from dataclasses import dataclass
 from colorama import init, Fore
-from functions.clear_terminal import clear_terminal
-from functions.create_output_file import execute_command_and_log
-from functions.proxy_chains import ProxyManager
-from functions.set_global_target import state, set_global_target
-from functions.toggle_info import toggle_info, is_info_visible
-from functions.validations.validate_protocol import validate_url, validate_domain_extension
 from prompt_toolkit import PromptSession
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.formatted_text import HTML
 import subprocess
 import asyncio
-import os
+
+from functions.clear_terminal import clear_terminal
+from functions.create_output_file import execute_command_and_log
+from functions.proxy_chains import ProxyManager
+from functions.set_global_target import global_target, set_global_target, TargetValidator
+from functions.toggle_info import toggle_info, is_info_visible
+from functions.validations.validate_protocol import validate_url, validate_domain_extension
+
 
 init(autoreset=True)  # inicia o colorama
 
@@ -31,71 +33,63 @@ def get_command_explanation(mode):
     }
     return explanations.get(mode, f"{Fore.RED}| [INFO] Modo não identificado.")
 
-
-def wpscan(target, mode, api_token=None):
-
-    base_command = "sudo wpscan" if not ProxyManager.is_enabled() else "sudo proxychains4 wpscan"
-    
-    commands = {
-        'normal': f"{base_command} --url {target}",
-        'enumerate_users': f"{base_command} --url {target} --enumerate u",
-        'enumerate_plugins': f"{base_command} --url {target} --enumerate p",
-        'enumerate_themes': f"{base_command} --url {target} --enumerate t",
-        'scan': f"{base_command} --url {target} --api-token {api_token}"
+def wpscan(target: str, mode: str, api_token: str = None):
+    base = "sudo wpscan" if not ProxyManager.is_enabled() else "sudo proxychains wpscan"
+    cmds = {
+        'normal': f"{base} --url {target}",
+        'enumerate_users': f"{base} --url {target} --enumerate u",
+        'enumerate_plugins': f"{base} --url {target} --enumerate p",
+        'enumerate_themes': f"{base} --url {target} --enumerate t",
+        'scan': f"{base} --url {target} --api-token {api_token}",
     }
-
-    command = commands.get(mode)
-    if command:
-        execute_command_and_log(command, "sudo wpscan")
+    cmd = cmds.get(mode)
+    if cmd:
+        execute_command_and_log(cmd, "wpscan")
 
 def get_api_token():
     return input(f"{Fore.GREEN}Digite seu API Token ou {Fore.RED}[B]{Fore.GREEN} para voltar: ")
 
-def wpscan_options(option, global_target):
-    # Usa o global_target diretamente, sem pedir ao usuário se ele já estiver definido
-    target = global_target if global_target else input(f"{Fore.RED}Digite o alvo ou [B] para voltar: ")
-
-    if target.lower() == 'b':
+def wpscan_options(option: str):
+    raw = global_target.value or ''
+    if not raw:
+        raw = input(f"{Fore.RED}Digite o alvo ou [B] para voltar: ")
+    if raw.lower() == 'b':
         clear_terminal()
         return
-
-    if option == "1":
-        clear_terminal()
-        wpscan(target, 'normal')
-    elif option == "2":
-        clear_terminal()
-        wpscan(target, 'enumerate_users')
-    elif option == "3":
-        clear_terminal()
-        wpscan(target, 'enumerate_plugins')
-    elif option == "4":
-        clear_terminal()
-        wpscan(target, 'enumerate_themes')
-    elif option == "5":
-        clear_terminal()
-        api_token = get_api_token()  # Solicita o token aqui
-        if api_token.lower() == 'b':
+    target = validate_url(raw)
+    if option == '5':
+        api = input(f"{Fore.GREEN}Digite seu API Token ou {Fore.RED}[B]{Fore.GREEN} para voltar: ")
+        if api.lower() == 'b':
             clear_terminal()
-            return  
-        wpscan(target, 'scan', api_token)
+            return
+        wpscan(target, 'scan', api)
+    else:
+        modes = {'1': 'normal', '2': 'enumerate_users', '3': 'enumerate_plugins', '4': 'enumerate_themes'}
+        mode = modes.get(option)
+        if mode:
+            wpscan(target, mode)
 
-async def wpscan_menu_loop(global_target):
+async def wpscan_menu_loop(dummy_arg=None):
  
     while True:
         clear_terminal()
-        if not global_target:
-            target = input(f"{Fore.RED}Digite o alvo ou [B] para voltar: ").strip()
-            if target.lower() == 'b':
+        raw = global_target.value or ''
+        if not raw:
+            inp = input(f"{Fore.RED}Digite o alvo ou [B] para voltar: ").strip()
+            if inp.lower() == 'b':
                 break
-        else:
-            target = global_target
+            raw = inp
 
         # Adiciona http:// ou https://, se necessário
-        target = validate_url(target)
+        target = validate_url(raw)
 
         clear_terminal()
 
-        global_target_display = f"Alvo: {target}" if target else "Alvo: Não definido"
+        global_target_display = (
+            f"Alvo: {Fore.GREEN}{global_target.value}{Fore.RESET}"
+            if global_target.value
+            else f"Alvo: {Fore.RED}Não definido{Fore.RESET}"
+        )
 
         print(rf"""
         {Fore.BLUE}

@@ -13,7 +13,7 @@ from prompt_toolkit.key_binding import KeyBindings
 from functions.check_system import check_system  # Verifica se o sistema é Linux
 from functions.clear_terminal import clear_terminal  # Limpar o terminal
 from functions.check_and_install_tool import check_and_install_tool  # Função genérica para checar e instalar ferramentas
-from functions.set_global_target import set_global_target, bindings, state  # Funções e variáveis para configuração do alvo global
+from functions.set_global_target import set_global_target, bindings, global_target  # Funções e variáveis para configuração do alvo global
 from configurations.ar_updater import parse_args, update_repository, new_version_checker # Verifica se a ferramenta está atualizada
 from configurations.configure_alias import configure_global_command  # Configura o alias global "autorecon"
 from configurations.version import __version__
@@ -41,8 +41,12 @@ def main_menu():
     proxychains_info = " (/etc/proxychains.conf)" if ProxyManager.check_installed() else ""
     proxychains_status = f"{Fore.GREEN}ON" if ProxyManager.is_enabled() else f"{Fore.RED}OFF"
     
-    global_target_display = f"Alvo: {state['global_target']}" if state['global_target'] else f"Alvo: {Fore.RED}Não definido"
-    automation_commands = f"{Fore.GREEN}ON" if state['global_target'] else f"{Fore.RED}OFF"
+    global_target_display = (
+        f"Alvo: {Fore.GREEN}{global_target.value}{Fore.RESET}"
+        if global_target.value
+        else f"Alvo: {Fore.RED}Não definido{Fore.RESET}"
+    )
+    automation_commands = f"{Fore.GREEN}ON" if global_target.value else f"{Fore.RED}OFF"
     print(rf"""
     {Fore.BLUE}{Style.BRIGHT}
                 _        _____                      
@@ -72,7 +76,7 @@ async def main_loop():
     bindings = KeyBindings()
     @bindings.add('c-a')
     async def _(event):
-        if state['global_target']:
+        if global_target.value:
             clear_terminal()
             await automation_setup_menu()
         else:
@@ -105,7 +109,7 @@ async def main_loop():
         elif option in OPTIONS:
             tool_name, menu_func = OPTIONS[option]
             clear_terminal()
-            await check_and_install_tool(tool_name, menu_func, state['global_target'])
+            await check_and_install_tool(tool_name, menu_func, global_target.value)
 
         elif option == "0":
             clear_terminal()
