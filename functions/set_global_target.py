@@ -31,7 +31,6 @@ class TargetValidator(Validator):
 async def set_global_target():
     clear_terminal()
     try:
-        # Prompt with built-in validation
         target = await session.prompt_async(
             HTML(f"<ansiyellow>Digite o alvo global (ex: 192.168.0.1 ou example.com):</ansiyellow> \n<ansiyellow>~$ </ansiyellow>"),
             validator=TargetValidator(),
@@ -41,7 +40,6 @@ async def set_global_target():
         global_target.value = target.strip()
         clear_terminal()
         print(f"{Fore.YELLOW}[INFO] Alvo global definido: {Fore.GREEN}{global_target.value}\n{Fore.BLUE}Pressione Enter para continuar...")
-        # wait for Enter
         await session.prompt_async(HTML(""))
     except Exception as e:
         print(f"{Fore.RED}[ERROR] {e}")
