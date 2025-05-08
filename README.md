@@ -111,41 +111,20 @@ Atualmente, o AutoRecon é compatível apenas com sistemas operacionais baseados
 
 > [!WARNING]  
 > É altamente recomendado que a ferramenta seja instalada na pasta `home` (`~/AutoRecon`), pois isso garante a compatibilidade com o script de criação de lançadores e a configuração do alias "autorecon".
+> Para isso, utilize o comando abaixo para realizar a instalação.
 
-Clone o repositório:
 
-    ~$ git clone https://github.com/seu-usuario/AutoRecon.git ~/AutoRecon
-
-Acesse o diretório:
-
-    ~$ cd AutoRecon
-
-Instale as dependências:
-
-    ~$ sudo pip3 install -r requirements.txt
-
-Execute a ferramenta:
-
-    ~$ sudo python3 autorecon.py
-
-Após a primeira execução, você terá a possibilidade de usar o alias "autorecon":
-
-    ~$ sudo autorecon
+    bash <(curl -sSL https://raw.githubusercontent.com/LuizWT/AutoRecon/main/configurations/autorecon.sh)
   
 
 ### Atualização
 
 Execute o comando:
 
-    ~$ sudo autorecon -update
+    sudo autorecon -u
+ou
 
-Caso o alias "autorecon" não esteja disponível:
-
-    Entre no diretório do projeto AutoRecon:
-
-        ~$ cd AutoRecon/
-
-        ~$ sudo python3 autorecon.py -update
+    sudo autorecon --update 
 
 <hr>
 
