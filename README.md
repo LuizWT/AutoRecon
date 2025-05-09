@@ -153,7 +153,7 @@ Se você quiser contribuir com o AutoRecon, sinta-se à vontade para abrir uma *
 > - [Template de Reporte de Bug](.github/ISSUE_TEMPLATE.md)
 > - [Template de Solicitação de Funcionalidade](.github/FEATURE_REQUEST_TEMPLATE.md)
 
-Leia atentamente cada template antes de enviar. Isso ajuda a manter uma comunicação clara, objetiva e padronizada. ✔
+Leia atentamente cada template antes de enviar.
 
 ---
 
