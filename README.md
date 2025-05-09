@@ -145,13 +145,23 @@ O AutoRecon possui um menu interativo que facilita a execução de diferentes mo
 
 ## Apoio ao Projeto
 
-Se você quiser contribuir com o projeto, sinta-se à vontade para abrir Issues ou fazer Pull Requests no repositório.
-  
+Se você quiser contribuir com o AutoRecon, sinta-se à vontade para abrir uma **Issue** ou criar um **Pull Request** neste repositório.
+
+> 📌 Para manter a organização e o padrão do projeto, siga os templates disponíveis em:
+> 
+> - [Template de Pull Request](.github/PULL_REQUEST_TEMPLATE.md)
+> - [Template de Reporte de Bug](.github/ISSUE_TEMPLATE.md)
+> - [Template de Solicitação de Funcionalidade](.github/FEATURE_REQUEST_TEMPLATE.md)
+
+Leia atentamente cada template antes de enviar. Isso ajuda a manter uma comunicação clara, objetiva e padronizada. ✔
+
+---
+
 Quer apoiar ainda mais? Faça uma doação e ajude a manter este projeto vivo!
 
 **BTC Wallet**:  
 `bc1qfy534ujs9yekwthe063fck0zf7hel7paem6sxl`
-  
-<hr>
 
-Este projeto está licenciado sob a GNU Affero General Public License v3.0 (Modificada)
+---
+
+Este projeto está licenciado sob a **GNU Affero General Public License v3.0 (Modificada)**
