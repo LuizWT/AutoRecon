@@ -83,11 +83,6 @@ async def main_loop():
             clear_terminal()
             print(f"{Fore.RED}Você deve definir um alvo global antes de acessar este submenu.\n{Fore.CYAN}Pressione Enter para retornar...")
             return
-    
-    @bindings.add('c-t')
-    def _(event):
-        asyncio.create_task(set_global_target())
-
 
     OPTIONS = {
         "1": ("sniper", sniper_menu_loop),
