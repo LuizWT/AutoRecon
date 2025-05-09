@@ -8,9 +8,9 @@
 ## Descrição
 
 **O que foi feito:**
-- [ ] Breve explicação das alterações implementadas
-- [ ] Motivo da mudança (bug, melhoria, nova funcionalidade)
-- [ ] Módulos/pastas afetadas (ex: `scheduler/`, `tools_commands/`, `output/`, etc.)
+- Breve explicação das alterações implementadas
+- Motivo da mudança (correção de bug, refatoração, nova funcionalidade)
+- Módulos/pastas afetadas (ex: `scheduler/`, `tools_commands/`, `output/`, etc.)
 
 **Exemplo:**  
 > Adicionado XXX em YYY
