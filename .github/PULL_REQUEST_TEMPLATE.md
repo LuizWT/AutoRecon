@@ -1,6 +1,6 @@
 # Pull Request - AutoRecon
 
-## Título da PR
+## [PR] Título da PR
 > _Descreva resumidamente o objetivo da PR (ex: Adiciona XXX em YYY)_
 
 ---
