@@ -317,7 +317,7 @@ def save_command_queue(queue):
 
 # Adiciona um novo comando ao arquivo (storage/commands_queue.txt)
 def add_command_to_queue(tool_name, mode, target, additional_param=None):
-    from tools.submenu.automation_submenu import format_command, clear_terminal
+    from tools.scheduler.automation_submenu import format_command, clear_terminal
 
     formatted_command = format_command(tool_name, mode, target, additional_param)
     commands_added = []
@@ -543,7 +543,7 @@ async def edit_queue_menu(session, new_version_checker):
             elif choice.lower() == 'e':
                 await edit_command_in_queue(session)
             elif choice.lower() == 'p':
-                from tools.submenu.automation_submenu import apply_proxychains_to_command
+                from tools.scheduler.automation_submenu import apply_proxychains_to_command
                 clear_terminal()
                 await apply_proxychains_to_command()
             elif choice.lower() == 'b':

@@ -19,7 +19,7 @@ from configurations.configure_alias import configure_global_command  # Configura
 from configurations.version import __version__
 # Importação de configurações e ferramentas
 from setup_tools.setup import TOOLS_CONFIG, install_tool
-from tools.submenu.automation_submenu import automation_setup_menu
+from tools.scheduler.automation_submenu import automation_setup_menu
 from tools.sniper import sniper_menu_loop
 from tools.nmap import nmap_menu_loop
 from tools.wpscan import wpscan_menu_loop
