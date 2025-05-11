@@ -29,56 +29,67 @@ warn() {
 
 # Detecta gerenciador de pacotes
 detect_pm() {
-  if command -v apt >/dev/null; then
+  if command -v apt &>/dev/null; then
     PM='apt'
-  elif command -v dnf >/dev/null; then
+  elif command -v dnf &>/dev/null; then
     PM='dnf'
-  elif command -v pacman >/dev/null; then
+  elif command -v pacman &>/dev/null; then
     PM='pacman'
-  elif command -v zypper >/dev/null; then
+  elif command -v zypper &>/dev/null; then
     PM='zypper'
   else
     die "Gerenciador de pacotes não suportado."
   fi
 }
 
-# Instala pacote, casop recise
+# Instala pacote se necessário
 install_pkg() {
-  local pkg=$1
-  if ! command -v "$pkg" >/dev/null; then
+  local pkg="$1"
+  if ! command -v "$pkg" &>/dev/null; then
     warn "Instalando $pkg..."
     case "$PM" in
       apt)
-        sudo apt update && sudo apt install -y "$pkg"
-        ;;
+        sudo apt update && sudo apt install -y "$pkg";;
       dnf)
-        sudo dnf install -y "$pkg"
-        ;;
+        sudo dnf install -y "$pkg";;
       pacman)
-        sudo pacman -Sy --noconfirm "$pkg"
-        ;;
+        sudo pacman -Sy --noconfirm "$pkg";;
       zypper)
-        sudo zypper refresh && sudo zypper install -y "$pkg"
-        ;;
+        sudo zypper refresh && sudo zypper install -y "$pkg";;
     esac
   else
     info "$pkg já instalado."
   fi
 }
 
-# Verifica comando
-check_cmd() {
-  command -v "$1" >/dev/null || die "$1 não encontrado. Saindo..."
+# Verifica o venv
+check_venv() {
+  if ! python3 -m venv --help &>/dev/null; then
+    warn "Módulo venv não detectado."
+    case "$PM" in
+      apt|zypper)
+        warn "Instalando pacote de venv para $PM..."
+        pkg="${PM == 'apt' && echo python3-venv || echo python3-virtualenv}" # zypper usa python3-virtualenv
+        sudo $PM install -y "$pkg"
+        ;;  
+      *)
+        warn "Assumindo que o venv já está incluso no pacote python3 do sistema."
+        ;;  
+    esac
+    python3 -m venv --help &>/dev/null || die "Falha ao habilitar módulo venv."
+  else
+    info "Módulo venv disponível." 
+  fi
 }
 
 main() {
-  DEST_DIR="${1:-$HOME/AutoRecon}"
+  local DEST_DIR="${1:-$HOME/AutoRecon}"
 
   detect_pm
   install_pkg git
   install_pkg python3
   install_pkg pip3
-  install_pkg python3-venv
+  check_venv
 
   if [ -d "$DEST_DIR" ]; then
     info "Repositório já clonado em $DEST_DIR"
@@ -92,7 +103,7 @@ main() {
   python3 -m venv venv
 
   warn "Ativando venv"
-  # shellcheck disable=SC1091
+
   source venv/bin/activate
 
   [ -s requirements.txt ] || die "requirements.txt não encontrado."
