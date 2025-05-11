@@ -3,10 +3,10 @@ set -euo pipefail
 trap 'echo -e "\e[31m[ERRO]\e[0m Um erro inesperado ocorreu." >&2' ERR
 
 # Cores ANSI
-RED='\e[31m';
-GREEN='\e[32m';
-YELLOW='\e[33m';
-NC='\e[0m';
+RED='\e[31m'
+GREEN='\e[32m'
+YELLOW='\e[33m'
+NC='\e[0m'
 BLUE='\e[34m'
 
 die() {
