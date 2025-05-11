@@ -3,16 +3,13 @@ from colorama import init, Fore
 from prompt_toolkit import PromptSession
 from prompt_toolkit.key_binding import KeyBindings
 from prompt_toolkit.formatted_text import HTML
-import subprocess
 import asyncio
 
 from functions.clear_terminal import clear_terminal
 from functions.create_output_file import execute_command_and_log
 from functions.proxy_chains import ProxyManager
-from functions.set_global_target import global_target, set_global_target, TargetValidator
+from functions.set_global_target import global_target, set_global_target
 from functions.toggle_info import toggle_info, is_info_visible
-from functions.validations.validate_protocol import validate_url, validate_domain_extension
-
 
 init(autoreset=True)  # inicia o colorama
 
@@ -30,6 +27,7 @@ def get_command_explanation(mode):
         'enumerate_plugins': f"{Fore.CYAN}| [INFO] {Fore.BLUE} Lista os plugins instalados e suas vulnerabilidades conhecidas.",
         'enumerate_themes': f"{Fore.CYAN}| [INFO] {Fore.BLUE} Lista os temas instalados e suas vulnerabilidades conhecidas.",
         'scan': f"{Fore.CYAN}| [INFO] {Fore.BLUE} Realiza uma varredura completa em busca de vulnerabilidades.",
+        'update': f"{Fore.CYAN}| [INFO] {Fore.BLUE} Atualiza o WPSCAN.",
     }
     return explanations.get(mode, f"{Fore.RED}| [INFO] Modo não identificado.")
 
@@ -41,6 +39,7 @@ def wpscan(target: str, mode: str, api_token: str = None):
         'enumerate_plugins': f"{base} --url {target} --enumerate p",
         'enumerate_themes': f"{base} --url {target} --enumerate t",
         'scan': f"{base} --url {target} --api-token {api_token}",
+        'update': f"{base} --update"
     }
     cmd = cmds.get(mode)
     if cmd:
@@ -50,13 +49,17 @@ def get_api_token():
     return input(f"{Fore.GREEN}Digite seu API Token ou {Fore.RED}[B]{Fore.GREEN} para voltar: ")
 
 def wpscan_options(option: str):
-    raw = global_target.value or ''
-    if not raw:
-        raw = input(f"{Fore.RED}Digite o alvo ou [B] para voltar: ")
-    if raw.lower() == 'b':
-        clear_terminal()
+    if option.lower() == 'a':
+        wpscan(target="", mode="update")
         return
-    target = validate_url(raw)
+
+    target = global_target.value or ''
+    if not target:
+        target = input(f"{Fore.RED}Digite o alvo ou [B] para voltar: ")
+        if target.lower() == 'b':
+            clear_terminal()
+            return
+
     if option == '5':
         api = input(f"{Fore.GREEN}Digite seu API Token ou {Fore.RED}[B]{Fore.GREEN} para voltar: ")
         if api.lower() == 'b':
@@ -69,20 +72,9 @@ def wpscan_options(option: str):
         if mode:
             wpscan(target, mode)
 
+
 async def wpscan_menu_loop(dummy_arg=None):
- 
     while True:
-        clear_terminal()
-        raw = global_target.value or ''
-        if not raw:
-            inp = input(f"{Fore.RED}Digite o alvo ou [B] para voltar: ").strip()
-            if inp.lower() == 'b':
-                break
-            raw = inp
-
-        # Adiciona http:// ou https://, se necessário
-        target = validate_url(raw)
-
         clear_terminal()
 
         global_target_display = (
@@ -105,6 +97,7 @@ async def wpscan_menu_loop(dummy_arg=None):
         {Fore.CYAN}[3] {Fore.RESET}Enumerar Plugins {get_command_explanation("enumerate_plugins") if is_info_visible() else ""}
         {Fore.CYAN}[4] {Fore.RESET}Enumerar Temas {get_command_explanation("enumerate_themes") if is_info_visible() else ""}
         {Fore.CYAN}[5] {Fore.RESET}Scan Completo {get_command_explanation("scan") if is_info_visible() else ""}
+        {Fore.CYAN}[A] {Fore.RESET}Atualizar WPSCAN {get_command_explanation("update") if is_info_visible() else ""}
         {Fore.RED}[B] {Fore.RESET}Voltar
         {Fore.YELLOW}[I] {Fore.RESET}Alternar Informações
         """)
@@ -117,5 +110,5 @@ async def wpscan_menu_loop(dummy_arg=None):
             toggle_info()
             continue
 
-        if option in [str(i) for i in range(1, 6)]:
-            wpscan_options(option, target)
+        if option.lower() in [str(i) for i in range(1, 6)] + ['a']:
+            wpscan_options(option)

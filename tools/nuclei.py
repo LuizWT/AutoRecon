@@ -79,8 +79,6 @@ def get_custom_template():
     return (target, template)
 
 def nuclei_options(option):
-    clear_terminal()
-
     target = global_target.value or input(f"{Fore.RED}Digite o alvo ou [B] para voltar: ")
 
     if option in ["1", "2", "6"] and target:
@@ -105,10 +103,10 @@ def nuclei_options(option):
                 return
             nuclei(target, 'dashboard')
     elif option == "3":
-        target = get_multi_target_file()
         if target.lower() == 'b':
-            clear_terminal()
-            return
+                clear_terminal()
+                return
+        target = get_multi_target_file()
         nuclei(target, 'multi_target')
 
     elif option == "5":
