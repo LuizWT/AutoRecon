@@ -8,7 +8,6 @@ from prompt_toolkit import PromptSession
 from colorama import Fore, Style, init
 from functions.clear_terminal import clear_terminal
 from functions.set_global_target import global_target
-from functions.validations.validate_protocol import validate_url
 from functions.validations.is_valid import is_valid_cidr
 from functions.create_output_file import execute_command_and_log_submenu
 from functions.validations.validate_ports import validate_ports
@@ -884,7 +883,6 @@ async def nikto_menu():
 
 async def wpscan_menu():
     target = global_target.value
-    target = validate_url(target)
     global_target_display = f"Alvo: {target}" if target else "Alvo: Não definido"
     clear_terminal()
     while True:
