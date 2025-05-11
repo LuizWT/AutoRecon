@@ -9,6 +9,11 @@ YELLOW='\e[33m'
 NC='\e[0m'
 BLUE='\e[34m'
 
+echo -e "${BLUE}========================================="
+echo -e "${BLUE}==      AutoRecon - Installer          =="
+echo -e "${BLUE}========================================="
+echo -e "${YELLOW}+ -- --=[ https://github.com/LuizWT/ ${NC}"
+
 die() {
   echo -e "${RED}[ERROR] $*${NC}" >&2
   exit 1
@@ -68,10 +73,7 @@ check_cmd() {
 
 main() {
   DEST_DIR="${1:-$HOME/AutoRecon}"
-  echo -e "${BLUE}========================================="
-  echo -e "${BLUE}==      AutoRecon - Installer          =="
-  echo -e "${BLUE}========================================="
-  echo -e "${YELLOW}+ -- --=[ https://github.com/LuizWT/ ${NC}"
+
   detect_pm
   install_pkg git
   install_pkg python3
