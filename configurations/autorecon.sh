@@ -1,75 +1,106 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
+trap 'echo -e "\e[31m[ERRO]\e[0m Um erro inesperado ocorreu." >&2' ERR
 
-# Verificações de pré-requisitos
-check_command() {
-    if ! command -v "$1" &> /dev/null; then
-        echo "Erro: $1 não está instalado. Instale-o e tente novamente."
-        exit 1
-    fi
+# Cores ANSI
+RED='\e[31m';
+GREEN='\e[32m';
+YELLOW='\e[33m';
+NC='\e[0m'
+
+die() {
+  echo -e "${RED}[ERROR] $*${NC}" >&2
+  exit 1
 }
 
-echo "Verificando dependências do sistema..."
+info() {
+  echo -e "${GREEN}[OK] $*${NC}"
+}
 
-check_command git
-check_command python3
-check_command pip3
+warn() {
+  echo -e "${YELLOW}[INFO] $*${NC}"
+}
 
-# Verifica o VENV isoladamente
-if ! python3 -m venv --help &> /dev/null; then
-    echo "Erro: O módulo venv do Python não está disponível. Instale com:"
-    echo "Debian/Ubuntu: sudo apt install python3-venv"
-    echo "Fedora: sudo dnf install python3-venv"
-    echo "Arch: sudo pacman -S python-virtualenv"
-    exit 1
-fi
+# Detecta gerenciador de pacotes
+detect_pm() {
+  if command -v apt >/dev/null; then
+    PM='apt'
+  elif command -v dnf >/dev/null; then
+    PM='dnf'
+  elif command -v pacman >/dev/null; then
+    PM='pacman'
+  elif command -v zypper >/dev/null; then
+    PM='zypper'
+  else
+    die "Gerenciador de pacotes não suportado."
+  fi
+}
 
-# Define o diretório de destino
-DEST_DIR="$HOME/AutoRecon"
+# Instala pacote, casop recise
+install_pkg() {
+  local pkg=$1
+  if ! command -v "$pkg" >/dev/null; then
+    warn "Instalando $pkg..."
+    case "$PM" in
+      apt)
+        sudo apt update && sudo apt install -y "$pkg"
+        ;;
+      dnf)
+        sudo dnf install -y "$pkg"
+        ;;
+      pacman)
+        sudo pacman -Sy --noconfirm "$pkg"
+        ;;
+      zypper)
+        sudo zypper refresh && sudo zypper install -y "$pkg"
+        ;;
+    esac
+  else
+    info "$pkg já instalado."
+  fi
+}
 
-# Valida se o repo já está clonado e, caso não esteja, o clona
-if [ -d "$DEST_DIR" ]; then
-    echo "O diretório $DEST_DIR já existe."
-else
-    echo "Clonando o AutoRecon para $DEST_DIR..."
+# Verifica comando
+check_cmd() {
+  command -v "$1" >/dev/null || die "$1 não encontrado. Saindo..."
+}
+
+main() {
+  DEST_DIR="${1:-$HOME/AutoRecon}"
+  echo -e "${BLUE}========================================="
+  echo -e "${BLUE}==      AutoRecon - Installer          =="
+  echo -e "${BLUE}========================================="
+  echo -e "${YELLOW}+ -- --=[ https://github.com/LuizWT/ ${NC}"
+  detect_pm
+  install_pkg git
+  install_pkg python3
+  install_pkg pip3
+  install_pkg python3-venv
+
+  if [ -d "$DEST_DIR" ]; then
+    info "Repositório já clonado em $DEST_DIR"
+  else
+    warn "Clonando AutoRecon em $DEST_DIR"
     git clone https://github.com/LuizWT/AutoRecon.git "$DEST_DIR"
-    if [ $? -ne 0 ]; then
-        echo "Erro ao clonar o repositório."
-        exit 1
-    fi
-fi
+  fi
 
-# Entra no diretório
-cd "$DEST_DIR" || {
-    echo "Erro ao entrar no diretório $DEST_DIR."
-    exit 1
+  cd "$DEST_DIR"
+  info "Criando venv em venv/"
+  python3 -m venv venv
+
+  warn "Ativando venv"
+  # shellcheck disable=SC1091
+  source venv/bin/activate
+
+  [ -s requirements.txt ] || die "requirements.txt não encontrado."
+  warn "Instalando dependências..."
+  pip install -r requirements.txt
+
+  warn "Executando AutoRecon..."
+  sudo venv/bin/python3 autorecon.py
+
+  echo -e "${GREEN}[OK] Tudo pronto! =)${NC}"
+  echo "Use: 'source $DEST_DIR/venv/bin/activate' para reativar o ambiente virtual."
 }
 
-# Cria o VENV
-echo "Criando ambiente virtual em venv/..."
-python3 -m venv venv
-if [ $? -ne 0 ]; then
-    echo "Erro ao criar o ambiente virtual com python3."
-    exit 1
-fi
-
-# Usa o source para ativar o VENV
-source venv/bin/activate
-if [ $? -ne 0 ]; then
-    echo "Erro ao ativar o ambiente virtual."
-    exit 1
-fi
-
-# Instala as dependências
-echo "Instalando dependências do requirements.txt..."
-pip3 install -r requirements.txt
-if [ $? -ne 0 ]; then
-    echo "Erro ao instalar as dependências."
-    deactivate
-    exit 1
-fi
-
-# Executa o autorecon com o caminho do python3 do ambiente VENV (previne erro)
-echo "Executando autorecon.py com sudo..."
-sudo venv/bin/python3 autorecon.py
-
-echo "Instalação e verificação concluídas com sucesso!"
+main "$@"
