@@ -88,6 +88,7 @@ main() {
   detect_pm
   install_pkg git
   install_pkg python3
+  install_pkg python3-venv
   install_pkg python3-pip
   check_venv
 
