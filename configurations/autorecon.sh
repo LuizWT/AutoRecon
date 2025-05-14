@@ -28,6 +28,7 @@ warn() {
 }
 
 # Detecta gerenciador de pacotes
+PM=""
 detect_pm() {
   if command -v apt &>/dev/null; then
     PM='apt'
@@ -45,7 +46,7 @@ detect_pm() {
 # Instala pacote se necessário
 install_pkg() {
   local pkg="$1"
-  if ! command -v "$pkg" &>/dev/null; then
+  if ! dpkg -s "$pkg" &>/dev/null && ! command -v "$pkg" &>/dev/null; then
     warn "Instalando $pkg..."
     case "$PM" in
       apt)
@@ -69,12 +70,10 @@ check_venv() {
     case "$PM" in
       apt|zypper)
         warn "Instalando pacote de venv para $PM..."
-        pkg="${PM == 'apt' && echo python3-venv || echo python3-virtualenv}" # zypper usa python3-virtualenv
-        sudo $PM install -y "$pkg"
-        ;;  
+        pkg="${PM == 'apt' && echo python3-venv || echo python3-virtualenv}"
+        sudo $PM install -y "$pkg";;
       *)
-        warn "Assumindo que o venv já está incluso no pacote python3 do sistema."
-        ;;  
+        warn "Assumindo que o venv já está incluso no pacote python3 do sistema.";;
     esac
     python3 -m venv --help &>/dev/null || die "Falha ao habilitar módulo venv."
   else
@@ -101,7 +100,7 @@ main() {
 
   cd "$DEST_DIR"
   info "Criando venv em venv/"
-  sudo python3 -m venv venv
+  python3 -m venv venv
 
   warn "Ativando venv"
 
@@ -109,13 +108,15 @@ main() {
 
   [ -s requirements.txt ] || die "requirements.txt não encontrado."
   warn "Instalando dependências..."
+  pip install --upgrade pip
   pip install -r requirements.txt
 
   warn "Executando AutoRecon..."
-  sudo venv/bin/python3 autorecon.py
+  venv/bin/python3 autorecon.py
 
   echo -e "${GREEN}[OK] Tudo pronto! =)${NC}"
   echo "Use: 'source $DEST_DIR/venv/bin/activate' para reativar o ambiente virtual."
 }
 
 main "$@"
+
