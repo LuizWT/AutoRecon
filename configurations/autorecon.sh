@@ -101,7 +101,7 @@ main() {
 
   cd "$DEST_DIR"
   info "Criando venv em venv/"
-  python3 -m venv venv
+  sudo python3 -m venv venv
 
   warn "Ativando venv"
 
