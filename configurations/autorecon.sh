@@ -88,7 +88,7 @@ main() {
   detect_pm
   install_pkg git
   install_pkg python3
-  install_pkg python3-pip3
+  install_pkg python3-pip
   check_venv
 
   if [ -d "$DEST_DIR" ]; then
