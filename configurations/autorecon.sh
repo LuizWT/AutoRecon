@@ -112,7 +112,7 @@ main() {
   pip install -r requirements.txt
 
   warn "Executando AutoRecon..."
-  venv/bin/python3 autorecon.py
+  sudo venv/bin/python3 autorecon.py
 
   echo -e "${GREEN}[OK] Tudo pronto! =)${NC}"
   echo "Use: 'source $DEST_DIR/venv/bin/activate' para reativar o ambiente virtual."
