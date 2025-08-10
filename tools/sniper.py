@@ -1,7 +1,8 @@
 from colorama import init, Fore
 from functions.clear_terminal import clear_terminal
 from functions.validations.is_valid import is_valid_cidr
-from functions.create_output_file import execute_command_and_log
+from functions.runner import run_command
+from functions.logger import get_logger
 from functions.proxy_chains import ProxyManager
 from functions.set_global_target import set_global_target, global_target
 from functions.toggle_info import toggle_info, is_info_visible
@@ -13,6 +14,7 @@ import asyncio
 
 init(autoreset=True)  # inicia o colorama
 
+logger = get_logger(__name__)
 session = PromptSession()
 bindings = KeyBindings()
 
@@ -36,7 +38,7 @@ def get_command_explanation(mode):
     }
     return explanations.get(mode, f"{Fore.RED}| [INFO] Modo não identificado.")
 
-def sniper(target, mode, additional_param=None):
+async def sniper(target, mode, additional_param=None):
     base_command = "sudo sniper " if not ProxyManager.is_enabled() else "sudo proxychains sniper "
     
     commands = {
@@ -55,82 +57,82 @@ def sniper(target, mode, additional_param=None):
 
     command = commands.get(mode)
     if command:
-        execute_command_and_log(command, "sniper")
+        await run_command(command, "sniper")
 
-def get_target(global_target):
-    return global_target if global_target else input(f"{Fore.GREEN}Digite o alvo ou {Fore.RED}[B]{Fore.GREEN} para voltar:{Fore.RESET} ")
+async def get_target(global_target_value):
+    return global_target_value if global_target_value else await session.prompt_async(f"{Fore.GREEN}Digite o alvo ou {Fore.RED}[B]{Fore.GREEN} para voltar:{Fore.RESET} ")
 
-def get_cidr():
+async def get_cidr():
     while True:
-        cidr = input(f"{Fore.GREEN}Digite o CIDR (EX: 192.168.0.0/24) ou {Fore.RED}[B]{Fore.GREEN} para voltar:{Fore.RESET} ").strip()
+        cidr = await session.prompt_async(f"{Fore.GREEN}Digite o CIDR (EX: 192.168.0.0/24) ou {Fore.RED}[B]{Fore.GREEN} para voltar:{Fore.RESET} ").strip()
         if cidr.lower() == 'b':
             return 'b'
         if is_valid_cidr(cidr):
             return cidr
         else:
-            print(f"{Fore.RED}[ERROR] CIDR inválido!{Fore.RESET}")
+            logger.error(f"CIDR inválido!")
 
-def get_workspace():
-    return input(f"{Fore.GREEN}Digite o nome do Workspace ou {Fore.RED}[B]{Fore.GREEN} para voltar:{Fore.RESET} ")
+async def get_workspace():
+    return await session.prompt_async(f"{Fore.GREEN}Digite o nome do Workspace ou {Fore.RED}[B]{Fore.GREEN} para voltar:{Fore.RESET} ")
 
-def get_port():
+async def get_port():
     while True:
-        port_string = input(f"{Fore.GREEN}Digite o número da porta ou {Fore.RED}[B]{Fore.GREEN} para voltar:{Fore.RESET} ").strip()
+        port_string = await session.prompt_async(f"{Fore.GREEN}Digite o número da porta ou {Fore.RED}[B]{Fore.GREEN} para voltar:{Fore.RESET} ").strip()
         if port_string.lower() == 'b':
             return 'b'
         if validate_ports(port_string):
             return int(port_string)
         else:
-           print(f"{Fore.RED}[ERROR] Porta inválida (1-65536).{Fore.RESET}")
+           logger.error(f"Porta inválida (1-65536).")
 
-def sniper_options(option, global_target):
-    target = get_target(global_target)
+async def sniper_options(option):
+    target = await get_target(global_target.value)
     if target.lower() == 'b':
         clear_terminal()
         return  
     
     if option == "1":
-        sniper(target, 'normal')
+        await sniper(target, 'normal')
     elif option == "2":
-        sniper(target, 'osint_recon')
+        await sniper(target, 'osint_recon')
     elif option == "3":
-        sniper(target, 'stealth')
+        await sniper(target, 'stealth')
     elif option == "4":
-        cidr = get_cidr()
+        cidr = await get_cidr()
         if cidr.lower() == 'b':
             clear_terminal()
             return  
-        workspace = get_workspace()
+        workspace = await get_workspace()
         if workspace.lower() == 'b':
             clear_terminal()
             return  
-        sniper(cidr, 'discover', workspace)
+        await sniper(cidr, 'discover', workspace)
     elif option == "5":
-        port = get_port()
+        port = await get_port()
         if port == 'b':
             clear_terminal()
             return  
-        sniper(target, 'port', port)
+        await sniper(target, 'port', port)
     elif option == "6":
-        sniper(target, 'fullportonly')
+        await sniper(target, 'fullportonly')
     elif option == "7":
-        sniper(target, 'web')
+        await sniper(target, 'web')
     elif option == "8":
-        port = get_port()
+        port = await get_port()
         if port == 'b':
             clear_terminal()
             return  
-        sniper(target, 'webporthttp', port)
+        await sniper(target, 'webporthttp', port)
     elif option == "9":
-        port = get_port()
+        port = await get_port()
         if port == 'b':
             clear_terminal()
             return  
-        sniper(target, 'webporthttps', port)
+        await sniper(target, 'webporthttps', port)
     elif option == "10":
-        sniper(target, 'webscan')
+        await sniper(target, 'webscan')
     elif option == "11":
-        sniper(target, 'bruteforce')
+        await sniper(target, 'bruteforce')
 async def sniper_menu_loop():
     while True:
         clear_terminal()
@@ -175,4 +177,6 @@ async def sniper_menu_loop():
             continue
 
         if option in [str(i) for i in range(1, 12)]:
-            sniper_options(option)
+            await sniper_options(option)
+
+

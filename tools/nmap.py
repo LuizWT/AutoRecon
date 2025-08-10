@@ -7,7 +7,8 @@ import asyncio
 
 from functions.validations.validate_ports import validate_ports
 from functions.clear_terminal import clear_terminal
-from functions.create_output_file import execute_command_and_log
+from functions.runner import run_command
+from functions.logger import get_logger
 from functions.proxy_chains import ProxyManager
 from functions.validations.is_valid import is_valid_cidr
 from functions.set_global_target import global_target, set_global_target, TargetValidator
@@ -15,6 +16,7 @@ from functions.toggle_info import toggle_info, is_info_visible
 
 init(autoreset=True)  # inicia o colorama
 
+logger = get_logger(__name__)
 session = PromptSession()
 bindings = KeyBindings()
 
@@ -44,7 +46,7 @@ def get_command_explanation(mode):
     
     return explanations.get(mode, f"{Fore.RED}| [INFO] Modo não identificado.")
 
-def nmap(target, mode, additional_param=None):
+async def nmap(target, mode, additional_param=None):
     base_command = "sudo nmap " if not ProxyManager.is_enabled() else "sudo proxychains nmap "
     command = None
 
@@ -55,7 +57,7 @@ def nmap(target, mode, additional_param=None):
             techniques = ['-sS', '-sT', '-sU', '-sF', '-sN', '-sX']
             for technique in techniques:
                 command = f"{base_command}{technique} {target}"
-                execute_command_and_log(command, "nmap")
+                await run_command(command, output_name="nmap")
             return 
         else:
             command = f"{base_command}{additional_param} {target}"
@@ -85,10 +87,9 @@ def nmap(target, mode, additional_param=None):
         command = f"{base_command}--script=dns-brute --script-args dns-brute.domain={target}"
 
     if command:
-        execute_command_and_log(command, "nmap")
+        await run_command(command, output_name="nmap")
 
-def execute_all_nmap_commands(target):
-    # Os comandos DEVEM ser executados um a um para não causar conflito com a flag -p
+async def execute_all_nmap_commands(target):
     commands = [
         f"-sS -v {target}",                      # TCP SYN scan
         f"-sT -v {target}",                      # TCP connect scan
@@ -109,10 +110,10 @@ def execute_all_nmap_commands(target):
     ]
 
     for cmd in commands:
-        execute_command_and_log(f"sudo nmap {cmd}", "nmap")
+        await run_command(f"sudo nmap {cmd}", output_name="nmap")
 
-def nmap_options(option):
-    target = global_target.value or input(f"{Fore.RED}Digite o alvo ou [B] para voltar: ")
+async def nmap_options(option):
+    target = global_target.value or await session.prompt_async(f"{Fore.RED}Digite o alvo ou [B] para voltar: ")
     if target.lower() == 'b':
         clear_terminal()
         return
@@ -121,17 +122,17 @@ def nmap_options(option):
         if target.lower() == 'b':
             clear_terminal()
             return
-        nmap(target, 'target_spec')
+        await nmap(target, 'target_spec')
     elif option == "2":
         clear_terminal()
         if target.lower() == 'b':
             clear_terminal()
-            return
+            return  
         technique = get_scan_technique()
         if technique.lower() == 'b':
             clear_terminal()
             return  
-        nmap(target, 'scan_technique', technique)
+        await nmap(target, 'scan_technique', technique)
     elif option == "4":
         clear_terminal()
         if target.lower() == 'b':
@@ -141,78 +142,78 @@ def nmap_options(option):
         if ports.lower() == 'b':
             clear_terminal()
             return  
-        nmap(target, 'port_spec', ports)
+        await nmap(target, 'port_spec', ports)
     elif option == "5":
         clear_terminal()
         if target.lower() == 'b':
             clear_terminal()
             return  
-        nmap(target, 'service_detection')  
+        await nmap(target, 'service_detection')  
     elif option == "6":
         clear_terminal()
         if target.lower() == 'b':
             clear_terminal()
             return  
-        nmap(target, 'os_detection')  
+        await nmap(target, 'os_detection')  
     elif option == "7":
         while True:
             clear_terminal()
-            timing = input(f"{Fore.GREEN}Digite o nível de timing (0-5) ou {Fore.RED}[B] {Fore.GREEN}para voltar: ")
+            timing = await session.prompt_async(f"{Fore.GREEN}Digite o nível de timing (0-5) ou {Fore.RED}[B] {Fore.GREEN}para voltar: ")
             if timing.lower() == 'b':
                 clear_terminal()
                 return
             if timing.isdigit() and 0 <= int(timing) <= 5:
-                print(f"{Fore.GREEN}Configuração de temporização definida para {timing}.")
-                nmap(target, 'timing', timing)
+                logger.info(f"Configuração de temporização definida para {timing}.")
+                await nmap(target, 'timing', timing)
             else:
-                print(f"{Fore.RED}Nível de timing inválido.")
+                logger.error(f"Nível de timing inválido.")
     elif option == "8":
         clear_terminal()
         if target.lower() == 'b':
             clear_terminal()
             return  
-        nmap(target, 'http_title')  
+        await nmap(target, 'http_title')  
     elif option == "9":
         clear_terminal()
         if target.lower() == 'b':
             clear_terminal()
             return  
-        nmap(target, 'ssl_cert')  
+        await nmap(target, 'ssl_cert')  
     elif option == "10":
         clear_terminal()
         if target.lower() == 'b':
             clear_terminal()
             return  
-        nmap(target, 'vuln')  
+        await nmap(target, 'vuln')  
     elif option == "11":
         clear_terminal()
         if target.lower() == 'b':
             clear_terminal()
             return  
-        nmap(target, 'smb_os_discovery')  
+        await nmap(target, 'smb_os_discovery')  
     elif option == "12":
         clear_terminal()
         if target.lower() == 'b':
             clear_terminal()
             return  
-        nmap(target, 'http_robots_txt')  
+        await nmap(target, 'http_robots_txt')  
     elif option == "13":
         clear_terminal()
         if target.lower() == 'b':
             clear_terminal()
             return  
-        nmap(target, 'ssh_hostkey')  
+        await nmap(target, 'ssh_hostkey')  
     elif option == "14":
         clear_terminal()
         if target.lower() == 'b':
             clear_terminal()
             return  
-        nmap(target, 'dns_brute')  
+        await nmap(target, 'dns_brute')  
     elif option == "15":
         clear_terminal()
-        execute_all_nmap_commands(target)
+        await execute_all_nmap_commands(target)
     else:
-        print(f"{Fore.RED}[INFO] {Fore.BLUE}Opção inválida!")
+        logger.info(f"Opção inválida!")
 
 
 def get_range():
@@ -223,7 +224,7 @@ def get_range():
         if is_valid_cidr(target):
             return target
         else:
-            print(f"{Fore.RED}Formato inválido. Por favor, insira um endereço CIDR válido.")
+            logger.error(f"Formato inválido. Por favor, insira um endereço CIDR válido.")
 
 def get_ports():
     while True:
@@ -233,7 +234,7 @@ def get_ports():
         if validate_ports(ports_string):
             return ports_string
         else:
-            print(f"{Fore.RED}Entrada inválida! Certifique-se de usar o formato correto, como 21,22 ou 1-100.{Fore.RESET}")
+            logger.error(f"Entrada inválida! Certifique-se de usar o formato correto, como 21,22 ou 1-100.{Fore.RESET}")
 
 
 def get_scan_technique():
@@ -265,7 +266,7 @@ def get_scan_technique():
     elif choice == '7':
         return 'all'
     else:
-        print(f"{Fore.RED}[ERRO] Opção inválida. Tente novamente.")
+        logger.error(f"Opção inválida. Tente novamente.")
         return get_scan_technique()
 
 async def nmap_menu_loop():
@@ -314,4 +315,4 @@ async def nmap_menu_loop():
             continue
 
         if option in [str(i) for i in range(1, 16)]:
-            nmap_options(option)
+            await nmap_options(option)

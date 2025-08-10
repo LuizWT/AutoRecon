@@ -1,11 +1,11 @@
-# Bibliotecas e Dependências:
 import os
-from colorama import init, Fore
 import subprocess
+import asyncio
 from functions.clear_terminal import clear_terminal
+from functions.logger import get_logger
+from functions.runner import run_command
 
-# Inicialização:
-init(autoreset=True)
+logger = get_logger(__name__)
 
 # Estruturas de configurações de ferramentas e dependências:
 TOOLS_CONFIG = {
@@ -21,7 +21,7 @@ TOOLS_CONFIG = {
     "wpscan": {
         "check_command": ["wpscan", "--version"],
         "install_commands": {
-            "ruby_required": True,  # Gem WPScan depende de Ruby
+            "ruby_required": True, # Gem WPScan depende de Ruby
             "debian": "sudo gem install wpscan",
             "redhat": "sudo gem install wpscan",
             "suse": "sudo gem install wpscan",
@@ -73,7 +73,7 @@ TOOLS_CONFIG = {
     "nuclei": {
         "check_command": ["nuclei", "--version"],
         "install_commands": {
-            "go_required": True,  # Nuclei depende de Go
+            "go_required": True, # Nuclei depende de Go
             "install_script": """
                 USER_HOME=$(eval echo ~$SUDO_USER) && 
 
@@ -87,7 +87,6 @@ TOOLS_CONFIG = {
 
                 sudo -u $SUDO_USER go build -v -buildvcs=false -o $USER_HOME/nuclei/bin/nuclei ./cmd/nuclei && 
 
-                # Adicionando o binário ao PATH
                 if [ -n "$BASH_VERSION" ]; then 
                     echo 'export PATH=$PATH:$USER_HOME/nuclei/bin' >> $USER_HOME/.bashrc; 
                     source $USER_HOME/.bashrc;
@@ -115,11 +114,10 @@ TOOLS_CONFIG = {
     }
 }
 
-# Funções de Verificação de Ferramenta:
 def check_tool(tool):
     tool_config = TOOLS_CONFIG.get(tool)
     if not tool_config:
-        print(f"{Fore.RED}[ERROR] Configuração para {tool} não encontrada.")
+        logger.error(f"Configuração para {tool} não encontrada.")
         return False
 
     try:
@@ -129,21 +127,20 @@ def check_tool(tool):
             return version_output >= tool_config["min_version"]
         else:
             subprocess.run(tool_config["check_command"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            print(f"{Fore.CYAN}[INFO] {tool.capitalize()} já está instalado.")
+            logger.info(f"{tool.capitalize()} já está instalado.")
             return True
     except (subprocess.CalledProcessError, FileNotFoundError):
-        print(f"{Fore.RED}[INFO] {tool.capitalize()} não está instalado.")
+        logger.info(f"{tool.capitalize()} não está instalado.")
         return False
 
 
-# Funções de Instalação de Ferramenta:
-def install_tool(tool):
+async def install_tool(tool):
     config = TOOLS_CONFIG.get(tool)
     if not config:
-        print(f"{Fore.RED}[ERROR] Configuração para {tool} não encontrada.")
+        logger.error(f"Configuração para {tool} não encontrada.")
         return
-    print(f"{Fore.CYAN}[INFO] Instalando {tool}...")
-    # Detecta distro apenas uma vez
+    logger.info(f"Instalando {tool}...")
+
     distro = None
     if os.path.exists("/etc/debian_version"):
         distro = "debian"
@@ -154,21 +151,22 @@ def install_tool(tool):
     elif os.path.exists("/etc/SuSE-release"):
         distro = "suse"
     if distro is None:
-        print(f"{Fore.RED}[ERROR] Distribuição não suportada.")
+        logger.error(f"Distribuição não suportada.")
         return
-    # Obtém comando
+
     command = config["install_commands"].get(distro)
     if not command and "install_script" in config["install_commands"]:
         command = config["install_commands"]["install_script"]
     if not command:
-        print(f"{Fore.RED}[ERROR] Nenhum comando de instalação definido para {tool}.")
+        logger.error(f"Nenhum comando de instalação definido para {tool}.")
         return
+
     try:
-        result = subprocess.run(command, shell=True, check=True,
-                                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        print(result.stdout.decode())
-        print(result.stderr.decode())
-        clear_terminal()
-        print(f"{Fore.CYAN}[INFO] {tool.capitalize()} instalado com sucesso.")
+        stdout, stderr, returncode = await run_command(command, output_name=f"install_{tool}")
+        if returncode == 0:
+            clear_terminal()
+            logger.info(f"{tool.capitalize()} instalado com sucesso.")
+        else:
+            logger.error(f"Erro na instalação de {tool}. Saída: {stderr}")
     except Exception as e:
-        print(f"{Fore.RED}[ERROR] Erro na instalação de {tool}: {e}")
+        logger.error(f"Erro na instalação de {tool}: {e}")

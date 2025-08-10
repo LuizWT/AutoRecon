@@ -6,13 +6,15 @@ from prompt_toolkit.formatted_text import HTML
 import asyncio
 
 from functions.clear_terminal import clear_terminal
-from functions.create_output_file import execute_command_and_log
+from functions.runner import run_command
+from functions.logger import get_logger
 from functions.proxy_chains import ProxyManager
 from functions.set_global_target import global_target, set_global_target
 from functions.toggle_info import toggle_info, is_info_visible
 
 init(autoreset=True)  # inicia o colorama
 
+logger = get_logger(__name__)
 session = PromptSession()
 bindings = KeyBindings()
 
@@ -31,7 +33,7 @@ def get_command_explanation(mode):
     }
     return explanations.get(mode, f"{Fore.RED}| [INFO] Modo não identificado.")
 
-def wpscan(target: str, mode: str, api_token: str = None):
+async def wpscan(target: str, mode: str, api_token: str = None):
     base = "sudo wpscan" if not ProxyManager.is_enabled() else "sudo proxychains wpscan"
     cmds = {
         'normal': f"{base} --url {target}",
@@ -43,34 +45,34 @@ def wpscan(target: str, mode: str, api_token: str = None):
     }
     cmd = cmds.get(mode)
     if cmd:
-        execute_command_and_log(cmd, "wpscan")
+        await run_command(cmd, "wpscan")
 
 def get_api_token():
     return input(f"{Fore.GREEN}Digite seu API Token ou {Fore.RED}[B]{Fore.GREEN} para voltar: ")
 
-def wpscan_options(option: str):
+async def wpscan_options(option: str):
     if option.lower() == 'a':
-        wpscan(target="", mode="update")
+        await wpscan(target="", mode="update")
         return
 
     target = global_target.value or ''
     if not target:
-        target = input(f"{Fore.RED}Digite o alvo ou [B] para voltar: ")
+        target = await session.prompt_async(f"{Fore.RED}Digite o alvo ou [B] para voltar: ")
         if target.lower() == 'b':
             clear_terminal()
             return
 
     if option == '5':
-        api = input(f"{Fore.GREEN}Digite seu API Token ou {Fore.RED}[B]{Fore.GREEN} para voltar: ")
+        api = await session.prompt_async(f"{Fore.GREEN}Digite seu API Token ou {Fore.RED}[B]{Fore.GREEN} para voltar: ")
         if api.lower() == 'b':
             clear_terminal()
             return
-        wpscan(target, 'scan', api)
+        await wpscan(target, 'scan', api)
     else:
         modes = {'1': 'normal', '2': 'enumerate_users', '3': 'enumerate_plugins', '4': 'enumerate_themes'}
         mode = modes.get(option)
         if mode:
-            wpscan(target, mode)
+            await wpscan(target, mode)
 
 
 async def wpscan_menu_loop(dummy_arg=None):
@@ -111,4 +113,4 @@ async def wpscan_menu_loop(dummy_arg=None):
             continue
 
         if option.lower() in [str(i) for i in range(1, 6)] + ['a']:
-            wpscan_options(option)
+            await wpscan_options(option)

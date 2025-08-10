@@ -9,7 +9,7 @@ from colorama import Fore, Style, init
 from functions.clear_terminal import clear_terminal
 from functions.set_global_target import global_target
 from functions.validations.is_valid import is_valid_cidr
-from functions.create_output_file import execute_command_and_log_submenu
+from functions.runner import run_command
 from functions.validations.validate_ports import validate_ports
 from prompt_toolkit.formatted_text import HTML
 from configurations.ar_updater import new_version_checker
@@ -487,7 +487,7 @@ async def process_command(command_data):
     cmd_str = command_data.get("command")
 
     try:
-        await execute_command_and_log_submenu(cmd_str, tool)
+        await run_command(cmd_str, output_name=tool)
     except Exception as e:
         print(f"[ERRO] Falha ao executar '{cmd_str}': {e}")
 
@@ -1109,7 +1109,7 @@ async def automation_setup_menu():
                 except ValueError:
                     print(f"{Fore.RED}Entrada inválida. Por favor, insira um número inteiro.")
         elif choice.lower() == 'q':
-            await edit_queue_menu(session, new_version_checker, global_target.value)
+            await edit_queue_menu(session, new_version_checker)
         elif choice.lower() == 'b':
             if is_running:
                 print(f"{Fore.YELLOW}Automação em andamento. Conclua ou interrompa a execução antes de sair.{Fore.RESET}")

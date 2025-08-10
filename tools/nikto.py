@@ -1,5 +1,6 @@
 from colorama import init, Fore
-from functions.create_output_file import execute_command_and_log
+from functions.runner import run_command
+from functions.logger import get_logger
 from functions.clear_terminal import clear_terminal
 from functions.set_global_target import set_global_target, global_target
 from functions.toggle_info import toggle_info, is_info_visible
@@ -10,6 +11,7 @@ import asyncio
 
 init(autoreset=True)  # inicia o colorama
 
+logger = get_logger(__name__)
 session = PromptSession()
 bindings = KeyBindings()
 
@@ -30,7 +32,7 @@ def get_command_explanation(mode):
     }
     return explanations.get(mode, f"{Fore.RED}| [INFO] Modo não identificado.")
 
-def nikto(target, mode):
+async def nikto(target, mode):
     base_command = f"nikto -h {target} "
     command = None
 
@@ -50,41 +52,41 @@ def nikto(target, mode):
         command = f"{base_command}-T"
 
     if command:
-        execute_command_and_log(command, "nikto")
+        await run_command(command, output_name="nikto")
 
-def execute_all_nikto_commands(target):
+async def execute_all_nikto_commands(target):
     commands = [
-        f"-C all -h {target}",                     # Vulnerability checks
-        f"-M all -h {target}",                     # Server modules checks
-        f"-e all -h {target}",                     # Configuration files tests
-        f"-C -p -h {target}",                      # Cookie security
-        f"-p -h {target}",                         # Protocols checks
-        f"-d -h {target}",                         # Directory and file scan
-        f"-T -h {target}"                          # Third-party scripts checks
+        f"-C all -h {target}",
+        f"-M all -h {target}",
+        f"-e all -h {target}",
+        f"-C -p -h {target}",
+        f"-p -h {target}",
+        f"-d -h {target}",
+        f"-T -h {target}"
     ]
 
     for cmd in commands:
-        execute_command_and_log(f"nikto {cmd}", "nikto")
+        await run_command(f"nikto {cmd}", output_name="nikto")
 
-def nikto_options(option):
-    target = global_target.value or input(f"{Fore.RED}Digite o alvo: ")
+async def nikto_options(option):
+    target = global_target.value or await session.prompt_async(f"{Fore.RED}Digite o alvo: ")
     clear_terminal()
     if option == "1":
-        nikto(target, 'vuln_checks')
+        await nikto(target, 'vuln_checks')
     elif option == "2":
-        nikto(target, 'server_modules')
+        await nikto(target, 'server_modules')
     elif option == "3":
-        nikto(target, 'config_files')
+        await nikto(target, 'config_files')
     elif option == "4":
-        nikto(target, 'cookie_security')
+        await nikto(target, 'cookie_security')
     elif option == "5":
-        nikto(target, 'protocols')
+        await nikto(target, 'protocols')
     elif option == "6":
-        nikto(target, 'dir_file_scan')
+        await nikto(target, 'dir_file_scan')
     elif option == "7":
-        nikto(target, 'third_party_scripts')
+        await nikto(target, 'third_party_scripts')
     elif option == "8":
-        execute_all_nikto_commands(target)
+        await execute_all_nikto_commands(target)
 
 async def nikto_menu_loop():
     while True:
@@ -124,6 +126,8 @@ async def nikto_menu_loop():
             continue
 
         if option in [str(i) for i in range(1, 9)]:
-            nikto_options(option)
+            await nikto_options(option)
         else:
-            print(f"{Fore.RED}Opção inválida.")
+            logger.error(f"Opção inválida.")
+
+

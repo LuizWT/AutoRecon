@@ -1,4 +1,5 @@
 import ipaddress
+import re
 
 def is_valid_cidr(cidr: str) -> bool:
     try:
@@ -14,8 +15,9 @@ def is_valid_ip(ip: str) -> bool:
     except ValueError:
         return False
 
-import re
 def is_valid_domain(domain: str) -> bool:
+    if domain is None:
+        return False
     pattern = re.compile(r'^((?!-)[A-Za-z0-9-]{1,63}(?<!-)\.)+[A-Za-z]{2,}$')
     return bool(pattern.match(domain))
 

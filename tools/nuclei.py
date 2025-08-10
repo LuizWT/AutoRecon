@@ -1,6 +1,7 @@
 from colorama import init, Fore
 from functions.clear_terminal import clear_terminal
-from functions.create_output_file import execute_command_and_log
+from functions.runner import run_command
+from functions.logger import get_logger
 from functions.proxy_chains import ProxyManager
 from functions.validations.is_valid import is_valid_cidr
 from functions.set_global_target import set_global_target, global_target
@@ -12,6 +13,7 @@ import asyncio
 
 init(autoreset=True)  # inicia o colorama
 
+logger = get_logger(__name__)
 session = PromptSession()
 bindings = KeyBindings()
 
@@ -31,7 +33,7 @@ def get_command_explanation(mode):
     
     return explanations.get(mode, f"{Fore.RED}| [INFO] Modo não identificado.")
 
-def nuclei(target, mode, additional_param=None):
+async def nuclei(target, mode, additional_param=None):
     base_command = "nuclei " if not ProxyManager.is_enabled() else "proxychains nuclei "
     command = None
 
@@ -49,7 +51,7 @@ def nuclei(target, mode, additional_param=None):
         command = f"{base_command}-target {target} -dashboard"
 
     if command:
-        execute_command_and_log(command, "nuclei")
+        await run_command(command, output_name="nuclei")
 
 def get_severity():
     return input(f"{Fore.GREEN}Digite a severidade (low, medium, high) ou {Fore.RED}[B]{Fore.GREEN} para voltar: ")
@@ -65,7 +67,7 @@ def get_network_target():
         if is_valid_cidr(target):
             return target
         else:
-            print(f"{Fore.RED}Formato inválido. Por favor, insira um endereço CIDR válido.")
+            logger.error(f"Formato inválido. Por favor, insira um endereço CIDR válido.")
 
 def get_custom_template():
     target = input(f"{Fore.GREEN}Digite o endereço do alvo (EX: 192.168.0.1 | site.com) ou {Fore.RED}[B]{Fore.GREEN} para voltar: ")
@@ -78,8 +80,8 @@ def get_custom_template():
 
     return (target, template)
 
-def nuclei_options(option):
-    target = global_target.value or input(f"{Fore.RED}Digite o alvo ou [B] para voltar: ")
+async def nuclei_options(option):
+    target = global_target.value or await session.prompt_async(f"{Fore.RED}Digite o alvo ou [B] para voltar: ")
 
     if option in ["1", "2", "6"] and target:
 
@@ -87,7 +89,7 @@ def nuclei_options(option):
             if target.lower() == 'b':
                 clear_terminal()
                 return
-            nuclei(target, 'target_spec')
+            await nuclei(target, 'target_spec')
         elif option == "2":
             if target.lower() == 'b':
                 clear_terminal()
@@ -96,25 +98,25 @@ def nuclei_options(option):
             if severity.lower() == 'b':
                 clear_terminal()
                 return
-            nuclei(target, 'severity', severity)
+            await nuclei(target, 'severity', severity)
         elif option == "6":
             if target.lower() == 'b':
                 clear_terminal()
                 return
-            nuclei(target, 'dashboard')
+            await nuclei(target, 'dashboard')
     elif option == "3":
         if target.lower() == 'b':
                 clear_terminal()
                 return
         target = get_multi_target_file()
-        nuclei(target, 'multi_target')
+        await nuclei(target, 'multi_target')
 
     elif option == "5":
         target, template = get_custom_template()
         if target is None or template is None:
             clear_terminal()
             return
-        nuclei(target, 'custom_template', (target, template))
+        await nuclei(target, 'custom_template', (target, template))
 
 async def nuclei_menu_loop():
     while True:
@@ -155,6 +157,8 @@ async def nuclei_menu_loop():
             if target is None:
                 clear_terminal()
                 break
-            nuclei(target, 'network_scan')
+            await nuclei(target, 'network_scan')
         if option in [str(i) for i in range(1, 7)]:
-            nuclei_options(option)
+            await nuclei_options(option)
+
+
