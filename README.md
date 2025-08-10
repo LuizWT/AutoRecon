@@ -11,32 +11,40 @@ O **AutoRecon** é um projeto de automação de ferramentas de segurança focado
 
 <hr>
 
-### **Atualização 1.6.0**
-Esta versão introduz novas funcionalidades que aprimoram ainda mais a experiência do usuário e a flexibilidade da ferramenta:
+### **Atualização 1.7.0**
+Esta versão traz uma grande **refatoração interna** visando melhor organização, manutenção e padronização da execução:
 
-- **Otimização do Desempenho e Maior Estabilidade:**  
-   A listagem e execução de comandos foram otimizadas, reduzindo a lentidão em filas extensas. Diversos bugs menores foram corrigidos, incluindo ajustes no gerenciamento de diretórios Git para garantir que os comandos sejam executados no local correto e a criação de funções para melhores validações, tornando o projeto mais robusto e confiável.
+- **Execução Assíncrona**  
+  Todas as ferramentas agora utilizam um runner assíncrono centralizado, permitindo maior paralelismo e evitando bloqueios.
 
-- **Verificação de Atualizações Inteligente:**  
-   Agora o AutoRecon verifica o repositório antes de executar o comando `-update`, avisando o usuário nos casos que ocorrerem.
+- **Configuração Centralizada**  
+  Novo arquivo `config.py` unifica constantes e caminhos (ex.: `OUTPUT_DIR`, `LOG_FILE`, timeout padrão), simplificando ajustes futuros.
 
-- **Melhorias no Menu de Scheduler:**  
-   O menu de agendamento recebeu melhorias visuais (nova arte ASCII) e de usabilidade, diferenciando-se do menu principal e tornando a navegação mais intuitiva.
+- **Logger Padronizado**  
+  O `logger.py` centraliza logs com suporte a rotação de arquivos, facilitando auditoria e análise posterior.
+
+- **Runner Unificado**  
+  Implementação do `runner.py` para executar comandos com timeout, captura de saída e gravação automática no diretório de resultados.
+
+- **Padronização da Saída (LOGs)**  
+  `create_output_file.py` reformulado para salvar arquivos consistentemente em `output/` e trabalhar com `pathlib.Path`.
+
+- **Refatoração dos Módulos de Ferramentas**  
+  Nmap, Nuclei, Nikto, WPScan e Sn1per agora utilizam o mesmo fluxo de execução e log, reduzindo duplicação de código.
+
+- **Melhorias no AR Scheduler**  
+  Submenu de automação ajustado para trabalhar com o runner assíncrono, garantindo consistência e estabilidade.
+
+Arquivos alterados (principais):  
+`autorecon.py`, `config.py`, `create_output_file.py`, `logger.py`, `runner.py`, `setup.py`, `nikto.py`, `nmap.py`, `nuclei.py`, `sniper.py`, `wpscan.py`, `automation_submenu.py`.
 
 <div align="center">
 
 ![1732716073_grim](https://github.com/user-attachments/assets/30ac5cc7-cd26-4ce1-87c8-cba217421688)
 
-
 </div>
-
-Além disso, foi adicionado as seguintes opções e funcionalidades:
    
-- As ferramentas SNIPER e NUCLEI estão disponíveis no AR Scheduler.
-   
-- Opção "[RA]" para remover todos os comandos da Queue.
-   
-- Opção para usar ProxyChains: Entre em "[Q] Editar Queue" e utilize a opção "[P] Aplicar Proxychains" (a opção aparecerá apenas se houver um comando na lista), possibilitando adicionar o uso de ProxyChains para os comandos desejados. Veja o exemplo abaixo:
+As funcionalidades do AR Scheduler foram mantidas, com melhorias internas para uso assíncrono e padronização de execução. Opções como **ProxyChains**, **remoção de toda a fila** e **suporte a Nuclei/Sn1per** continuam presentes e funcionais.
 
 <div align="center">
 
@@ -48,16 +56,17 @@ Além disso, foi adicionado as seguintes opções e funcionalidades:
 
 </div>
   
-- **Nova Funcionalidade de Lançadores:**  
-A funcionalidade de **lançadores** no AutoRecon permite criar um atalho no menu do sistema para facilitar a execução da ferramenta com um ícone e comando pré-configurado. Para criar o lançador, basta executar o script `create_launcher.sh`:
+- **Funcionalidade de Lançadores:**  
+A funcionalidade de **lançadores** no AutoRecon permite criar um atalho no menu do sistema para facilitar a execução da ferramenta com um ícone e comando pré-configurado.
+Para criar o lançador, basta executar o script `create_launcher.sh`:
 
 Entre no diretório do projeto:
 
-    ~$ cd ~/AutoRecon
+    cd ~/AutoRecon
 
 Execute o script:
 
-    ~$ bash launcher/create_launcher.sh
+    bash launcher/create_launcher.sh
 
 <br>
 
@@ -94,6 +103,9 @@ Execute o script:
 ### Compatibilidade
 
 Atualmente, o AutoRecon é compatível apenas com sistemas operacionais baseados em **Linux**.
+> [!WARNING]  
+> A ferramenta apenas foi testada nas seguintes distros:
+> Debian, Fedora, OpenSUSE e Arch Linux.
   
 <hr>
 
