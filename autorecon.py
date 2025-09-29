@@ -98,9 +98,6 @@ async def main_loop():
         "5": ("nikto", nikto_menu_loop)
     }
 
-    if not check_system():
-        return
-
     while True:
         clear_terminal()
         main_menu()
@@ -138,6 +135,9 @@ async def main_loop():
 
 
 if __name__ == "__main__":
+    if not check_system():
+        sys.exit(1)
+
     args = parse_args()
     if args.update:
         update_repository()
