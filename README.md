@@ -76,15 +76,15 @@ As funcionalidades do AR Scheduler foram mantidas, com melhorias internas para u
   
 - **Funcionalidade de Lançadores:**  
 A funcionalidade de **lançadores** no AutoRecon permite criar um atalho no menu do sistema para facilitar a execução da ferramenta com um ícone e comando pré-configurado.
-Para criar o lançador, basta executar o script `create_launcher.sh`:
 
-Entre no diretório do projeto:
+Para criar o lançador, entre no diretório do projeto e execute:
 
     cd ~/AutoRecon
-
-Execute o script:
-
     bash launcher/create_launcher.sh
+
+Para remover o lançador:
+
+    bash launcher/remove_launcher.sh
 
 <br>
 
