@@ -1,164 +1,154 @@
-from colorama import init, Fore
-from functions.clear_terminal import clear_terminal
-from functions.runner import run_command
-from functions.logger import get_logger
-from functions.proxy_chains import ProxyManager
-from functions.validations.is_valid import is_valid_cidr
-from functions.set_global_target import set_global_target, global_target
-from functions.toggle_info import toggle_info, is_info_visible
-from prompt_toolkit import PromptSession
-from prompt_toolkit.key_binding import KeyBindings
-from prompt_toolkit.formatted_text import HTML
 import asyncio
+import os
+from colorama import Fore, init
+from prompt_toolkit import PromptSession
+from prompt_toolkit.formatted_text import HTML
+from prompt_toolkit.key_binding import KeyBindings
 
-init(autoreset=True)  # inicia o colorama
+from functions.clear_terminal import clear_terminal
+from functions.logger import get_logger
+from functions.set_global_target import global_target, set_global_target
+from functions.toggle_info import toggle_info, is_info_visible
+from functions.validations.is_valid import is_valid_cidr
+import tools.registry as registry
+from tools.common import dispatch
 
-logger = get_logger(__name__)
+init(autoreset=True)
 session = PromptSession()
-bindings = KeyBindings()
+logger = get_logger(__name__)
 
-@bindings.add('c-t')
+_bindings = KeyBindings()
+
+
+@_bindings.add("c-t")
 def _(event):
     asyncio.create_task(set_global_target())
 
-def get_command_explanation(mode):
-    explanations = {
-        'target_spec': f"{Fore.CYAN}| [INFO] {Fore.BLUE}Varredura padrão: Varre um único alvo, IPs, intervalos ou CIDR.",
-        'severity': f"{Fore.CYAN}| [INFO] {Fore.BLUE}Severidade: Filtrar os resultados por severidade.",
-        'multi_target': f"{Fore.CYAN}| [INFO] {Fore.BLUE}Varredura múltipla: Varre uma lista de alvos de um arquivo.",
-        'network_scan': f"{Fore.CYAN}| [INFO] {Fore.BLUE}Varredura de rede: Varre uma sub-rede inteira.",
-        'custom_template': f"{Fore.CYAN}| [INFO] {Fore.BLUE}Usar template personalizado: Execute um template específico no alvo.",
-        'dashboard': f"{Fore.CYAN}| [INFO] {Fore.BLUE}Enviar resultados para o ProjectDiscovery.",
-    }
-    
-    return explanations.get(mode, f"{Fore.RED}| [INFO] Modo não identificado.")
 
-async def nuclei(target, mode, additional_param=None):
-    base_command = "nuclei " if not ProxyManager.is_enabled() else "proxychains nuclei "
-    command = None
+def _info(mode: str) -> str:
+    if not is_info_visible():
+        return ""
+    return f"  {Fore.CYAN}|{Fore.BLUE} {registry.info('nuclei', mode)}{Fore.RESET}"
 
-    if mode == 'target_spec':
-        command = f"{base_command}-target {target}"
-    elif mode == 'severity':
-        command = f"{base_command}-severity {additional_param} -target {target}"
-    elif mode == 'multi_target':
-        command = f"{base_command}-targets {target}"
-    elif mode == 'network_scan':
-        command = f"{base_command}-target {target}"
-    elif mode == 'custom_template':
-        command = f"{base_command}-u {additional_param[0]} -t {additional_param[1]}"
-    elif mode == 'dashboard':
-        command = f"{base_command}-target {target} -dashboard"
 
-    if command:
-        await run_command(command, output_name="nuclei")
+async def nuclei_menu_loop(action: str = "run") -> None:
+    mode_label = "Automação" if action == "queue" else "Execução"
+    m = registry.REGISTRY["nuclei"]["modes"]
 
-def get_severity():
-    return input(f"{Fore.GREEN}Digite a severidade (low, medium, high) ou {Fore.RED}[B]{Fore.GREEN} para voltar: ")
-
-def get_multi_target_file():
-    return input(f"{Fore.GREEN}Digite o caminho para o arquivo com a lista de alvos ou {Fore.RED}[B]{Fore.GREEN} para voltar: ")
-
-def get_network_target():
-    while True:
-        target = input(f"{Fore.GREEN}Digite o alvo da rede (EX: 192.168.1.0/24) ou {Fore.RED}[B]{Fore.GREEN} para voltar: ")
-        if target.lower() == 'b':
-            return None
-        if is_valid_cidr(target):
-            return target
-        else:
-            logger.error(f"Formato inválido. Por favor, insira um endereço CIDR válido.")
-
-def get_custom_template():
-    target = input(f"{Fore.GREEN}Digite o endereço do alvo (EX: 192.168.0.1 | site.com) ou {Fore.RED}[B]{Fore.GREEN} para voltar: ")
-    if target.lower() == 'b':
-        return (None, None)
-
-    template = input(f"{Fore.GREEN}Digite o caminho para o template personalizado (EX: /path/to/template.yaml) ou {Fore.RED}[B]{Fore.GREEN} para voltar: ")
-    if template.lower() == 'b':
-        return (None, None)
-
-    return (target, template)
-
-async def nuclei_options(option):
-    target = global_target.value or await session.prompt_async(f"{Fore.RED}Digite o alvo ou [B] para voltar: ")
-
-    if option in ["1", "2", "6"] and target:
-
-        if option == "1":
-            if target.lower() == 'b':
-                clear_terminal()
-                return
-            await nuclei(target, 'target_spec')
-        elif option == "2":
-            if target.lower() == 'b':
-                clear_terminal()
-                return
-            severity = get_severity()
-            if severity.lower() == 'b':
-                clear_terminal()
-                return
-            await nuclei(target, 'severity', severity)
-        elif option == "6":
-            if target.lower() == 'b':
-                clear_terminal()
-                return
-            await nuclei(target, 'dashboard')
-    elif option == "3":
-        if target.lower() == 'b':
-                clear_terminal()
-                return
-        target = get_multi_target_file()
-        await nuclei(target, 'multi_target')
-
-    elif option == "5":
-        target, template = get_custom_template()
-        if target is None or template is None:
-            clear_terminal()
-            return
-        await nuclei(target, 'custom_template', (target, template))
-
-async def nuclei_menu_loop():
     while True:
         clear_terminal()
-        global_target_display = (
-            f"Alvo: {Fore.GREEN}{global_target.value}{Fore.RESET}"
-            if global_target.value
-            else f"Alvo: {Fore.RED}Não definido{Fore.RESET}"
+        target = global_target.value
+        target_display = (
+            f"{Fore.GREEN}{target}{Fore.RESET}" if target
+            else f"{Fore.RED}Não definido{Fore.RESET}"
         )
-        
-        print(rf"""{Fore.BLUE}
-         _   _            _      _ Pressione Ctrl+T para definir o alvo
-        | \ | |          | |    (_)     {Fore.YELLOW}{global_target_display}{Fore.BLUE}
-        |  \| |_   _  ___| | ___ _ 
-        | . ` | | | |/ __| |/ _ \ |
+
+        print(rf"""
+        {Fore.BLUE}
+         _   _            _      _
+        | \ | |          | |    (_)    Ctrl+T → definir alvo
+        |  \| |_   _  ___| | ___ _    Alvo: {target_display}{Fore.BLUE}
+        | . ` | | | |/ __| |/ _ \ |   Modo: {Fore.YELLOW}{mode_label}{Fore.BLUE}
         | |\  | |_| | (__| |  __/ |
         |_| \_|\__,_|\___|_|\___|_|
-                                    
-        {Fore.CYAN}[1] {Fore.RESET}Varredura padrão {get_command_explanation('target_spec') if is_info_visible() else ""}
-        {Fore.CYAN}[2] {Fore.RESET}Filtrar por severidade {get_command_explanation('severity') if is_info_visible() else ""}
-        {Fore.CYAN}[3] {Fore.RESET}Varredura múltipla {get_command_explanation('multi_target') if is_info_visible() else ""}
-        {Fore.CYAN}[4] {Fore.RESET}Varredura de rede {get_command_explanation('network_scan') if is_info_visible() else ""}
-        {Fore.CYAN}[5] {Fore.RESET}Usar template personalizado {get_command_explanation('custom_template') if is_info_visible() else ""}
-        {Fore.CYAN}[6] {Fore.RESET}Enviar para ProjectDiscovery {get_command_explanation('dashboard') if is_info_visible() else ""}
-        {Fore.RED}[B] {Fore.RESET}Voltar
-        {Fore.YELLOW}[I] {Fore.RESET}Alternar Informações
+
+        {Fore.CYAN}[1]{Fore.RESET} {m['target_spec']['label']}{_info('target_spec')}
+        {Fore.CYAN}[2]{Fore.RESET} {m['severity']['label']}{_info('severity')}
+        {Fore.CYAN}[3]{Fore.RESET} {m['multi_target']['label']}{_info('multi_target')}
+        {Fore.CYAN}[4]{Fore.RESET} {m['network_scan']['label']}{_info('network_scan')}
+        {Fore.CYAN}[5]{Fore.RESET} {m['custom_template']['label']}{_info('custom_template')}
+        {Fore.CYAN}[6]{Fore.RESET} {m['dashboard']['label']}{_info('dashboard')}
+        {Fore.RED}[B]{Fore.RESET} Voltar   {Fore.YELLOW}[I]{Fore.RESET} Alternar Informações
         """)
 
-        option = await session.prompt_async(HTML(f"<ansiyellow>Escolha uma opção:</ansiyellow> "), key_bindings=bindings)
-    
-        if option.lower() == 'b':
+        option = await session.prompt_async(
+            HTML("<ansiyellow>Escolha:</ansiyellow> "), key_bindings=_bindings
+        )
+        option = option.strip()
+
+        if option.lower() == "b":
             break
-        elif option.lower() == 'i':
+        if option.lower() == "i":
             toggle_info()
             continue
+
+        target = global_target.value
+        if not target and option not in ("3", "4"):
+            logger.error("Nenhum alvo definido. Pressione Ctrl+T para configurar.")
+            await session.prompt_async(HTML("<ansiblue>Enter para continuar...</ansiblue>"))
+            continue
+
+        if option == "1":
+            await dispatch(action, "nuclei", "target_spec",
+                           [registry.build("nuclei", "target_spec", target)])
+
+        elif option == "2":
+            while True:
+                sev = await session.prompt_async(
+                    HTML(
+                        "<ansiyellow>Severidade (low, medium, high, critical)</ansiyellow>"
+                        " <ansired>[B voltar]</ansired><ansiyellow>:</ansiyellow> "
+                    )
+                )
+                if sev.strip().lower() == "b":
+                    break
+                if sev.strip().lower() in ("low", "medium", "high", "critical"):
+                    await dispatch(action, "nuclei", "severity",
+                                   [registry.build("nuclei", "severity", target,
+                                                   severity=sev.strip().lower())])
+                    break
+                logger.error("Severidade inválida. Use: low, medium, high ou critical.")
+
+        elif option == "3":
+            while True:
+                path = await session.prompt_async(
+                    HTML(
+                        "<ansiyellow>Caminho para o arquivo de alvos</ansiyellow>"
+                        " <ansired>[B voltar]</ansired><ansiyellow>:</ansiyellow> "
+                    )
+                )
+                if path.strip().lower() == "b":
+                    break
+                if os.path.isfile(path.strip()):
+                    await dispatch(action, "nuclei", "multi_target",
+                                   [registry.build("nuclei", "multi_target", path.strip())])
+                    break
+                logger.error(f"Arquivo não encontrado: {path.strip()}")
+
         elif option == "4":
-            target = get_network_target()
-            if target is None:
-                clear_terminal()
-                break
-            await nuclei(target, 'network_scan')
-        if option in [str(i) for i in range(1, 7)]:
-            await nuclei_options(option)
+            while True:
+                cidr = await session.prompt_async(
+                    HTML(
+                        "<ansiyellow>Alvo de rede (ex: 192.168.1.0/24)</ansiyellow>"
+                        " <ansired>[B voltar]</ansired><ansiyellow>:</ansiyellow> "
+                    )
+                )
+                if cidr.strip().lower() == "b":
+                    break
+                if is_valid_cidr(cidr.strip()):
+                    await dispatch(action, "nuclei", "network_scan",
+                                   [registry.build("nuclei", "network_scan", cidr.strip())])
+                    break
+                logger.error("CIDR inválido.")
 
+        elif option == "5":
+            while True:
+                raw = await session.prompt_async(
+                    HTML(
+                        "<ansiyellow>URL e caminho do template separados por espaço</ansiyellow>"
+                        " <ansired>[B voltar]</ansired><ansiyellow>:</ansiyellow> "
+                    )
+                )
+                if raw.strip().lower() == "b":
+                    break
+                parts = raw.strip().split(maxsplit=1)
+                if len(parts) == 2:
+                    await dispatch(action, "nuclei", "custom_template",
+                                   [registry.build("nuclei", "custom_template",
+                                                   parts[0], template=parts[1])])
+                    break
+                logger.error("Informe URL e template separados por espaço.")
 
+        elif option == "6":
+            await dispatch(action, "nuclei", "dashboard",
+                           [registry.build("nuclei", "dashboard", target)])
