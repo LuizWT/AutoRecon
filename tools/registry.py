@@ -26,8 +26,8 @@ def _wrap(cmd: list[str], sudo: bool) -> list[str]:
     return ["sudo"] + cmd
 
 
-def _render(template: list[str], **kwargs) -> list[str]:
-    return [elem.format(**kwargs) for elem in template]
+def _render(tokens: list[str], **kwargs) -> list[str]:
+    return [elem.format(**kwargs) for elem in tokens]
 
 
 def build(tool: str, mode: str, target: str, **kwargs) -> list[str]:
@@ -44,7 +44,7 @@ def build_multi(tool: str, mode: str, target: str, **kwargs) -> list[list[str]]:
     """Returns a list of commands for multi-step modes."""
     mode_def = REGISTRY[tool]["modes"][mode]
     sudo = REGISTRY[tool].get("sudo", False)
-    return [_wrap(_render(t, target=target, **kwargs), sudo) for t in mode_def["commands"]]
+    return [_wrap(_render(tokens, target=target, **kwargs), sudo) for tokens in mode_def["commands"]]
 
 
 def is_multi(tool: str, mode: str) -> bool:
