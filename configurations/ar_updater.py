@@ -77,5 +77,21 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         '-u', '--update', action='store_true', help="Atualiza o código para a versão mais recente"
     )
+
+    subparsers = parser.add_subparsers(dest="command")
+
+    scan_p = subparsers.add_parser("scan", help="Executa varredura automatizada com perfil")
+    scan_p.add_argument("--target", required=True, metavar="ALVO", help="IP, domínio ou CIDR")
+    scan_p.add_argument(
+        "--profile", required=True, metavar="PERFIL",
+        help="Nome do perfil (ex: web-app, network-recon, full-recon)"
+    )
+    scan_p.add_argument(
+        "--output", metavar="ARQUIVO",
+        help="Caminho do relatório markdown (padrão: output/report_<perfil>_<alvo>.md)"
+    )
+
+    subparsers.add_parser("profiles", help="Lista os perfis de varredura disponíveis")
+
     return parser.parse_args()
 

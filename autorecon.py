@@ -1,5 +1,6 @@
 import asyncio
 import sys
+from pathlib import Path
 from colorama import init, Fore, Style
 from prompt_toolkit import PromptSession
 from prompt_toolkit.formatted_text import HTML
@@ -22,6 +23,8 @@ from tools.wpscan import wpscan_menu_loop
 from tools.nuclei import nuclei_menu_loop
 from tools.nikto import nikto_menu_loop
 from config import OUTPUT_DIR
+from scan.engine import run_scan, list_profiles
+from scan.report import save_report
 
 init(autoreset=True)
 session = PromptSession()
@@ -138,13 +141,71 @@ async def main_loop() -> None:
                 )
 
 
+def _list_profiles_cli() -> None:
+    profiles = list_profiles()
+    if not profiles:
+        print(f"{Fore.RED}Nenhum perfil encontrado.{Fore.RESET}")
+        return
+    print(f"\n{Fore.CYAN}Perfis disponíveis:{Fore.RESET}\n")
+    for p in profiles:
+        print(f"  {Fore.YELLOW}{p['name']:<20}{Fore.RESET} {p['label']} — {p['description']}")
+        print(f"  {'':20} {Fore.GREEN}{p['steps']} etapas{Fore.RESET}\n")
+
+
+async def _run_scan_cli(args) -> None:
+    target = args.target
+    profile = args.profile
+
+    if args.output:
+        output_path = Path(args.output)
+    else:
+        safe_target = target.replace("/", "_").replace(":", "_")
+        output_path = OUTPUT_DIR / f"report_{profile}_{safe_target}.md"
+
+    print(f"\n{Fore.CYAN}AutoRecon Scan{Fore.RESET}")
+    print(f"  Alvo:   {Fore.GREEN}{target}{Fore.RESET}")
+    print(f"  Perfil: {Fore.GREEN}{profile}{Fore.RESET}")
+    print(f"  Output: {Fore.GREEN}{output_path}{Fore.RESET}\n")
+
+    def on_start(step: dict) -> None:
+        print(f"{Fore.CYAN}[+] {step['label']}{Fore.RESET}")
+
+    def on_done(step) -> None:
+        status = f"{Fore.GREEN}OK{Fore.RESET}" if step.success else f"{Fore.RED}ERRO (rc={step.returncode}){Fore.RESET}"
+        print(f"    {status} — {step.duration:.1f}s\n")
+
+    result = await run_scan(
+        target=target,
+        profile_name=profile,
+        stream=True,
+        on_step_start=on_start,
+        on_step_done=on_done,
+    )
+
+    saved = save_report(result, output_path)
+    print(f"\n{Fore.GREEN}Varredura concluída em {result.duration:.1f}s.{Fore.RESET}")
+    print(f"Relatório salvo em: {Fore.YELLOW}{saved}{Fore.RESET}\n")
+
+
 if __name__ == "__main__":
     if not check_system():
         sys.exit(1)
 
     args = parse_args()
+
     if args.update:
         update_repository()
+        sys.exit(0)
+
+    if args.command == "profiles":
+        _list_profiles_cli()
+        sys.exit(0)
+
+    if args.command == "scan":
+        try:
+            asyncio.run(_run_scan_cli(args))
+        except KeyboardInterrupt:
+            print(f"\n{Fore.RED}Varredura interrompida.{Fore.RESET}")
         sys.exit(0)
 
     try:

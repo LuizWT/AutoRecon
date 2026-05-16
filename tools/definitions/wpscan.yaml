@@ -1,0 +1,31 @@
+name: wpscan
+label: WPSCAN
+sudo: true
+modes:
+  normal:
+    label: MODO NORMAL
+    info: Varredura padrão no WordPress.
+    command: ["wpscan", "--url", "{target}"]
+
+  enumerate_users:
+    label: ENUMERAR USUÁRIOS
+    info: Enumera usuários registrados no WordPress.
+    command: ["wpscan", "--url", "{target}", "--enumerate", "u"]
+
+  enumerate_plugins:
+    label: ENUMERAR PLUGINS
+    info: Enumera plugins instalados e suas versões.
+    command: ["wpscan", "--url", "{target}", "--enumerate", "p"]
+
+  enumerate_themes:
+    label: ENUMERAR TEMAS
+    info: Enumera temas instalados e suas versões.
+    command: ["wpscan", "--url", "{target}", "--enumerate", "t"]
+
+  scan:
+    label: SCAN COMPLETO (API TOKEN)
+    info: Scan completo com verificação de vulnerabilidades via API.
+    command: ["wpscan", "--url", "{target}", "--api-token", "{api_token}"]
+    params:
+      api_token:
+        required: true

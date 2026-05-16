@@ -11,6 +11,24 @@ O **AutoRecon** é um projeto de automação de ferramentas de segurança focado
 
 <hr>
 
+### **Atualização 1.8.0**
+
+Esta versão introduz o **`autorecon scan`** — varredura orquestrada multi-ferramenta via perfis YAML — e refatora as definições de comandos para um formato declarativo.
+
+- **Varredura por Perfis (`autorecon scan`)**  
+  Execute múltiplas ferramentas em sequência com um único comando, informando apenas o alvo e o perfil desejado. O resultado é salvo automaticamente como relatório Markdown em `output/`.
+
+- **Perfis Prontos**  
+  Três perfis incluídos: `web-app`, `network-recon` e `full-recon`. Liste-os com `autorecon profiles`.
+
+- **Relatório Markdown Automático**  
+  Após cada varredura, um relatório estruturado é gerado em `output/` com status de cada etapa, saída completa das ferramentas e tempo de execução.
+
+- **Definições de Ferramentas em YAML**  
+  Os comandos de cada ferramenta (nmap, nikto, nuclei, wpscan, sniper) foram migrados para arquivos YAML em `tools/definitions/`. Adicionar ou ajustar um modo não requer mais editar código Python.
+
+<hr>
+
 ### **Atualização 1.7.0**
 Esta versão traz uma grande **refatoração interna** visando melhor organização, manutenção e padronização da execução:
 
@@ -83,12 +101,14 @@ Execute o script:
 <hr>
 
 ### Funcionalidades
-- **Automatização de Ferramentas**: Execute varreduras do Nmap, Nuclei, WPScan, Nikto e outras ferramentas, com diferentes modos e técnicas como detecção de serviços, descoberta de hosts, verificação de vulnerabilidades e força bruta de DNS.
-- **Execução Sequencial**: Execute múltiplos comandos em sequência para uma varredura completa, evitando a necessidade de rodar cada comando individualmente.
-- **Instalação Automática**: O AutoRecon verifica e instala automaticamente ferramentas essenciais, como Nmap, Sn1per, WPScan, Nuclei e Nikto. O usuário não é obrigado a instalar todas as ferramentas de terceiros, mas apenas as que pretende usar, sendo perguntado antes da instalação.
-- **Execução de Ferramentas de Terceiros**: Integração com **Sn1per** para reconhecimento de rede, **WPScan** para varredura de vulnerabilidades de WordPress, **Nuclei** para execução de scans de segurança baseados em templates, **Nikto** para verificar vulnerabilidades em servidores web e **Nmap** para escaneamento e descoberta de rede.
-- **Opção de Uso de Proxychains**: Execute varreduras através do **proxychains**, adicionando uma camada de anonimato durante os testes de segurança.
-- **Relatório de Resultados**: É salvo automaticamente os resultados das varreduras em arquivos para análise posterior em `output/`.
+- **Varredura por Perfis**: Execute múltiplas ferramentas em sequência com `autorecon scan --target X --profile Y`. Perfis são arquivos YAML que definem quais ferramentas e modos rodar em ordem.
+- **Relatório Markdown Automático**: Após cada varredura via `scan`, um relatório estruturado é salvo em `output/` com status, saída e tempo de execução de cada etapa.
+- **Perfis Personalizáveis**: Crie seus próprios perfis em `profiles/` combinando qualquer ferramenta e modo disponível.
+- **Menu Interativo (TUI)**: Interface de terminal para execução manual e exploração individual de cada ferramenta.
+- **Automatização com Fila (AR Scheduler)**: Adicione comandos a uma fila e execute-os com intervalo configurável.
+- **Instalação Automática**: Verifica e instala ferramentas sob demanda — apenas quando o usuário decide utilizá-las.
+- **Suporte a ProxyChains**: Execute varreduras através do proxychains para anonimato adicional.
+- **Definições em YAML**: Modos de cada ferramenta são declarados em `tools/definitions/`, facilitando adição e manutenção sem alterar código Python.
   
 <hr>
 
@@ -142,16 +162,101 @@ ou
 
 ### Uso
 
-O AutoRecon possui um menu interativo que facilita a execução de diferentes modos de varredura a partir de outras ferramentas. Ao decorrer dos menus que forem sendo escolhidos, você se deparará com várias opções, incluindo:
+#### Menu interativo (TUI)
 
-- **Especificação de Alvo**: Informe o endereço IP ou domínio que deseja analisar.
-- **Técnicas de Varredura**: Selecione entre varreduras TCP, UDP, ACK, entre outras.
-- **Descoberta de Hosts**: Identifique hosts ativos na rede.
-- **Detecção de Sistema Operacional**: Detecte o sistema operacional dos dispositivos alvo.
-- **Varredura de Vulnerabilidades em WordPress com WPScan**: Realize uma análise de segurança focada em sites WordPress.
-- **Execução de Scans com Nuclei**: Utilize templates para verificar vulnerabilidades específicas em aplicações.
-- **Verificação de Vulnerabilidades com Nikto**: Analise servidores web em busca de configurações inseguras e vulnerabilidades conhecidas.
-- **Execução de Todos os Comandos em Sequência**: Execute uma sequência completa de scans para uma análise abrangente.
+Execute sem argumentos para abrir o menu interativo:
+
+    sudo autorecon
+
+No menu você escolhe a ferramenta, o modo de varredura e define o alvo. As opções disponíveis incluem:
+
+- **Especificação de Alvo** — IP, domínio ou CIDR.
+- **Técnicas de Varredura** — TCP, UDP, ACK, FIN, NULL, Xmas e outras.
+- **Descoberta de Hosts** — identifica hosts ativos na rede.
+- **Detecção de Sistema Operacional** — SO do dispositivo alvo.
+- **WPScan** — varredura de vulnerabilidades em WordPress.
+- **Nuclei** — scans baseados em templates personalizáveis.
+- **Nikto** — verificação de vulnerabilidades em servidores web.
+- **Execução em Sequência** — todos os comandos de uma ferramenta de uma vez.
+
+<hr>
+
+#### Varredura por Perfil (`autorecon scan`)
+
+Para executar múltiplas ferramentas em sequência de forma automática, use o comando `scan`:
+
+    sudo autorecon scan --target <ALVO> --profile <PERFIL>
+
+**Exemplos:**
+
+```bash
+# Varredura de aplicação web (nmap + nikto + nuclei)
+sudo autorecon scan --target 192.168.1.10 --profile web-app
+
+# Reconhecimento de rede (descoberta de hosts, serviços e SO)
+sudo autorecon scan --target 192.168.1.0/24 --profile network-recon
+
+# Varredura completa com todas as ferramentas
+sudo autorecon scan --target exemplo.com --profile full-recon
+
+# Salvar relatório em caminho personalizado
+sudo autorecon scan --target 10.0.0.1 --profile web-app --output ~/relatorios/recon.md
+```
+
+O relatório Markdown é salvo automaticamente em `output/report_<perfil>_<alvo>.md`.
+
+<hr>
+
+#### Listar perfis disponíveis
+
+    sudo autorecon profiles
+
+Saída esperada:
+
+```
+Perfis disponíveis:
+
+  web-app              Aplicação Web — Reconhecimento focado em HTTP/HTTPS.
+                       5 etapas
+
+  network-recon        Reconhecimento de Rede — Descoberta de hosts e serviços.
+                       4 etapas
+
+  full-recon           Reconhecimento Completo — Varredura abrangente multi-ferramenta.
+                       12 etapas
+```
+
+<hr>
+
+#### Perfis incluídos
+
+| Perfil | Ferramentas | Etapas |
+|--------|-------------|--------|
+| `web-app` | nmap, nikto, nuclei | 5 |
+| `network-recon` | nmap | 4 |
+| `full-recon` | nmap, nikto, nuclei, wpscan | 12 |
+
+<hr>
+
+#### Criar um perfil personalizado
+
+Crie um arquivo `.yaml` em `profiles/` seguindo a estrutura abaixo:
+
+```yaml
+name: meu-perfil
+label: Meu Perfil
+description: Descrição do que este perfil faz.
+steps:
+  - tool: nmap
+    mode: service_detection
+    label: Detecção de Serviços
+
+  - tool: nikto
+    mode: vuln_checks
+    label: Nikto — Verificações de Vulnerabilidades
+```
+
+Os valores aceitos em `tool` e `mode` correspondem aos arquivos em `tools/definitions/`.
   
 <hr>
 

@@ -1,0 +1,70 @@
+name: sniper
+label: SNIPER
+sudo: true
+modes:
+  normal:
+    label: MODO PADRÃO
+    info: Varredura padrão do Sn1per.
+    command: ["sniper", "-t", "{target}"]
+
+  osint_recon:
+    label: OSINT + RECONHECIMENTO
+    info: Combina reconhecimento OSINT com varredura.
+    command: ["sniper", "-t", "{target}", "-o", "-re"]
+
+  stealth:
+    label: FURTIVO + OSINT + RECONHECIMENTO
+    info: Modo furtivo — combina stealth, OSINT e reconhecimento.
+    command: ["sniper", "-t", "{target}", "-m", "stealth", "-o", "-re"]
+
+  discover:
+    label: MODO DE DESCOBERTA
+    info: Descoberta de hosts usando wordlist.
+    command: ["sniper", "-t", "{target}", "-m", "discover", "-w", "{wordlist}"]
+    params:
+      wordlist:
+        required: true
+
+  port:
+    label: PORTA ESPECÍFICA
+    info: Escaneia somente a(s) porta(s) informadas.
+    command: ["sniper", "-t", "{target}", "-m", "port", "-p", "{ports}"]
+    params:
+      ports:
+        default: "80"
+
+  fullportonly:
+    label: TODAS AS PORTAS
+    info: Escaneia todas as portas abertas.
+    command: ["sniper", "-t", "{target}", "-fp"]
+
+  web:
+    label: MODO WEB
+    info: Foco em serviços web (HTTP/HTTPS).
+    command: ["sniper", "-t", "{target}", "-m", "web"]
+
+  webporthttp:
+    label: PORTA HTTP ESPECÍFICA
+    info: Escaneia porta HTTP informada.
+    command: ["sniper", "-t", "{target}", "-m", "webporthttp", "-p", "{ports}"]
+    params:
+      ports:
+        default: "80"
+
+  webporthttps:
+    label: PORTA HTTPS ESPECÍFICA
+    info: Escaneia porta HTTPS informada.
+    command: ["sniper", "-t", "{target}", "-m", "webporthttps", "-p", "{ports}"]
+    params:
+      ports:
+        default: "443"
+
+  webscan:
+    label: VULNERABILIDADES WEB
+    info: Varredura de vulnerabilidades em aplicações web.
+    command: ["sniper", "-t", "{target}", "-m", "webscan"]
+
+  bruteforce:
+    label: FORÇA BRUTA
+    info: Modo de força bruta em serviços do alvo.
+    command: ["sniper", "-t", "{target}", "-b"]

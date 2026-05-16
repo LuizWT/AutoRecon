@@ -1,0 +1,39 @@
+name: nuclei
+label: NUCLEI
+sudo: true
+modes:
+  target_spec:
+    label: VARREDURA PADRÃO
+    info: Executa todas as templates no alvo.
+    command: ["nuclei", "-target", "{target}"]
+
+  severity:
+    label: FILTRAR POR SEVERIDADE
+    info: Filtra resultados por severidade — low, medium, high, critical.
+    command: ["nuclei", "-severity", "{severity}", "-target", "{target}"]
+    params:
+      severity:
+        default: "high"
+
+  multi_target:
+    label: VARREDURA MÚLTIPLA
+    info: Usa arquivo com lista de alvos (um por linha).
+    command: ["nuclei", "-targets", "{target}"]
+
+  network_scan:
+    label: VARREDURA DE REDE
+    info: "Varredura de rede via CIDR (ex: 192.168.1.0/24)."
+    command: ["nuclei", "-target", "{target}"]
+
+  custom_template:
+    label: TEMPLATE PERSONALIZADO
+    info: Usa template local ou remoto personalizado.
+    command: ["nuclei", "-u", "{target}", "-t", "{template}"]
+    params:
+      template:
+        required: true
+
+  dashboard:
+    label: ENVIAR PARA PROJECTDISCOVERY
+    info: Envia resultados ao dashboard ProjectDiscovery.
+    command: ["nuclei", "-target", "{target}", "-dashboard"]

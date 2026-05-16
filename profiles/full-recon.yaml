@@ -1,0 +1,51 @@
+name: full-recon
+label: Reconhecimento Completo
+description: Varredura abrangente — rede, serviços, web, WordPress e vulnerabilidades com todos os módulos disponíveis.
+steps:
+  - tool: nmap
+    mode: host_discovery
+    label: Descoberta de Hosts
+
+  - tool: nmap
+    mode: service_detection
+    label: Detecção de Serviços
+
+  - tool: nmap
+    mode: os_detection
+    label: Detecção de Sistema Operacional
+
+  - tool: nmap
+    mode: http_title
+    label: HTTP Title (80/443)
+
+  - tool: nmap
+    mode: ssl_cert
+    label: Certificado SSL (443)
+
+  - tool: nmap
+    mode: vuln
+    label: Vulnerabilidades Web (nmap)
+
+  - tool: nmap
+    mode: dns_brute
+    label: DNS Brute Force
+
+  - tool: nikto
+    mode: vuln_checks
+    label: Nikto — Verificações de Vulnerabilidades
+
+  - tool: nikto
+    mode: server_modules
+    label: Nikto — Módulos do Servidor
+
+  - tool: nuclei
+    mode: target_spec
+    label: Nuclei — Varredura Completa
+
+  - tool: wpscan
+    mode: enumerate_users
+    label: WPScan — Usuários WordPress
+
+  - tool: wpscan
+    mode: enumerate_plugins
+    label: WPScan — Plugins WordPress

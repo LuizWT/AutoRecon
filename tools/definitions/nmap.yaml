@@ -1,0 +1,104 @@
+name: nmap
+label: NMAP
+sudo: true
+modes:
+  target_spec:
+    label: VARREDURA PADRÃO
+    info: Varre IPs, intervalos, CIDR, arquivos, etc.
+    command: ["nmap", "{target}"]
+
+  scan_technique:
+    label: TÉCNICAS DE VARREDURA
+    info: Técnicas TCP, UDP, ACK, FIN, NULL, Xmas, etc.
+    command: ["nmap", "{technique}", "{target}"]
+    params:
+      technique:
+        default: "-sS"
+
+  host_discovery:
+    label: DESCOBRIR HOSTS
+    info: Descobre hosts ativos na rede.
+    command: ["nmap", "-sn", "{target}"]
+
+  port_spec:
+    label: ESPECIFICAÇÃO DE PORTAS
+    info: "Varre portas específicas ou faixa (ex: 21,22 ou 1-100)."
+    command: ["nmap", "-p", "{ports}", "{target}"]
+    params:
+      ports:
+        default: "80"
+
+  service_detection:
+    label: DETECÇÃO DE SERVIÇOS
+    info: Detecta serviços e versões em execução.
+    command: ["nmap", "-sV", "{target}"]
+
+  os_detection:
+    label: DETECÇÃO DE SO
+    info: Tenta identificar o sistema operacional do alvo.
+    command: ["nmap", "-O", "{target}"]
+
+  timing:
+    label: TEMPORIZAÇÃO E DESEMPENHO
+    info: Ajusta a velocidade da varredura (0 = lento, 5 = rápido).
+    command: ["nmap", "-T{level}", "{target}"]
+    params:
+      level:
+        default: "3"
+
+  http_title:
+    label: HTTP TITLE
+    info: Varre portas 80 e 443 para título HTTP.
+    command: ["nmap", "-p", "80,443", "--script=http-title", "{target}"]
+
+  ssl_cert:
+    label: SSL CERT
+    info: Varre a porta 443 para certificado SSL.
+    command: ["nmap", "-p", "443", "--script=ssl-cert", "{target}"]
+
+  vuln:
+    label: VULN
+    info: Varre portas 80 e 443 para vulnerabilidades conhecidas.
+    command: ["nmap", "-p", "80,443", "--script=vuln", "{target}"]
+
+  smb_os_discovery:
+    label: SMB OS DISCOVERY
+    info: Varre porta 445 para descobrir SO via SMB.
+    command: ["nmap", "-p", "445", "--script=smb-os-discovery", "{target}"]
+
+  http_robots_txt:
+    label: HTTP ROBOTS.TXT
+    info: Varre portas 80 e 443 para arquivo robots.txt.
+    command: ["nmap", "-p", "80,443", "--script=http-robots.txt", "{target}"]
+
+  ssh_hostkey:
+    label: SSH HOSTKEY
+    info: Varre a porta 22 para chave do host SSH.
+    command: ["nmap", "-p", "22", "--script=ssh-hostkey", "{target}"]
+
+  dns_brute:
+    label: DNS BRUTE FORCE
+    info: Realiza força bruta em DNS do domínio alvo.
+    command: ["nmap", "--script=dns-brute", "--script-args=dns-brute.domain={target}"]
+
+  all_commands:
+    label: EXECUTAR TODOS OS COMANDOS
+    info: Executa todos os modos nmap em sequência.
+    multi: true
+    commands:
+      - ["nmap", "-sS", "-v", "{target}"]
+      - ["nmap", "-sT", "-v", "{target}"]
+      - ["nmap", "-sU", "-v", "{target}"]
+      - ["nmap", "-sF", "-v", "{target}"]
+      - ["nmap", "-sN", "-v", "{target}"]
+      - ["nmap", "-sX", "-v", "{target}"]
+      - ["nmap", "-sn", "-v", "{target}"]
+      - ["nmap", "-sV", "-v", "{target}"]
+      - ["nmap", "-O", "-v", "{target}"]
+      - ["nmap", "-p-", "-v", "--script=http-title", "{target}"]
+      - ["nmap", "-p", "443", "-v", "--script=ssl-cert", "{target}"]
+      - ["nmap", "-p-", "-v", "--script=vuln", "{target}"]
+      - ["nmap", "-p", "445", "-v", "--script=smb-os-discovery", "{target}"]
+      - ["nmap", "-p-", "-v", "--script=http-robots.txt", "{target}"]
+      - ["nmap", "-p", "22", "-v", "--script=ssh-hostkey", "{target}"]
+      - ["nmap", "--script=dns-brute", "--script-args=dns-brute.domain={target}"]

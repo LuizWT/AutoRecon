@@ -1,0 +1,19 @@
+name: network-recon
+label: Reconhecimento de Rede
+description: Descoberta de hosts, varredura de portas, detecção de serviços e sistema operacional via nmap.
+steps:
+  - tool: nmap
+    mode: host_discovery
+    label: Descoberta de Hosts
+
+  - tool: nmap
+    mode: target_spec
+    label: Varredura Padrão
+
+  - tool: nmap
+    mode: service_detection
+    label: Detecção de Serviços
+
+  - tool: nmap
+    mode: os_detection
+    label: Detecção de Sistema Operacional

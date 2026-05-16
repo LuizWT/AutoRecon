@@ -1,0 +1,51 @@
+name: nikto
+label: NIKTO
+sudo: true
+modes:
+  vuln_checks:
+    label: VERIFICAÇÕES DE VULNERABILIDADES
+    info: Executa todas as verificações de vulnerabilidades.
+    command: ["nikto", "-h", "{target}", "-C", "all"]
+
+  server_modules:
+    label: VERIFICAÇÕES DE MÓDULOS DO SERVIDOR
+    info: Verifica todos os módulos do servidor web.
+    command: ["nikto", "-h", "{target}", "-M", "all"]
+
+  config_files:
+    label: ARQUIVOS DE CONFIGURAÇÃO
+    info: Testa presença de arquivos de configuração sensíveis.
+    command: ["nikto", "-h", "{target}", "-e", "all"]
+
+  cookie_security:
+    label: SEGURANÇA DE COOKIES
+    info: Analisa flags e segurança dos cookies.
+    command: ["nikto", "-h", "{target}", "-C", "-p"]
+
+  protocols:
+    label: VERIFICAÇÕES DE PROTOCOLOS
+    info: Verifica protocolos HTTP disponíveis.
+    command: ["nikto", "-h", "{target}", "-p"]
+
+  dir_file_scan:
+    label: VARREDURA DE DIRETÓRIOS
+    info: Enumera diretórios e arquivos acessíveis.
+    command: ["nikto", "-h", "{target}", "-d"]
+
+  third_party_scripts:
+    label: SCRIPTS DE TERCEIROS
+    info: Detecta scripts e bibliotecas de terceiros.
+    command: ["nikto", "-h", "{target}", "-T"]
+
+  all_commands:
+    label: EXECUTAR TODOS OS COMANDOS
+    info: Executa todos os modos nikto em sequência.
+    multi: true
+    commands:
+      - ["nikto", "-h", "{target}", "-C", "all"]
+      - ["nikto", "-h", "{target}", "-M", "all"]
+      - ["nikto", "-h", "{target}", "-e", "all"]
+      - ["nikto", "-h", "{target}", "-C", "-p"]
+      - ["nikto", "-h", "{target}", "-p"]
+      - ["nikto", "-h", "{target}", "-d"]
+      - ["nikto", "-h", "{target}", "-T"]
