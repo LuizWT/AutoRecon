@@ -27,76 +27,6 @@ Esta versão introduz o **`autorecon scan`** — varredura orquestrada multi-fer
 - **Definições de Ferramentas em YAML**  
   Os comandos de cada ferramenta (nmap, nikto, nuclei, wpscan, sniper) foram migrados para arquivos YAML em `tools/definitions/`. Adicionar ou ajustar um modo não requer mais editar código Python.
 
-<hr>
-
-### **Atualização 1.7.0**
-Esta versão traz uma grande **refatoração interna** visando melhor organização, manutenção e padronização da execução:
-
-- **Execução Assíncrona**  
-  Todas as ferramentas agora utilizam um runner assíncrono centralizado, permitindo maior paralelismo e evitando bloqueios.
-
-- **Configuração Centralizada**  
-  Novo arquivo `config.py` unifica constantes e caminhos (ex.: `OUTPUT_DIR`, `LOG_FILE`, timeout padrão), simplificando ajustes futuros.
-
-- **Logger Padronizado**  
-  O `logger.py` centraliza logs com suporte a rotação de arquivos, facilitando auditoria e análise posterior.
-
-- **Runner Unificado**  
-  Implementação do `runner.py` para executar comandos com timeout, captura de saída e gravação automática no diretório de resultados.
-
-- **Padronização da Saída (LOGs)**  
-  `create_output_file.py` reformulado para salvar arquivos consistentemente em `output/` e trabalhar com `pathlib.Path`.
-
-- **Refatoração dos Módulos de Ferramentas**  
-  Nmap, Nuclei, Nikto, WPScan e Sn1per agora utilizam o mesmo fluxo de execução e log, reduzindo duplicação de código.
-
-- **Melhorias no AR Scheduler**  
-  Submenu de automação ajustado para trabalhar com o runner assíncrono, garantindo consistência e estabilidade.
-
-Arquivos alterados (principais):  
-`autorecon.py`, `config.py`, `create_output_file.py`, `logger.py`, `runner.py`, `setup.py`, `nikto.py`, `nmap.py`, `nuclei.py`, `sniper.py`, `wpscan.py`, `automation_submenu.py`.
-
-<div align="center">
-
-![1732716073_grim](https://github.com/user-attachments/assets/30ac5cc7-cd26-4ce1-87c8-cba217421688)
-
-</div>
-   
-As funcionalidades do AR Scheduler foram mantidas, com melhorias internas para uso assíncrono e padronização de execução. Opções como **ProxyChains**, **remoção de toda a fila** e **suporte a Nuclei/Sn1per** continuam presentes e funcionais.
-
-<div align="center">
-
-![1732716209_grim](https://github.com/user-attachments/assets/76b3bd9b-5191-4fa0-ac1e-4dcac513969d)
-
-<hr>
-
-![1732716223_grim](https://github.com/user-attachments/assets/b04b51ca-f8e3-427e-be1c-bfb4bbc48244)
-
-</div>
-  
-- **Funcionalidade de Lançadores:**  
-A funcionalidade de **lançadores** no AutoRecon permite criar um atalho no menu do sistema para facilitar a execução da ferramenta com um ícone e comando pré-configurado.
-
-Para criar o lançador, entre no diretório do projeto e execute:
-
-    cd ~/AutoRecon
-    bash launcher/create_launcher.sh
-
-Para remover o lançador:
-
-    bash launcher/remove_launcher.sh
-
-<br>
-
-<div align="center">
-
-![1732716570_grim](https://github.com/user-attachments/assets/a389d9fa-cdbb-4d67-9d8d-1a419aae7ed1)
-
-<hr>
-
-![1732716689_grim](https://github.com/user-attachments/assets/a33f2e05-b527-4352-97d4-d2df1917df3e)
-
-</div>
 
 <hr>
 
@@ -258,6 +188,23 @@ steps:
 
 Os valores aceitos em `tool` e `mode` correspondem aos arquivos em `tools/definitions/`.
   
+<hr>
+
+#### Lançador no menu do sistema
+
+O AutoRecon pode ser adicionado ao menu de aplicativos do seu ambiente gráfico como um atalho com ícone pré-configurado.
+
+Para criar o lançador:
+
+    bash launcher/create_launcher.sh
+
+Para remover o lançador:
+
+    bash launcher/remove_launcher.sh
+
+> [!WARNING]
+> Compatível com GNOME, KDE, XFCE, LXDE, MATE, Cinnamon e Hyprland. É recomendado instalar em `~/AutoRecon` para garantir o funcionamento correto do atalho.
+
 <hr>
 
 ## Apoio ao Projeto
