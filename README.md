@@ -1,8 +1,5 @@
 <div align="center">
   <h1>AutoRecon</h1>
-  <img src="https://github.com/user-attachments/assets/238b7cf0-dde6-4844-8400-256eaeeba807" alt="autorecon" width="200" height="200">
-</div>
-
 <hr>
 
 ### Descrição
